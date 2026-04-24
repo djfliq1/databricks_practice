@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Large Data Arrays in Notebooks</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<h1>📦 Passing Large Data Arrays with Notebooks in LakeFlow Jobs</h1>
+<p><strong>Databricks Data Engineer Associate 2026 Certification</strong></p>
+<h2>The Cortana Overview</h2>
+<p><strong>Large data arrays</strong> can break notebook task value passing due to JSON size limits and performance issues. The key is knowing <strong>when to pass arrays directly vs. when to use alternative patterns</strong> like temporary tables, volumes, or streaming approaches.</p>
+<hr />
+<h2>🚨 The Problem: Large Array Limitations</h2>
+<h3>Size Limits and Performance Issues</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/01_large_array_problem.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Large Array Problem Demonstration</span>
+<span class="c1"># MAGIC **When direct JSON passing breaks down**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Example: Your products dataset scaled up</span>
+<span class="n">large_product_analysis</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  product_id,</span>
+<span class="s2">  product_name,</span>
+<span class="s2">  category,</span>
+<span class="s2">  price,</span>
+<span class="s2">  ROUND(price * RAND(), 2) as predicted_demand,</span>
+<span class="s2">  ROUND(price * (1 + RAND() * 0.3), 2) as competitor_price,</span>
+<span class="s2">  DATE_ADD(current_date(), CAST(RAND() * 365 AS INT)) as next_review_date,</span>
+
+<span class="s2">  -- Generate large nested object per product</span>
+<span class="s2">  STRUCT(</span>
+<span class="s2">    category as main_category,</span>
+<span class="s2">    CASE WHEN price &gt; 250 THEN &#39;premium&#39; ELSE &#39;standard&#39; END as tier,</span>
+<span class="s2">    ARRAY(</span>
+<span class="s2">      STRUCT(&#39;feature_1&#39; as name, RAND() * 100 as score),</span>
+<span class="s2">      STRUCT(&#39;feature_2&#39; as name, RAND() * 100 as score),</span>
+<span class="s2">      STRUCT(&#39;feature_3&#39; as name, RAND() * 100 as score),</span>
+<span class="s2">      STRUCT(&#39;feature_4&#39; as name, RAND() * 100 as score),</span>
+<span class="s2">      STRUCT(&#39;feature_5&#39; as name, RAND() * 100 as score)</span>
+<span class="s2">    ) as features,</span>
+<span class="s2">    MAP(</span>
+<span class="s2">      &#39;supplier_rating&#39;, RAND() * 5,</span>
+<span class="s2">      &#39;quality_score&#39;, RAND() * 10,</span>
+<span class="s2">      &#39;inventory_turnover&#39;, RAND() * 50,</span>
+<span class="s2">      &#39;seasonal_factor&#39;, RAND() * 2</span>
+<span class="s2">    ) as metrics</span>
+<span class="s2">  ) as enrichment_data</span>
+
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Collect large complex data (THIS WILL CAUSE ISSUES)</span>
+<span class="n">large_array</span> <span class="o">=</span> <span class="n">large_product_analysis</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🚨 Large array size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">large_array</span><span class="p">)</span><span class="si">}</span><span class="s2"> complex objects&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🚨 PROBLEM: Convert to JSON for task output</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="c1"># This creates massive JSON that breaks task value limits</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># Convert Spark rows to serializable dictionaries</span>
+    <span class="n">serializable_array</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">large_array</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>  <span class="c1"># Just first 5 for demo</span>
+        <span class="n">row_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;product_id&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;product_id&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;product_name&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;product_name&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;price&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;predicted_demand&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;predicted_demand&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;competitor_price&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;competitor_price&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;next_review_date&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;next_review_date&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+
+            <span class="c1"># Large nested structure</span>
+            <span class="s2">&quot;enrichment&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;main_category&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;enrichment_data&quot;</span><span class="p">][</span><span class="s2">&quot;main_category&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;tier&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;enrichment_data&quot;</span><span class="p">][</span><span class="s2">&quot;tier&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="s2">&quot;score&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">])}</span> 
+                    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;enrichment_data&quot;</span><span class="p">][</span><span class="s2">&quot;features&quot;</span><span class="p">]</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;metrics&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;enrichment_data&quot;</span><span class="p">][</span><span class="s2">&quot;metrics&quot;</span><span class="p">])</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="n">serializable_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_dict</span><span class="p">)</span>
+
+    <span class="c1"># Calculate JSON size</span>
+    <span class="n">json_output</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">serializable_array</span><span class="p">)</span>
+    <span class="n">json_size_mb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">json_output</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 JSON size for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">serializable_array</span><span class="p">)</span><span class="si">}</span><span class="s2"> products: </span><span class="si">{</span><span class="n">json_size_mb</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔥 Estimated size for all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">large_array</span><span class="p">)</span><span class="si">}</span><span class="s2"> products: </span><span class="si">{</span><span class="n">json_size_mb</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">large_array</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">serializable_array</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB&quot;</span><span class="p">)</span>
+
+    <span class="c1"># 🚨 This would fail for large datasets</span>
+    <span class="k">if</span> <span class="n">json_size_mb</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>  <span class="c1"># Simulate size limit</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JSON too large: </span><span class="si">{</span><span class="n">json_size_mb</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> MB exceeds 10 MB limit&quot;</span><span class="p">)</span>
+
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Large array JSON serialization failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return error indication instead of large array</span>
+<span class="n">error_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;LARGE_ARRAY_ERROR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;product_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">large_array</span><span class="p">),</span>
+    <span class="s2">&quot;estimated_json_size_mb&quot;</span><span class="p">:</span> <span class="n">json_size_mb</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">large_array</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">serializable_array</span><span class="p">),</span>
+    <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="s2">&quot;Array too large for direct JSON passing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;alternative_needed&quot;</span><span class="p">:</span> <span class="kc">True</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">error_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>✅ Solution 1: Temporary Tables for Large Arrays</h2>
+<h3>Producer Notebook: Write to Temp Table</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/02_large_array_temp_table.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Solution 1: Temporary Tables for Large Arrays</span>
+<span class="c1"># MAGIC **Write large arrays to Delta tables instead of JSON**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Generate the same large product analysis</span>
+<span class="n">large_product_analysis</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  product_id,</span>
+<span class="s2">  product_name,</span>
+<span class="s2">  category,</span>
+<span class="s2">  price,</span>
+<span class="s2">  ROUND(price * RAND(), 2) as predicted_demand,</span>
+<span class="s2">  ROUND(price * (1 + RAND() * 0.3), 2) as competitor_price,</span>
+<span class="s2">  DATE_ADD(current_date(), CAST(RAND() * 365 AS INT)) as next_review_date,</span>
+
+<span class="s2">  -- Flattened structure for better performance</span>
+<span class="s2">  category as main_category,</span>
+<span class="s2">  CASE WHEN price &gt; 250 THEN &#39;premium&#39; ELSE &#39;standard&#39; END as tier,</span>
+<span class="s2">  RAND() * 100 as feature_1_score,</span>
+<span class="s2">  RAND() * 100 as feature_2_score,</span>
+<span class="s2">  RAND() * 100 as feature_3_score,</span>
+<span class="s2">  RAND() * 100 as feature_4_score,</span>
+<span class="s2">  RAND() * 100 as feature_5_score,</span>
+<span class="s2">  RAND() * 5 as supplier_rating,</span>
+<span class="s2">  RAND() * 10 as quality_score,</span>
+<span class="s2">  RAND() * 50 as inventory_turnover,</span>
+<span class="s2">  RAND() * 2 as seasonal_factor,</span>
+
+<span class="s2">  -- Processing metadata</span>
+<span class="s2">  current_timestamp() as analysis_timestamp,</span>
+<span class="s2">  uuid() as batch_id</span>
+
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 SOLUTION: Write to temporary table instead of JSON</span>
+<span class="n">temp_table_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.temp.large_product_analysis_</span><span class="si">{</span><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;SELECT uuid()&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="n">large_product_analysis</span><span class="o">.</span><span class="n">write</span> \
+    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">temp_table_name</span><span class="p">)</span>
+
+<span class="n">total_records</span> <span class="o">=</span> <span class="n">large_product_analysis</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">batch_id</span> <span class="o">=</span> <span class="n">large_product_analysis</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;batch_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()[</span><span class="s2">&quot;batch_id&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Wrote </span><span class="si">{</span><span class="n">total_records</span><span class="si">}</span><span class="s2"> records to </span><span class="si">{</span><span class="n">temp_table_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Calculate summary metrics for small JSON output</span>
+<span class="n">summary_metrics</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  COUNT(*) as total_products,</span>
+<span class="s2">  ROUND(AVG(price), 2) as avg_price,</span>
+<span class="s2">  ROUND(AVG(predicted_demand), 2) as avg_predicted_demand,</span>
+<span class="s2">  COUNT(DISTINCT category) as categories,</span>
+<span class="s2">  COUNT(CASE WHEN tier = &#39;premium&#39; THEN 1 END) as premium_count,</span>
+<span class="s2">  MIN(next_review_date) as earliest_review,</span>
+<span class="s2">  MAX(next_review_date) as latest_review,</span>
+<span class="s2">  ROUND(AVG(supplier_rating), 2) as avg_supplier_rating,</span>
+<span class="s2">  &#39;</span><span class="si">{</span><span class="n">batch_id</span><span class="si">}</span><span class="s2">&#39; as batch_id</span>
+<span class="s2">FROM </span><span class="si">{</span><span class="n">temp_table_name</span><span class="si">}</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🔥 EXAM PATTERN: Return table reference + summary (small JSON)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="n">task_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Instead of large array, return table reference</span>
+    <span class="s2">&quot;large_data_table&quot;</span><span class="p">:</span> <span class="n">temp_table_name</span><span class="p">,</span>
+    <span class="s2">&quot;data_location&quot;</span><span class="p">:</span> <span class="s2">&quot;temp_table&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;batch_id&quot;</span><span class="p">:</span> <span class="n">batch_id</span><span class="p">,</span>
+
+    <span class="c1"># Small summary metrics that fit in JSON</span>
+    <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;total_records&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">summary_metrics</span><span class="p">[</span><span class="s2">&quot;total_products&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;avg_price&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">summary_metrics</span><span class="p">[</span><span class="s2">&quot;avg_price&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;avg_predicted_demand&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">summary_metrics</span><span class="p">[</span><span class="s2">&quot;avg_predicted_demand&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;categories&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">summary_metrics</span><span class="p">[</span><span class="s2">&quot;categories&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;premium_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">summary_metrics</span><span class="p">[</span><span class="s2">&quot;premium_count&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;avg_supplier_rating&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">summary_metrics</span><span class="p">[</span><span class="s2">&quot;avg_supplier_rating&quot;</span><span class="p">])</span>
+    <span class="p">},</span>
+
+    <span class="c1"># Processing metadata</span>
+    <span class="s2">&quot;processing_timestamp&quot;</span><span class="p">:</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT current_timestamp()&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+    <span class="s2">&quot;records_available&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;data_format&quot;</span><span class="p">:</span> <span class="s2">&quot;delta_table&quot;</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Summary: </span><span class="si">{</span><span class="n">task_output</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;total_records&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> records, avg price $</span><span class="si">{</span><span class="n">task_output</span><span class="p">[</span><span class="s1">&#39;summary&#39;</span><span class="p">][</span><span class="s1">&#39;avg_price&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📍 Data location: </span><span class="si">{</span><span class="n">temp_table_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">task_output</span><span class="p">))</span>
+</code></pre></div>
+
+<h3>Consumer Notebook: Read from Temp Table</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/03_consume_temp_table.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md  </span>
+<span class="c1"># MAGIC ## Consumer: Reading Large Arrays from Temp Tables</span>
+<span class="c1"># MAGIC **Access large data via table reference instead of JSON**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Get upstream task output (small JSON with table reference)</span>
+<span class="n">producer_output</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;producer_output&quot;</span><span class="p">))</span>
+
+<span class="n">large_data_table</span> <span class="o">=</span> <span class="n">producer_output</span><span class="p">[</span><span class="s2">&quot;large_data_table&quot;</span><span class="p">]</span>
+<span class="n">batch_id</span> <span class="o">=</span> <span class="n">producer_output</span><span class="p">[</span><span class="s2">&quot;batch_id&quot;</span><span class="p">]</span>
+<span class="n">summary</span> <span class="o">=</span> <span class="n">producer_output</span><span class="p">[</span><span class="s2">&quot;summary&quot;</span><span class="p">]</span>
+<span class="n">total_records</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s2">&quot;total_records&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Consuming </span><span class="si">{</span><span class="n">total_records</span><span class="si">}</span><span class="s2"> records from </span><span class="si">{</span><span class="n">large_data_table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔍 Batch ID: </span><span class="si">{</span><span class="n">batch_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 SOLUTION: Read large data directly from table (no JSON limits)</span>
+<span class="n">df_large_data</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">large_data_table</span><span class="p">)</span>
+
+<span class="c1"># Verify data integrity</span>
+<span class="n">actual_count</span> <span class="o">=</span> <span class="n">df_large_data</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">actual_batch_id</span> <span class="o">=</span> <span class="n">df_large_data</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;batch_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()[</span><span class="s2">&quot;batch_id&quot;</span><span class="p">]</span>
+
+<span class="k">assert</span> <span class="n">actual_count</span> <span class="o">==</span> <span class="n">total_records</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Count mismatch: </span><span class="si">{</span><span class="n">actual_count</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">total_records</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">assert</span> <span class="n">actual_batch_id</span> <span class="o">==</span> <span class="n">batch_id</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Batch ID mismatch: </span><span class="si">{</span><span class="n">actual_batch_id</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">batch_id</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Successfully loaded </span><span class="si">{</span><span class="n">actual_count</span><span class="si">}</span><span class="s2"> records&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Process large data with full access (no JSON serialization needed)</span>
+<span class="c1"># Example: Category-specific processing of large dataset</span>
+
+<span class="n">categories</span> <span class="o">=</span> <span class="n">df_large_data</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+<span class="n">processing_results</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">category_row</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
+    <span class="n">category</span> <span class="o">=</span> <span class="n">category_row</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Filter large dataset for this category</span>
+    <span class="n">df_category</span> <span class="o">=</span> <span class="n">df_large_data</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">category</span><span class="p">)</span>
+    <span class="n">category_count</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+    <span class="c1"># Complex processing that would break JSON limits</span>
+    <span class="n">category_features</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;product_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;product_name&quot;</span><span class="p">,</span> 
+        <span class="s2">&quot;price&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;predicted_demand&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;feature_1_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;feature_2_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;feature_3_score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;feature_4_score&quot;</span><span class="p">,</span> 
+        <span class="s2">&quot;feature_5_score&quot;</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>  <span class="c1"># This is OK because we&#39;re processing by category</span>
+
+    <span class="c1"># Calculate category-specific metrics</span>
+    <span class="n">avg_features</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;feature_1&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;feature_1_score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_features</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">category_features</span><span class="p">),</span>
+        <span class="s2">&quot;feature_2&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;feature_2_score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_features</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">category_features</span><span class="p">),</span>
+        <span class="s2">&quot;feature_3&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;feature_3_score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_features</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">category_features</span><span class="p">),</span>
+        <span class="s2">&quot;feature_4&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;feature_4_score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_features</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">category_features</span><span class="p">),</span>
+        <span class="s2">&quot;feature_5&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;feature_5_score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_features</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">category_features</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Create enhanced Silver table for this category</span>
+    <span class="n">df_enhanced</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">avg_features</span><span class="p">[</span><span class="s2">&quot;feature_1&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_avg_feature_1&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">avg_features</span><span class="p">[</span><span class="s2">&quot;feature_2&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_avg_feature_2&quot;</span><span class="p">),</span> 
+        <span class="n">lit</span><span class="p">(</span><span class="n">avg_features</span><span class="p">[</span><span class="s2">&quot;feature_3&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_avg_feature_3&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">avg_features</span><span class="p">[</span><span class="s2">&quot;feature_4&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_avg_feature_4&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">avg_features</span><span class="p">[</span><span class="s2">&quot;feature_5&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_avg_feature_5&quot;</span><span class="p">),</span>
+
+        <span class="c1"># Feature rankings within category</span>
+        <span class="n">row_number</span><span class="p">()</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+            <span class="n">Window</span><span class="o">.</span><span class="n">partitionBy</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="n">desc</span><span class="p">(</span><span class="s2">&quot;feature_1_score&quot;</span><span class="p">))</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;feature_1_rank&quot;</span><span class="p">),</span>
+
+        <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;silver_processing_timestamp&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Write category-specific Silver table</span>
+    <span class="n">silver_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.silver.products_enhanced_</span><span class="si">{</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">df_enhanced</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">silver_table</span><span class="p">)</span>
+
+    <span class="n">processing_results</span><span class="p">[</span><span class="n">category</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;products_processed&quot;</span><span class="p">:</span> <span class="n">category_count</span><span class="p">,</span>
+        <span class="s2">&quot;silver_table&quot;</span><span class="p">:</span> <span class="n">silver_table</span><span class="p">,</span>
+        <span class="s2">&quot;avg_features&quot;</span><span class="p">:</span> <span class="n">avg_features</span>
+    <span class="p">}</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Processed </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">category_count</span><span class="si">}</span><span class="s2"> products → </span><span class="si">{</span><span class="n">silver_table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Clean up temporary table</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DROP TABLE IF EXISTS </span><span class="si">{</span><span class="n">large_data_table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🗑️  Cleaned up temporary table: </span><span class="si">{</span><span class="n">large_data_table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return processing summary (small JSON)</span>
+<span class="n">consumer_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;processing_complete&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;categories_processed&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">processing_results</span><span class="p">),</span>
+    <span class="s2">&quot;total_products_processed&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;products_processed&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">processing_results</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+    <span class="s2">&quot;silver_tables_created&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;silver_table&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">processing_results</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span>
+    <span class="s2">&quot;batch_id&quot;</span><span class="p">:</span> <span class="n">batch_id</span><span class="p">,</span>
+    <span class="s2">&quot;temp_table_cleaned&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;processing_results&quot;</span><span class="p">:</span> <span class="n">processing_results</span>  <span class="c1"># This is manageable size</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">consumer_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>✅ Solution 2: Volume Files for Large Arrays</h2>
+<h3>Producer: Write Large Array to Volume</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/04_large_array_volume.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Solution 2: Volume Files for Large Arrays</span>
+<span class="c1"># MAGIC **Write large arrays to Unity Catalog volumes as Parquet/JSON files**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+
+<span class="c1"># Generate large dataset</span>
+<span class="n">large_dataset</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  product_id,</span>
+<span class="s2">  product_name,</span>
+<span class="s2">  category,</span>
+<span class="s2">  price,</span>
+<span class="s2">  -- Simulate large feature vectors</span>
+<span class="s2">  ARRAY(RAND(), RAND(), RAND(), RAND(), RAND(), RAND(), RAND(), RAND(), RAND(), RAND()) as feature_vector,</span>
+<span class="s2">  MAP(&#39;metric_1&#39;, RAND() * 100, &#39;metric_2&#39;, RAND() * 200, &#39;metric_3&#39;, RAND() * 50) as metrics,</span>
+<span class="s2">  current_timestamp() as created_timestamp</span>
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 SOLUTION: Write to Unity Catalog volume as Parquet</span>
+<span class="n">batch_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+<span class="n">volume_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/Volumes/databricks_clar/temp/large_arrays/batch_</span><span class="si">{</span><span class="n">batch_id</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="c1"># Write as Parquet (efficient for large datasets)</span>
+<span class="n">large_dataset</span><span class="o">.</span><span class="n">write</span> \
+    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;parquet&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">volume_path</span><span class="p">)</span>
+
+<span class="c1"># Also write metadata as JSON</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;batch_id&quot;</span><span class="p">:</span> <span class="n">batch_id</span><span class="p">,</span>
+    <span class="s2">&quot;record_count&quot;</span><span class="p">:</span> <span class="n">large_dataset</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+    <span class="s2">&quot;created_timestamp&quot;</span><span class="p">:</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT current_timestamp()&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+    <span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="n">large_dataset</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">json</span><span class="p">(),</span>
+    <span class="s2">&quot;file_format&quot;</span><span class="p">:</span> <span class="s2">&quot;parquet&quot;</span>
+<span class="p">}</span>
+
+<span class="n">metadata_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">volume_path</span><span class="si">}</span><span class="s2">_metadata.json&quot;</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">metadata_path</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Wrote large dataset to: </span><span class="si">{</span><span class="n">volume_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📋 Metadata written to: </span><span class="si">{</span><span class="n">metadata_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return small reference to large data</span>
+<span class="n">task_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;data_location&quot;</span><span class="p">:</span> <span class="s2">&quot;volume_file&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;volume_path&quot;</span><span class="p">:</span> <span class="n">volume_path</span><span class="p">,</span>
+    <span class="s2">&quot;metadata_path&quot;</span><span class="p">:</span> <span class="n">metadata_path</span><span class="p">,</span>
+    <span class="s2">&quot;batch_id&quot;</span><span class="p">:</span> <span class="n">batch_id</span><span class="p">,</span>
+    <span class="s2">&quot;record_count&quot;</span><span class="p">:</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;record_count&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;file_format&quot;</span><span class="p">:</span> <span class="s2">&quot;parquet&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;access_pattern&quot;</span><span class="p">:</span> <span class="s2">&quot;spark_read_parquet&quot;</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">task_output</span><span class="p">))</span>
+</code></pre></div>
+
+<h3>Consumer: Read from Volume</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/05_consume_volume.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Get volume file reference</span>
+<span class="n">producer_output</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;producer_output&quot;</span><span class="p">))</span>
+<span class="n">volume_path</span> <span class="o">=</span> <span class="n">producer_output</span><span class="p">[</span><span class="s2">&quot;volume_path&quot;</span><span class="p">]</span>
+<span class="n">metadata_path</span> <span class="o">=</span> <span class="n">producer_output</span><span class="p">[</span><span class="s2">&quot;metadata_path&quot;</span><span class="p">]</span>
+<span class="n">batch_id</span> <span class="o">=</span> <span class="n">producer_output</span><span class="p">[</span><span class="s2">&quot;batch_id&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📂 Reading large data from: </span><span class="si">{</span><span class="n">volume_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Read metadata first</span>
+<span class="n">metadata_json</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">metadata_path</span><span class="p">)</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">metadata_json</span><span class="p">)</span>
+
+<span class="n">expected_count</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;record_count&quot;</span><span class="p">]</span>
+<span class="n">file_format</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;file_format&quot;</span><span class="p">]</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 SOLUTION: Read large dataset from volume</span>
+<span class="k">if</span> <span class="n">file_format</span> <span class="o">==</span> <span class="s2">&quot;parquet&quot;</span><span class="p">:</span>
+    <span class="n">df_large</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="n">volume_path</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">df_large</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">volume_path</span><span class="p">)</span>
+
+<span class="n">actual_count</span> <span class="o">=</span> <span class="n">df_large</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">actual_count</span> <span class="o">==</span> <span class="n">expected_count</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Count mismatch: </span><span class="si">{</span><span class="n">actual_count</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="n">expected_count</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Successfully loaded </span><span class="si">{</span><span class="n">actual_count</span><span class="si">}</span><span class="s2"> records from volume&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Process large dataset</span>
+<span class="c1"># Example: Feature analysis that requires full dataset access</span>
+<span class="n">feature_analysis</span> <span class="o">=</span> <span class="n">df_large</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+    <span class="n">explode</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;feature_vector&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;feature_value&quot;</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">groupBy</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+    <span class="n">avg</span><span class="p">(</span><span class="s2">&quot;feature_value&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_feature&quot;</span><span class="p">),</span>
+    <span class="nb">min</span><span class="p">(</span><span class="s2">&quot;feature_value&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;min_feature&quot;</span><span class="p">),</span>
+    <span class="nb">max</span><span class="p">(</span><span class="s2">&quot;feature_value&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;max_feature&quot;</span><span class="p">),</span>
+    <span class="n">count</span><span class="p">(</span><span class="s2">&quot;feature_value&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;feature_count&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">feature_results</span> <span class="o">=</span> <span class="n">feature_analysis</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="c1"># Clean up volume files</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="n">volume_path</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="n">metadata_path</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🗑️  Cleaned up volume files&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return analysis results</span>
+<span class="n">consumer_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;processing_complete&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;records_processed&quot;</span><span class="p">:</span> <span class="n">actual_count</span><span class="p">,</span>
+    <span class="s2">&quot;feature_analysis&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;avg_feature&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;avg_feature&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;min_feature&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;min_feature&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;max_feature&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;max_feature&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;feature_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;feature_count&quot;</span><span class="p">])</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">feature_results</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;batch_id&quot;</span><span class="p">:</span> <span class="n">batch_id</span><span class="p">,</span>
+    <span class="s2">&quot;volume_files_cleaned&quot;</span><span class="p">:</span> <span class="kc">True</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">consumer_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>✅ Solution 3: Chunked Processing for Very Large Arrays</h2>
+<h3>Producer: Chunk Large Arrays</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/06_chunked_processing.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Solution 3: Chunked Processing for Very Large Arrays</span>
+<span class="c1"># MAGIC **Break large arrays into manageable chunks**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Simulate very large dataset analysis</span>
+<span class="n">very_large_analysis</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  product_id,</span>
+<span class="s2">  category,</span>
+<span class="s2">  price,</span>
+<span class="s2">  STRUCT(</span>
+<span class="s2">    RAND() as score_1,</span>
+<span class="s2">    RAND() as score_2,</span>
+<span class="s2">    RAND() as score_3,</span>
+<span class="s2">    RAND() as score_4,</span>
+<span class="s2">    RAND() as score_5</span>
+<span class="s2">  ) as analysis_scores</span>
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">CROSS JOIN (</span>
+<span class="s2">  SELECT EXPLODE(SEQUENCE(1, 20)) as multiplier  -- Simulate 20x data expansion</span>
+<span class="s2">)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">total_records</span> <span class="o">=</span> <span class="n">very_large_analysis</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Very large dataset: </span><span class="si">{</span><span class="n">total_records</span><span class="si">}</span><span class="s2"> records&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 SOLUTION: Create chunks with row numbers</span>
+<span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># Records per chunk</span>
+<span class="n">num_chunks</span> <span class="o">=</span> <span class="p">(</span><span class="n">total_records</span> <span class="o">+</span> <span class="n">chunk_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">chunk_size</span>
+
+<span class="n">chunked_data</span> <span class="o">=</span> <span class="n">very_large_analysis</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+    <span class="p">(</span><span class="n">row_number</span><span class="p">()</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="s2">&quot;product_id&quot;</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;row_num&quot;</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span>
+    <span class="s2">&quot;chunk_id&quot;</span><span class="p">,</span> 
+    <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;row_num&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">chunk_size</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Write each chunk as separate table</span>
+<span class="n">chunk_tables</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">chunk_summaries</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">chunk_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_chunks</span><span class="p">):</span>
+    <span class="n">df_chunk</span> <span class="o">=</span> <span class="n">chunked_data</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;chunk_id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">chunk_id</span><span class="p">)</span>
+    <span class="n">chunk_count</span> <span class="o">=</span> <span class="n">df_chunk</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+    <span class="n">chunk_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.temp.large_data_chunk_</span><span class="si">{</span><span class="n">chunk_id</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">df_chunk</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">chunk_table</span><span class="p">)</span>
+
+    <span class="c1"># Chunk summary</span>
+    <span class="n">chunk_summary</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;chunk_id&quot;</span><span class="p">:</span> <span class="n">chunk_id</span><span class="p">,</span>
+        <span class="s2">&quot;chunk_table&quot;</span><span class="p">:</span> <span class="n">chunk_table</span><span class="p">,</span>
+        <span class="s2">&quot;record_count&quot;</span><span class="p">:</span> <span class="n">chunk_count</span><span class="p">,</span>
+        <span class="s2">&quot;avg_price&quot;</span><span class="p">:</span> <span class="n">df_chunk</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">avg</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">}</span>
+
+    <span class="n">chunk_tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chunk_table</span><span class="p">)</span>
+    <span class="n">chunk_summaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chunk_summary</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Created chunk </span><span class="si">{</span><span class="n">chunk_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">chunk_count</span><span class="si">}</span><span class="s2"> records&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return chunk references (manageable JSON size)</span>
+<span class="n">task_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;data_location&quot;</span><span class="p">:</span> <span class="s2">&quot;chunked_tables&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;total_records&quot;</span><span class="p">:</span> <span class="n">total_records</span><span class="p">,</span>
+    <span class="s2">&quot;chunk_size&quot;</span><span class="p">:</span> <span class="n">chunk_size</span><span class="p">,</span>
+    <span class="s2">&quot;num_chunks&quot;</span><span class="p">:</span> <span class="n">num_chunks</span><span class="p">,</span>
+    <span class="s2">&quot;chunk_tables&quot;</span><span class="p">:</span> <span class="n">chunk_tables</span><span class="p">,</span>
+    <span class="s2">&quot;chunk_summaries&quot;</span><span class="p">:</span> <span class="n">chunk_summaries</span><span class="p">,</span>
+    <span class="s2">&quot;processing_pattern&quot;</span><span class="p">:</span> <span class="s2">&quot;for_each_chunk&quot;</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">task_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🛠️ DAB Configuration for Large Arrays</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># databricks.yml - Large array handling patterns</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">large_array_pipeline</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">large_array_processing</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># Method 1: Temp table approach</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">large_array_temp_table</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/02_large_array_temp_table.py</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">consume_temp_table</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">large_array_temp_table</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/03_consume_temp_table.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">producer_output</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.large_array_temp_table.values}}&quot;</span>
+
+<span class="w">        </span><span class="c1"># Method 2: Volume files approach  </span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">large_array_volume</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/04_large_array_volume.py</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">consume_volume</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">large_array_volume</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/05_consume_volume.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">producer_output</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.large_array_volume.values}}&quot;</span>
+
+<span class="w">        </span><span class="c1"># Method 3: Chunked processing with For Each</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chunk_large_data</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/06_chunked_processing.py</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_chunks</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chunk_large_data</span>
+<span class="w">          </span><span class="nt">for_each_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">inputs</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.chunk_large_data.values.chunk_summaries}}&quot;</span>
+<span class="w">            </span><span class="nt">task</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_single_chunk</span>
+<span class="w">              </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/07_process_chunk.py</span>
+<span class="w">                </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">                  </span><span class="nt">chunk_info</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{input}}&quot;</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 Performance Comparison</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>JSON Size</th>
+<th>Performance</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Direct JSON</strong></td>
+<td>❌ Large (&gt;10MB)</td>
+<td>❌ Slow serialization</td>
+<td>❌ Don't use for &gt;1000 complex records</td>
+</tr>
+<tr>
+<td><strong>Temp Tables</strong></td>
+<td>✅ Small metadata</td>
+<td>✅ Fast Delta I/O</td>
+<td>✅ Best for structured data processing</td>
+</tr>
+<tr>
+<td><strong>Volume Files</strong></td>
+<td>✅ Small reference</td>
+<td>⚡ Fast Parquet I/O</td>
+<td>✅ Best for file-based workflows</td>
+</tr>
+<tr>
+<td><strong>Chunked Processing</strong></td>
+<td>✅ Manageable chunks</td>
+<td>⚡ Parallel processing</td>
+<td>✅ Best for very large datasets</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🚨 Exam Key Points</h2>
+<h3>Large Array Anti-Patterns:</h3>
+<ul>
+<li>❌ <code>dbutils.notebook.exit(json.dumps(large_array))</code> → Exceeds size limits</li>
+<li>❌ Passing 1000+ complex objects via JSON → Performance issues</li>
+<li>❌ Collecting entire large DataFrames to driver → Memory issues</li>
+</ul>
+<h3>Recommended Patterns:</h3>
+<ul>
+<li>✅ <strong>Temp Tables</strong> → <code>df.write.saveAsTable()</code> + table reference</li>
+<li>✅ <strong>Volume Files</strong> → <code>df.write.parquet()</code> + file path reference  </li>
+<li>✅ <strong>Chunked Processing</strong> → Split + For Each + aggregate</li>
+<li>✅ <strong>Summary + Reference</strong> → Small JSON with data location</li>
+</ul>
+<h3>When to Use Each:</h3>
+<ul>
+<li><strong>Small arrays (&lt;100 records)</strong> → Direct JSON passing</li>
+<li><strong>Medium arrays (100-1000 records)</strong> → Temp tables</li>
+<li><strong>Large arrays (1000+ records)</strong> → Volume files or chunked processing</li>
+<li><strong>Very large arrays (10,000+ records)</strong> → Chunked with For Each</li>
+</ul>
+<p><strong>The Rule:</strong> <strong>Never serialize large arrays to JSON.</strong> Always use external storage (tables/files/volumes) with small reference metadata.</p>
+<p>This transforms <strong>large data bottlenecks into efficient data pipelines</strong> — essential for production-scale data engineering! 🫡</p>
+</body>
+</html>

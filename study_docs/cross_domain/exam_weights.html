@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Domain Weights</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<div class="codehilite"><pre><span></span><code>pie title 2026 DE Associate Exam Domains
+    &quot;Data Processing &amp; Transformations&quot; : 31
+    &quot;Development &amp; Ingestion&quot; : 30
+    &quot;Productionizing Pipelines (LakeFlow Jobs lives here)&quot; : 18
+    &quot;Data Governance &amp; Quality (UC)&quot; : 11
+    &quot;Databricks Intelligence Platform&quot; : 10
+</code></pre></div>
+</body>
+</html>

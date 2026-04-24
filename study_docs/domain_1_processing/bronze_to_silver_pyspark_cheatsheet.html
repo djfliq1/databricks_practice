@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bronze to Silver PySpark Cheat Sheet</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<h1>Bronze to Silver PySpark Cheat Sheet</h1>
+<h2>2026 Databricks Certification Prep</h2>
+<hr />
+<h2>🏗️ Medallion Architecture Overview</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">Raw</span><span class="w"> </span><span class="n">Data</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">Bronze</span><span class="w"> </span><span class="n">Layer</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">Silver</span><span class="w"> </span><span class="n">Layer</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">Gold</span><span class="w"> </span><span class="n">Layer</span>
+<span class="w">  </span><span class="p">(</span><span class="n">Land</span><span class="p">)</span><span class="w">   </span><span class="p">(</span><span class="n">Raw</span><span class="o">/</span><span class="n">Historic</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">Cleaned</span><span class="o">/</span><span class="n">Enriched</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">Aggregated</span><span class="o">/</span><span class="n">Features</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Bronze Layer</strong>: Raw data ingestion, minimal processing, schema-on-read<br />
+<strong>Silver Layer</strong>: Cleaned, validated, enriched business-level data<br />
+<strong>Gold Layer</strong>: Aggregated, feature-engineered data for analytics</p>
+<hr />
+<h2>🚀 Core PySpark Setup</h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.types</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">delta.tables</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparkSession</span>
+
+<span class="c1"># Initialize Spark session (if not using Databricks)</span>
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span> \
+    <span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s2">&quot;BronzeToSilver&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s2">&quot;spark.sql.extensions&quot;</span><span class="p">,</span> <span class="s2">&quot;io.delta.sql.DeltaSparkSessionExtension&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s2">&quot;spark.sql.catalog.spark_catalog&quot;</span><span class="p">,</span> <span class="s2">&quot;org.apache.spark.sql.delta.catalog.DeltaCatalog&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+</code></pre></div>
+
+<hr />
+<h2>📊 Data Quality Framework</h2>
+<h3>Critical Data Quality Dimensions (2026 Focus)</h3>
+<ul>
+<li><strong>Completeness</strong>: Missing values, nulls, sparse data</li>
+<li><strong>Validity</strong>: Data type constraints, format validation  </li>
+<li><strong>Accuracy</strong>: Business rule validation, range checks</li>
+<li><strong>Consistency</strong>: Cross-table relationships, referential integrity</li>
+<li><strong>Timeliness</strong>: Data freshness, SLA compliance</li>
+</ul>
+<h3>Schema Enforcement Pattern</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Define strict schema (prevents schema drift)</span>
+<span class="n">customer_schema</span> <span class="o">=</span> <span class="n">StructType</span><span class="p">([</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">False</span><span class="p">),</span>  <span class="c1"># Non-nullable</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;created_date&quot;</span><span class="p">,</span> <span class="n">DateType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">),</span>
+    <span class="n">StructField</span><span class="p">(</span><span class="s2">&quot;phone&quot;</span><span class="p">,</span> <span class="n">StringType</span><span class="p">(),</span> <span class="kc">True</span><span class="p">)</span>
+<span class="p">])</span>
+
+<span class="c1"># Apply schema during read</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">schema</span><span class="p">(</span><span class="n">customer_schema</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/path/to/bronze/customers/&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h2>🔄 UPSERT Operations - The Heart of Bronze→Silver</h2>
+<h3>Delta Lake MERGE (Primary Pattern for 2026)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Load existing Silver table</span>
+<span class="n">silver_table</span> <span class="o">=</span> <span class="n">DeltaTable</span><span class="o">.</span><span class="n">forPath</span><span class="p">(</span><span class="n">spark</span><span class="p">,</span> <span class="s2">&quot;/path/to/silver/customers&quot;</span><span class="p">)</span>
+
+<span class="c1"># Bronze to Silver transformation with UPSERT</span>
+<span class="n">silver_table</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+        <span class="n">source_df</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">),</span> 
+        <span class="s2">&quot;target.customer_id = source.customer_id&quot;</span>
+    <span class="p">)</span> \
+    <span class="o">.</span><span class="n">whenMatchedUpdate</span><span class="p">(</span><span class="nb">set</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;source.email&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;first_name&quot;</span><span class="p">:</span> <span class="s2">&quot;source.first_name&quot;</span><span class="p">,</span> 
+        <span class="s2">&quot;last_name&quot;</span><span class="p">:</span> <span class="s2">&quot;source.last_name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;updated_timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;current_timestamp()&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;target.version + 1&quot;</span>
+    <span class="p">})</span> \
+    <span class="o">.</span><span class="n">whenNotMatchedInsert</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;source.customer_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;source.email&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;first_name&quot;</span><span class="p">:</span> <span class="s2">&quot;source.first_name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;last_name&quot;</span><span class="p">:</span> <span class="s2">&quot;source.last_name&quot;</span><span class="p">,</span> 
+        <span class="s2">&quot;created_timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;current_timestamp()&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;updated_timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;current_timestamp()&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;lit(1)&quot;</span>
+    <span class="p">})</span> \
+    <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+</code></pre></div>
+
+<h3>Conditional UPSERT (Advanced Pattern)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Only update if source data is newer</span>
+<span class="o">.</span><span class="n">whenMatchedUpdate</span><span class="p">(</span>
+    <span class="n">condition</span><span class="o">=</span><span class="s2">&quot;source.last_modified &gt; target.last_modified&quot;</span><span class="p">,</span>
+    <span class="nb">set</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;source.email&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;updated_timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;current_timestamp()&quot;</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h2>📁 Four Folder Strategy Implementation</h2>
+<h3>1. Customer Data Processing</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_customer_data</span><span class="p">():</span>
+    <span class="c1"># Read from Bronze</span>
+    <span class="n">bronze_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;inferSchema&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/Volumes/databricks_clar/bronze/bronze_volume/customers/&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Data Quality Checks</span>
+    <span class="n">clean_df</span> <span class="o">=</span> <span class="n">bronze_df</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">())</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rlike</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$&#39;</span><span class="p">))</span> \
+        <span class="o">.</span><span class="n">dropDuplicates</span><span class="p">([</span><span class="s2">&quot;customer_id&quot;</span><span class="p">])</span> \
+        <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;processed_timestamp&quot;</span><span class="p">,</span> <span class="n">current_timestamp</span><span class="p">())</span>
+
+    <span class="c1"># Write to Silver (UPSERT pattern)</span>
+    <span class="n">clean_df</span><span class="o">.</span><span class="n">write</span> \
+        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;mergeSchema&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="s2">&quot;silver.customers_clean&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>2. Product Data Processing</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_product_data</span><span class="p">():</span>
+    <span class="n">bronze_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/Volumes/databricks_clar/bronze/bronze_volume/products/&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Price validation and standardization</span>
+    <span class="n">clean_df</span> <span class="o">=</span> <span class="n">bronze_df</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">())</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span> \
+        <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="n">upper</span><span class="p">(</span><span class="n">trim</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">))))</span> \
+        <span class="o">.</span><span class="n">dropDuplicates</span><span class="p">([</span><span class="s2">&quot;product_id&quot;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">clean_df</span>
+</code></pre></div>
+
+<h3>3. Sales Data Processing (Fact Table)</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_sales_data</span><span class="p">():</span>
+    <span class="n">bronze_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/Volumes/databricks_clar/bronze/bronze_volume/sales/&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Enrichment with business logic</span>
+    <span class="n">enriched_df</span> <span class="o">=</span> <span class="n">bronze_df</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;sales_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">())</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;profit_margin&quot;</span><span class="p">,</span> 
+                   <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mf">0.10</span><span class="p">))</span> \
+        <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;sales_quarter&quot;</span><span class="p">,</span> 
+                   <span class="n">concat</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">),</span> <span class="n">quarter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">),</span> <span class="n">year</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">))))</span>
+
+    <span class="k">return</span> <span class="n">enriched_df</span>
+</code></pre></div>
+
+<h3>4. Store Data Processing</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_store_data</span><span class="p">():</span>
+    <span class="n">bronze_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/Volumes/databricks_clar/bronze/bronze_volume/stores/&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Geospatial and operational enrichment</span>
+    <span class="n">clean_df</span> <span class="o">=</span> <span class="n">bronze_df</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;store_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">())</span> \
+        <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">,</span> 
+                   <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;CA&quot;</span><span class="p">,</span> <span class="s2">&quot;NV&quot;</span><span class="p">,</span> <span class="s2">&quot;OR&quot;</span><span class="p">,</span> <span class="s2">&quot;WA&quot;</span><span class="p">]),</span> <span class="s2">&quot;West&quot;</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;TX&quot;</span><span class="p">,</span> <span class="s2">&quot;OK&quot;</span><span class="p">,</span> <span class="s2">&quot;AR&quot;</span><span class="p">,</span> <span class="s2">&quot;LA&quot;</span><span class="p">]),</span> <span class="s2">&quot;South&quot;</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;NY&quot;</span><span class="p">,</span> <span class="s2">&quot;NJ&quot;</span><span class="p">,</span> <span class="s2">&quot;CT&quot;</span><span class="p">,</span> <span class="s2">&quot;MA&quot;</span><span class="p">]),</span> <span class="s2">&quot;Northeast&quot;</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;Other&quot;</span><span class="p">))</span> \
+        <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;store_size_category&quot;</span><span class="p">,</span>
+                   <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;square_feet&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">5000</span><span class="p">,</span> <span class="s2">&quot;Large&quot;</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;square_feet&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2000</span><span class="p">,</span> <span class="s2">&quot;Medium&quot;</span><span class="p">)</span> 
+                   <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;Small&quot;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">clean_df</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 User-Defined Functions (UDFs) and Custom Logic</h2>
+<h3>Creating and Registering UDFs</h3>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">udf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringType</span>
+
+<span class="c1"># Define Python function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">greeting_logic</span><span class="p">(</span><span class="n">flag</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="s2">&quot;YES&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Hello YES&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Hello NO&quot;</span>
+
+<span class="c1"># Register as UDF</span>
+<span class="n">udf_greet</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">greeting_logic</span><span class="p">,</span> <span class="n">StringType</span><span class="p">())</span>
+
+<span class="c1"># Apply UDF to DataFrame</span>
+<span class="n">df_enriched</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;greet&quot;</span><span class="p">,</span> <span class="n">udf_greet</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;flag&quot;</span><span class="p">)))</span>
+
+<span class="c1"># Alternative: Register for SQL usage</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">udf</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;greet_udf&quot;</span><span class="p">,</span> <span class="n">greeting_logic</span><span class="p">,</span> <span class="n">StringType</span><span class="p">())</span>
+<span class="n">df_sql</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT *, greet_udf(flag) as greeting FROM products&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>Common UDF Patterns for Bronze→Silver</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Email validation UDF</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_email</span><span class="p">(</span><span class="n">email</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+    <span class="k">if</span> <span class="n">email</span> <span class="ow">and</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$&#39;</span><span class="p">,</span> <span class="n">email</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+<span class="n">email_validator</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">validate_email</span><span class="p">,</span> <span class="n">BooleanType</span><span class="p">())</span>
+
+<span class="c1"># Phone number standardization UDF</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">standardize_phone</span><span class="p">(</span><span class="n">phone</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+    <span class="k">if</span> <span class="n">phone</span><span class="p">:</span>
+        <span class="c1"># Remove all non-digits</span>
+        <span class="n">digits</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\D&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">phone</span><span class="p">)</span>
+        <span class="c1"># Format as (XXX) XXX-XXXX if 10 digits</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">digits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">digits</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">digits</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">digits</span><span class="p">[</span><span class="mi">6</span><span class="p">:]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+<span class="n">phone_standardizer</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">standardize_phone</span><span class="p">,</span> <span class="n">StringType</span><span class="p">())</span>
+
+<span class="c1"># Business rule UDF for categorization</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">categorize_customer</span><span class="p">(</span><span class="n">total_spent</span><span class="p">,</span> <span class="n">num_orders</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">total_spent</span> <span class="o">&gt;</span> <span class="mi">1000</span> <span class="ow">and</span> <span class="n">num_orders</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;VIP&quot;</span>
+    <span class="k">elif</span> <span class="n">total_spent</span> <span class="o">&gt;</span> <span class="mi">500</span> <span class="ow">or</span> <span class="n">num_orders</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Premium&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Standard&quot;</span>
+
+<span class="n">customer_categorizer</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">categorize_customer</span><span class="p">,</span> <span class="n">StringType</span><span class="p">())</span>
+</code></pre></div>
+
+<h3>Performance Considerations for UDFs</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Vectorized UDF (Pandas UDF) - Better performance</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">pandas_udf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="nd">@pandas_udf</span><span class="p">(</span><span class="n">returnType</span><span class="o">=</span><span class="n">StringType</span><span class="p">())</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">vectorized_greeting</span><span class="p">(</span><span class="n">flag_series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">flag_series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;Hello YES&quot;</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">&quot;YES&quot;</span> <span class="k">else</span> <span class="s2">&quot;Hello NO&quot;</span><span class="p">)</span>
+
+<span class="c1"># Apply vectorized UDF</span>
+<span class="n">df_fast</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;greet&quot;</span><span class="p">,</span> <span class="n">vectorized_greeting</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;flag&quot;</span><span class="p">)))</span>
+</code></pre></div>
+
+<h2>📊 Data Enrichment Patterns</h2>
+<h3>Product Data Enrichment (From Your CSV)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Based on your product data structure</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">enrich_product_data</span><span class="p">():</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;inferSchema&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/path/to/products/&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Price category enrichment</span>
+    <span class="n">enriched_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;price_category&quot;</span><span class="p">,</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;Budget&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">&quot;Mid-Range&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;Premium&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;Luxury&quot;</span><span class="p">))</span> \
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;category_normalized&quot;</span><span class="p">,</span> <span class="n">upper</span><span class="p">(</span><span class="n">trim</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">))))</span> \
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;profit_margin&quot;</span><span class="p">,</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Electronics&quot;</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Clothing&quot;</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Books&quot;</span><span class="p">,</span> <span class="mf">0.30</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Furniture&quot;</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mf">0.18</span><span class="p">))</span> \
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;is_high_value&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">300</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;processDate&quot;</span><span class="p">,</span> <span class="n">current_timestamp</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">enriched_df</span>
+
+<span class="c1"># Apply your custom greeting UDF</span>
+<span class="n">df_with_flag</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;flag&quot;</span><span class="p">,</span> 
+    <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;YES&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;NO&quot;</span><span class="p">))</span>
+<span class="n">df_final</span> <span class="o">=</span> <span class="n">df_with_flag</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;greet&quot;</span><span class="p">,</span> <span class="n">udf_greet</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;flag&quot;</span><span class="p">)))</span>
+</code></pre></div>
+
+<h3>Cross-Table Enrichment</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Join with dimension tables for enrichment</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">enrich_with_lookups</span><span class="p">():</span>
+    <span class="c1"># Customer segmentation lookup</span>
+    <span class="n">customer_segments</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">([</span>
+        <span class="p">(</span><span class="s2">&quot;VIP&quot;</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="s2">&quot;Premium Support&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Premium&quot;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s2">&quot;Priority Support&quot;</span><span class="p">),</span> 
+        <span class="p">(</span><span class="s2">&quot;Standard&quot;</span><span class="p">,</span> <span class="mf">0.00</span><span class="p">,</span> <span class="s2">&quot;Standard Support&quot;</span><span class="p">)</span>
+    <span class="p">],</span> <span class="p">[</span><span class="s2">&quot;segment&quot;</span><span class="p">,</span> <span class="s2">&quot;discount_rate&quot;</span><span class="p">,</span> <span class="s2">&quot;support_level&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Product category lookup  </span>
+    <span class="n">category_details</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">([</span>
+        <span class="p">(</span><span class="s2">&quot;Electronics&quot;</span><span class="p">,</span> <span class="s2">&quot;ELEC&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Clothing&quot;</span><span class="p">,</span> <span class="s2">&quot;CLTH&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Books&quot;</span><span class="p">,</span> <span class="s2">&quot;BOOK&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Furniture&quot;</span><span class="p">,</span> <span class="s2">&quot;FURN&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="p">],</span> <span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;category_code&quot;</span><span class="p">,</span> <span class="s2">&quot;requires_assembly&quot;</span><span class="p">,</span> <span class="s2">&quot;warranty_years&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Enrich main dataset</span>
+    <span class="n">enriched</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">customer_segments</span><span class="p">,</span> <span class="s2">&quot;segment&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">)</span> \
+                 <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">category_details</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">enriched</span>
+</code></pre></div>
+
+<h2>🔍 Advanced Deduplication Strategies</h2>
+<h3>Multiple Deduplication Approaches Combined</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">intelligent_deduplication</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multi-stage deduplication process for complex scenarios</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Stage 1: Remove obvious exact duplicates</span>
+    <span class="n">stage1</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropDuplicates</span><span class="p">()</span>
+
+    <span class="c1"># Stage 2: Dedupe by business key with quality scoring</span>
+    <span class="n">stage2</span> <span class="o">=</span> <span class="n">stage1</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;quality_score&quot;</span><span class="p">,</span>
+        <span class="c1"># Email quality (10 points)</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rlike</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$&#39;</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span>
+        <span class="c1"># Phone completeness (5 points)</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;phone&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">()</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">length</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;phone&quot;</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span>
+        <span class="c1"># Address completeness (3 points)</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;address&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">()</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">length</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;address&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span>
+        <span class="c1"># Data source reliability (varies by source)</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;CRM&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Website&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Mobile&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Stage 3: Apply window function for final deduplication</span>
+    <span class="n">windowSpec</span> <span class="o">=</span> <span class="n">Window</span><span class="o">.</span><span class="n">partitionBy</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="n">desc</span><span class="p">(</span><span class="s2">&quot;quality_score&quot;</span><span class="p">),</span> <span class="n">desc</span><span class="p">(</span><span class="s2">&quot;last_updated&quot;</span><span class="p">))</span>
+
+    <span class="n">final_result</span> <span class="o">=</span> <span class="n">stage2</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">,</span> <span class="n">row_number</span><span class="p">()</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">windowSpec</span><span class="p">))</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;quality_score&quot;</span><span class="p">,</span> <span class="s2">&quot;rank&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">final_result</span>
+</code></pre></div>
+
+<h3>Fuzzy Deduplication for Name Matching</h3>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">levenshtein</span><span class="p">,</span> <span class="n">soundex</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">fuzzy_name_dedup</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle similar names that might be the same person</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create soundex codes for phonetic matching</span>
+    <span class="n">df_soundex</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;name_soundex&quot;</span><span class="p">,</span> 
+        <span class="n">concat</span><span class="p">(</span><span class="n">soundex</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;first_name&quot;</span><span class="p">)),</span> <span class="n">soundex</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;last_name&quot;</span><span class="p">))))</span>
+
+    <span class="c1"># Self-join to find potential duplicates</span>
+    <span class="n">potential_dupes</span> <span class="o">=</span> <span class="n">df_soundex</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">df_soundex</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a.name_soundex&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b.name_soundex&quot;</span><span class="p">))</span> <span class="o">&amp;</span> 
+        <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a.customer_id&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b.customer_id&quot;</span><span class="p">))</span> <span class="o">&amp;</span>
+        <span class="p">(</span><span class="n">levenshtein</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a.email&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b.email&quot;</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;a.*&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">potential_dupes</span>
+</code></pre></div>
+
+<hr />
+<h2>🛠️ Advanced Transformation Patterns</h2>
+<h3>Data Type Casting and Validation</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Safe casting with error handling</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">safe_cast_date</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">date_col</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">date_col</span><span class="si">}</span><span class="s2">_clean&quot;</span><span class="p">,</span> 
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">date_col</span><span class="p">)</span><span class="o">.</span><span class="n">rlike</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^\d</span><span class="si">{4}</span><span class="s1">-\d</span><span class="si">{2}</span><span class="s1">-\d</span><span class="si">{2}</span><span class="s1">$&#39;</span><span class="p">),</span> 
+             <span class="n">to_date</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">date_col</span><span class="p">),</span> <span class="s2">&quot;yyyy-MM-dd&quot;</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
+
+<span class="c1"># Numeric validation</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_numeric_range</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">col_name</span><span class="p">,</span> <span class="n">min_val</span><span class="p">,</span> <span class="n">max_val</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col_name</span><span class="si">}</span><span class="s2">_valid&quot;</span><span class="p">,</span> 
+        <span class="n">when</span><span class="p">((</span><span class="n">col</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_val</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="n">col_name</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="kc">None</span><span class="p">)))</span>
+</code></pre></div>
+
+<h3>Deduplication Strategies</h3>
+<h4>1. Simple Deduplication (Basic)</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Simple dropDuplicates - keeps first occurrence</span>
+<span class="n">df_simple</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropDuplicates</span><span class="p">([</span><span class="s2">&quot;customer_id&quot;</span><span class="p">])</span>
+
+<span class="c1"># Multiple columns</span>
+<span class="n">df_deduped</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropDuplicates</span><span class="p">([</span><span class="s2">&quot;customer_id&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">])</span>
+</code></pre></div>
+
+<h4>2. Keep Latest Record (Most Common)</h4>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.window</span><span class="w"> </span><span class="kn">import</span> <span class="n">Window</span>
+
+<span class="c1"># Window function to rank by timestamp</span>
+<span class="n">windowSpec</span> <span class="o">=</span> <span class="n">Window</span><span class="o">.</span><span class="n">partitionBy</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="n">desc</span><span class="p">(</span><span class="s2">&quot;last_updated&quot;</span><span class="p">))</span>
+<span class="n">df_latest</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">,</span> <span class="n">row_number</span><span class="p">()</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">windowSpec</span><span class="p">))</span> \
+    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span>
+
+<span class="c1"># Alternative: Using max timestamp</span>
+<span class="n">df_latest_alt</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupBy</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="s2">&quot;last_updated&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;max_date&quot;</span><span class="p">))</span> \
+    <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;customer_id&quot;</span><span class="p">])</span> \
+    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;last_updated&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;max_date&quot;</span><span class="p">))</span> \
+    <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;max_date&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h4>3. Data Source Priority (Business Logic)</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Prioritize by data source reliability</span>
+<span class="n">df_priority</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;priority&quot;</span><span class="p">,</span>
+    <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;data_source&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;CRM&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>        <span class="c1"># Highest priority</span>
+    <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;data_source&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Website&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>   <span class="c1"># Medium priority  </span>
+    <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;data_source&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Mobile&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>    <span class="c1"># Lowest priority</span>
+    <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span> \
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">,</span> <span class="n">row_number</span><span class="p">()</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+        <span class="n">Window</span><span class="o">.</span><span class="n">partitionBy</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="s2">&quot;priority&quot;</span><span class="p">,</span> <span class="n">desc</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">))))</span> \
+    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;priority&quot;</span><span class="p">,</span> <span class="s2">&quot;rank&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h4>4. Data Quality Score (Advanced)</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Score records by completeness and quality</span>
+<span class="n">df_quality</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;quality_score&quot;</span><span class="p">,</span>
+    <span class="c1"># Email validation (higher score = better quality)</span>
+    <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rlike</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$&#39;</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span>
+    <span class="c1"># Phone number present</span>
+    <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;phone&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">()</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;phone&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span>
+    <span class="c1"># Address completeness  </span>
+    <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;address&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">()</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;address&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span>
+    <span class="c1"># Name completeness</span>
+    <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;first_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;last_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">)</span> \
+<span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">,</span> <span class="n">row_number</span><span class="p">()</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+    <span class="n">Window</span><span class="o">.</span><span class="n">partitionBy</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">orderBy</span><span class="p">(</span><span class="n">desc</span><span class="p">(</span><span class="s2">&quot;quality_score&quot;</span><span class="p">),</span> <span class="n">desc</span><span class="p">(</span><span class="s2">&quot;updated_at&quot;</span><span class="p">))))</span> \
+<span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> \
+<span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;quality_score&quot;</span><span class="p">,</span> <span class="s2">&quot;rank&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h4>5. Composite Key Deduplication</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># For complex business scenarios</span>
+<span class="n">df_composite</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;composite_key&quot;</span><span class="p">,</span> 
+    <span class="n">concat_ws</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;transaction_date&quot;</span><span class="p">)))</span> \
+    <span class="o">.</span><span class="n">dropDuplicates</span><span class="p">([</span><span class="s2">&quot;composite_key&quot;</span><span class="p">])</span> \
+    <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;composite_key&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h4>6. Conditional Deduplication (2026 Exam Focus)</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Only deduplicate if certain conditions are met</span>
+<span class="n">df_conditional</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;should_dedupe&quot;</span><span class="p">,</span>
+    <span class="n">when</span><span class="p">((</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;active&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">()),</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="kc">False</span><span class="p">))</span> \
+    <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;should_dedupe&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">dropDuplicates</span><span class="p">([</span><span class="s2">&quot;customer_id&quot;</span><span class="p">])</span> \
+    <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;should_dedupe&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h2>🔧 Performance Optimization (2026 Critical)</h2>
+<h3>Partitioning Strategy</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Partition by date for time-series data</span>
+<span class="n">df</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">partitionBy</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;month&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="s2">&quot;silver.sales_partitioned&quot;</span><span class="p">)</span>
+
+<span class="c1"># Z-Ordering for better query performance  </span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;OPTIMIZE silver.customers ZORDER BY (customer_id, email)&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>Caching Strategic DataFrames</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Cache frequently accessed lookup tables</span>
+<span class="n">products_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;bronze.products&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+<span class="n">customers_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;bronze.customers&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+
+<span class="c1"># Unpersist when done</span>
+<span class="n">products_df</span><span class="o">.</span><span class="n">unpersist</span><span class="p">()</span>
+</code></pre></div>
+
+<h3>Broadcast Joins for Small Tables</h3>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">broadcast</span>
+
+<span class="c1"># Broadcast small dimension tables</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">large_fact_df</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="n">broadcast</span><span class="p">(</span><span class="n">small_dim_df</span><span class="p">),</span> 
+    <span class="s2">&quot;product_id&quot;</span><span class="p">,</span> 
+    <span class="s2">&quot;inner&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h2>📈 Data Quality Monitoring</h2>
+<h3>Quality Metrics Collection</h3>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">collect_quality_metrics</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;table_name&quot;</span><span class="p">:</span> <span class="n">table_name</span><span class="p">,</span>
+        <span class="s2">&quot;record_count&quot;</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+        <span class="s2">&quot;null_customer_ids&quot;</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">())</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+        <span class="s2">&quot;duplicate_records&quot;</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">-</span> <span class="n">df</span><span class="o">.</span><span class="n">dropDuplicates</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+        <span class="s2">&quot;invalid_emails&quot;</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">~</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rlike</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+        <span class="s2">&quot;processing_timestamp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">metrics</span>
+
+<span class="c1"># Log quality metrics</span>
+<span class="n">quality_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">([</span><span class="n">collect_quality_metrics</span><span class="p">(</span><span class="n">clean_df</span><span class="p">,</span> <span class="s2">&quot;customers&quot;</span><span class="p">)])</span>
+<span class="n">quality_df</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="s2">&quot;monitoring.data_quality_metrics&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>Data Profiling</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Statistical profiling</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">profile_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
+
+<span class="c1"># Column completeness check</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_completeness</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="n">total_rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+    <span class="n">completeness</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">non_null_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">())</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="n">completeness</span><span class="p">[</span><span class="n">col_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">non_null_count</span> <span class="o">/</span> <span class="n">total_rows</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+
+    <span class="k">return</span> <span class="n">completeness</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 2026 Certification Key Focus Areas</h2>
+<h3>1. Schema Evolution Handling</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Enable schema evolution</span>
+<span class="n">df</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;mergeSchema&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="s2">&quot;silver.evolving_table&quot;</span><span class="p">)</span>
+
+<span class="c1"># Schema enforcement</span>
+<span class="n">df</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;overwriteSchema&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="s2">&quot;silver.strict_schema_table&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>2. Change Data Feed (CDF)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Enable CDF on table</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE silver.customers SET TBLPROPERTIES (delta.enableChangeDataFeed = true)&quot;</span><span class="p">)</span>
+
+<span class="c1"># Read change data</span>
+<span class="n">changes_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;readChangeFeed&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;startingTimestamp&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-01-01&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;silver.customers&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>3. Time Travel and Versioning</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Query historical version</span>
+<span class="n">historical_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;timestampAsOf&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-01-01&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;silver.customers&quot;</span><span class="p">)</span>
+
+<span class="c1"># Query by version</span>
+<span class="n">version_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;versionAsOf&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;silver.customers&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>4. Streaming vs Batch Decision Matrix</h3>
+<table>
+<thead>
+<tr>
+<th>Use Case</th>
+<th>Pattern</th>
+<th>When to Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Real-time CDC</strong></td>
+<td>Structured Streaming</td>
+<td>Sub-second latency requirements</td>
+</tr>
+<tr>
+<td><strong>Daily ETL</strong></td>
+<td>Batch Processing</td>
+<td>SLA measured in hours</td>
+</tr>
+<tr>
+<td><strong>Event Processing</strong></td>
+<td>Streaming + Watermarks</td>
+<td>Out-of-order events</td>
+</tr>
+<tr>
+<td><strong>Large File Ingestion</strong></td>
+<td>Batch with Auto Loader</td>
+<td>File-based sources</td>
+</tr>
+</tbody>
+</table>
+<h3>5. Cost Optimization Strategies</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Compact small files</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;OPTIMIZE silver.customers&quot;</span><span class="p">)</span>
+
+<span class="c1"># Vacuum old files (2026 exam loves this)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;VACUUM silver.customers RETAIN 168 HOURS&quot;</span><span class="p">)</span>  <span class="c1"># 7 days</span>
+
+<span class="c1"># Adaptive Query Execution (enabled by default in DBR 7.3+)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;spark.sql.adaptive.enabled&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;spark.sql.adaptive.coalescePartitions.enabled&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h2>🏆 Best Practices Checklist</h2>
+<h3>✅ Development Best Practices</h3>
+<ul>
+<li>[ ] Use explicit schemas instead of <code>inferSchema</code> in production</li>
+<li>[ ] Implement idempotent transformations (can run multiple times safely)</li>
+<li>[ ] Add data lineage metadata (<code>_source_file</code>, <code>_processing_timestamp</code>)</li>
+<li>[ ] Use <code>MERGE</code> instead of <code>INSERT + UPDATE</code> for upserts</li>
+<li>[ ] Partition large tables by commonly filtered columns</li>
+<li>[ ] Z-order by high-cardinality columns in WHERE clauses</li>
+</ul>
+<h3>✅ Data Quality Best Practices</h3>
+<ul>
+<li>[ ] Validate business rules before writing to Silver</li>
+<li>[ ] Log all quality issues for monitoring</li>
+<li>[ ] Use constraints for critical fields</li>
+<li>[ ] Implement quarantine tables for invalid records</li>
+<li>[ ] Track data freshness and processing SLAs</li>
+</ul>
+<h3>✅ Performance Best Practices</h3>
+<ul>
+<li>[ ] Cache DataFrames used multiple times in same job</li>
+<li>[ ] Broadcast small lookup tables (&lt;200MB)</li>
+<li>[ ] Use column pruning (select only needed columns)</li>
+<li>[ ] Optimize file sizes (target 128MB-1GB per file)</li>
+<li>[ ] Enable Adaptive Query Execution (AQE)</li>
+</ul>
+<h3>✅ Production Best Practices</h3>
+<ul>
+<li>[ ] Use Unity Catalog for governance</li>
+<li>[ ] Enable audit logging</li>
+<li>[ ] Implement proper error handling and retries</li>
+<li>[ ] Monitor cluster utilization and auto-scaling</li>
+<li>[ ] Use secrets for connection strings</li>
+</ul>
+<hr />
+<h2>🚨 Common Gotchas for 2026 Exam</h2>
+<ol>
+<li><strong>Schema drift</strong>: Always use explicit schemas in production</li>
+<li><strong>Small files</strong>: Regular OPTIMIZE operations needed</li>
+<li><strong>Memory issues</strong>: Don't cache large DataFrames unnecessarily</li>
+<li><strong>Join strategies</strong>: Understand broadcast vs shuffle joins</li>
+<li><strong>Partition pruning</strong>: Filter on partition columns for performance</li>
+<li><strong>MERGE conditions</strong>: Complex join conditions can be expensive</li>
+<li><strong>Type mismatches</strong>: Cast data types explicitly (e.g., price as DoubleType)</li>
+<li><strong>Null handling</strong>: PySpark nulls behave differently than SQL nulls</li>
+<li><strong>UDF Performance</strong>: Use Pandas UDFs instead of regular UDFs for better performance</li>
+<li><strong>Timestamp handling</strong>: Be careful with timezone conversions and date formats</li>
+<li><strong>Category standardization</strong>: Always normalize categorical data (uppercase, trim)</li>
+<li><strong>Flag logic</strong>: Business rules like YES/NO flags need consistent implementation</li>
+</ol>
+<h3>Real Examples from Your Data</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Your product data schema shows common issues:</span>
+<span class="c1"># - Mixed case categories (&quot;Electronics&quot; vs &quot;electronics&quot;)</span>
+<span class="c1"># - Price precision (should be rounded to 2 decimals)  </span>
+<span class="c1"># - Timestamp parsing (ISO format handling)</span>
+<span class="c1"># - Flag derivation (price &gt; 100 → &quot;YES&quot;)</span>
+
+<span class="c1"># Correct approach:</span>
+<span class="n">df_fixed</span> <span class="o">=</span> <span class="n">df</span> \
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="n">upper</span><span class="p">(</span><span class="n">trim</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">))))</span> \
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span> \
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;processDate&quot;</span><span class="p">,</span> <span class="n">to_timestamp</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;processDate&quot;</span><span class="p">),</span> <span class="s2">&quot;yyyy-MM-dd&#39;T&#39;HH:mm:ss.SSS&#39;Z&#39;&quot;</span><span class="p">))</span> \
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;high_value_flag&quot;</span><span class="p">,</span> <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;YES&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;NO&quot;</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🌐 Lakehouse Federation (2026 Exam Critical)</h2>
+<h3>Core Concept</h3>
+<p><strong>Lakehouse Federation allows you to query external data sources without moving data into Databricks.</strong> This enables real-time analytics across multiple systems while maintaining data where it lives.</p>
+<h3>Federation Architecture</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Query across federated sources without data movement</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">o</span><span class="p">.</span><span class="n">order_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">o</span><span class="p">.</span><span class="n">total_amount</span><span class="p">,</span>
+<span class="w">    </span><span class="k">c</span><span class="p">.</span><span class="n">customer_name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">product_name</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="n">production</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="n">o</span><span class="w">           </span><span class="c1">-- Live PostgreSQL</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">databricks_catalog</span><span class="p">.</span><span class="n">silver</span><span class="p">.</span><span class="n">customers</span><span class="w"> </span><span class="k">c</span><span class="w">          </span><span class="c1">-- Delta Lake</span>
+<span class="w">     </span><span class="k">ON</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">customer_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">c</span><span class="p">.</span><span class="n">customer_id</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">snowflake_catalog</span><span class="p">.</span><span class="n">warehouse</span><span class="p">.</span><span class="n">products</span><span class="w"> </span><span class="n">p</span><span class="w">         </span><span class="c1">-- Federated Snowflake</span>
+<span class="w">     </span><span class="k">ON</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">product_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">product_id</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">order_date</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="s1">&#39;2024-01-01&#39;</span>
+</code></pre></div>
+
+<h3>Setting Up Foreign Catalogs (2026 Critical)</h3>
+<p>Foreign Catalogs are <strong>read-only</strong> Unity Catalog registrations of external data sources. This is the proper way to set up federation connections.</p>
+<h4>Step 1: Create Connection Object</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- PostgreSQL Connection</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">CONNECTION</span><span class="w"> </span><span class="n">postgres_prod_connection</span>
+<span class="k">TYPE</span><span class="w"> </span><span class="n">postgresql</span>
+<span class="k">OPTIONS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">host</span><span class="w"> </span><span class="s1">&#39;prod-db.company.com&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="n">port</span><span class="w"> </span><span class="s1">&#39;5432&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="k">user</span><span class="w"> </span><span class="s1">&#39;readonly_user&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="n">password</span><span class="w"> </span><span class="n">secret</span><span class="p">(</span><span class="s1">&#39;db_scope&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;postgres_password&#39;</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- Snowflake Connection  </span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">CONNECTION</span><span class="w"> </span><span class="n">snowflake_dwh_connection</span>
+<span class="k">TYPE</span><span class="w"> </span><span class="n">snowflake</span>
+<span class="k">OPTIONS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">sfUrl</span><span class="w"> </span><span class="s1">&#39;company.snowflakecomputing.com&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="n">sfUser</span><span class="w"> </span><span class="s1">&#39;DATABRICKS_USER&#39;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">  </span><span class="n">sfPassword</span><span class="w"> </span><span class="n">secret</span><span class="p">(</span><span class="s1">&#39;db_scope&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;snowflake_password&#39;</span><span class="p">),</span>
+<span class="w">  </span><span class="n">sfDatabase</span><span class="w"> </span><span class="s1">&#39;ANALYTICS_DWH&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="n">sfWarehouse</span><span class="w"> </span><span class="s1">&#39;COMPUTE_WH&#39;</span>
+<span class="p">);</span>
+</code></pre></div>
+
+<h4>Step 2: Register as Foreign Catalog</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Create Foreign Catalog (appears in Unity Catalog as read-only)</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">postgres_catalog</span>
+<span class="k">USING</span><span class="w"> </span><span class="k">CONNECTION</span><span class="w"> </span><span class="n">postgres_prod_connection</span>
+<span class="k">OPTIONS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">database</span><span class="w"> </span><span class="s1">&#39;ecommerce&#39;</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">FOREIGN</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">snowflake_catalog</span>
+<span class="k">USING</span><span class="w"> </span><span class="k">CONNECTION</span><span class="w"> </span><span class="n">snowflake_dwh_connection</span><span class="p">;</span>
+</code></pre></div>
+
+<h4>Step 3: Grant Permissions Through Unity Catalog</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Grant access to foreign catalog</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="n">USE</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="k">data</span><span class="o">-</span><span class="n">analysts</span><span class="o">`</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="k">data</span><span class="o">-</span><span class="n">analysts</span><span class="o">`</span><span class="p">;</span>
+
+<span class="c1">-- Schema-level permissions</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="n">USE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="k">public</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="n">business</span><span class="o">-</span><span class="n">users</span><span class="o">`</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>Foreign Catalog Characteristics (2026 Exam Focus)</h3>
+<h4>Read-Only by Design</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- ✅ ALLOWED Operations</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">customer_id</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="k">public</span><span class="p">.</span><span class="n">customers</span><span class="p">;</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="k">public</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="nb">date</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="s1">&#39;2024-01-01&#39;</span><span class="p">;</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="k">public</span><span class="p">.</span><span class="n">products</span><span class="w"> </span><span class="n">p</span><span class="w"> </span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">delta_catalog</span><span class="p">.</span><span class="n">silver</span><span class="p">.</span><span class="n">inventory</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="p">.</span><span class="n">product_id</span><span class="p">;</span>
+
+<span class="c1">-- ❌ FORBIDDEN Operations  </span>
+<span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="k">public</span><span class="p">.</span><span class="n">customers</span><span class="w"> </span><span class="k">VALUES</span><span class="w"> </span><span class="p">(...);</span><span class="w">     </span><span class="c1">-- ERROR</span>
+<span class="k">UPDATE</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="k">public</span><span class="p">.</span><span class="n">products</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span><span class="w">       </span><span class="c1">-- ERROR</span>
+<span class="k">DELETE</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="k">public</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">       </span><span class="c1">-- ERROR</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="k">public</span><span class="p">.</span><span class="n">new_table</span><span class="w"> </span><span class="p">(...);</span><span class="w">          </span><span class="c1">-- ERROR</span>
+</code></pre></div>
+
+<h4>Unity Catalog Integration</h4>
+<ul>
+<li><strong>Governance</strong>: Foreign catalogs appear in Unity Catalog with full metadata</li>
+<li><strong>Security</strong>: Fine-grained permissions through Unity Catalog RBAC</li>
+<li><strong>Discovery</strong>: Tables visible in Data Explorer with schema information</li>
+<li><strong>Lineage</strong>: Cross-system data lineage tracking</li>
+<li><strong>Monitoring</strong>: Query performance metrics and usage analytics</li>
+</ul>
+<h4>Connection Management</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- List all connections</span>
+<span class="k">SHOW</span><span class="w"> </span><span class="n">CONNECTIONS</span><span class="p">;</span>
+
+<span class="c1">-- Check foreign catalog status</span>
+<span class="k">DESCRIBE</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">;</span>
+
+<span class="c1">-- Test connectivity</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">connectivity_test</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="n">information_schema</span><span class="p">.</span><span class="n">tables</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="c1">-- Drop foreign catalog (doesn&#39;t affect source system)</span>
+<span class="k">DROP</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">;</span>
+</code></pre></div>
+
+<ul>
+<li><strong>PostgreSQL/MySQL</strong>: Production OLTP systems</li>
+<li><strong>Snowflake</strong>: Data warehouse federation  </li>
+<li><strong>BigQuery</strong>: Google Cloud integration</li>
+<li><strong>SQL Server</strong>: Enterprise databases</li>
+<li><strong>Oracle</strong>: Legacy system integration</li>
+<li><strong>Delta Sharing</strong>: Cross-organization data sharing</li>
+</ul>
+<h3>Supported External Sources (2026 Focus)</h3>
+<ul>
+<li><strong>PostgreSQL/MySQL</strong>: Production OLTP systems</li>
+<li><strong>Snowflake</strong>: Data warehouse federation  </li>
+<li><strong>BigQuery</strong>: Google Cloud integration</li>
+<li><strong>SQL Server</strong>: Enterprise databases</li>
+<li><strong>Oracle</strong>: Legacy system integration</li>
+<li><strong>Delta Sharing</strong>: Cross-organization data sharing</li>
+</ul>
+<h3>Federation vs Traditional ETL</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Federation</th>
+<th>ETL/ELT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Data Movement</strong></td>
+<td>None - query in place</td>
+<td>Full copy required</td>
+</tr>
+<tr>
+<td><strong>Latency</strong></td>
+<td>Real-time</td>
+<td>Batch intervals</td>
+</tr>
+<tr>
+<td><strong>Storage Cost</strong></td>
+<td>No additional cost</td>
+<td>Duplicate storage</td>
+</tr>
+<tr>
+<td><strong>Data Freshness</strong></td>
+<td>Always current</td>
+<td>Depends on batch schedule</td>
+</tr>
+<tr>
+<td><strong>Performance</strong></td>
+<td>Network dependent</td>
+<td>Optimized local queries</td>
+</tr>
+<tr>
+<td><strong>Use Case</strong></td>
+<td>Live dashboards, compliance</td>
+<td>Heavy analytics, ML</td>
+</tr>
+</tbody>
+</table>
+<h3>2026 Exam Scenarios</h3>
+<h4>Scenario 1: Cross-Platform Joins</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Join Databricks Delta with external Snowflake</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">VIEW</span><span class="w"> </span><span class="n">customer_360</span><span class="w"> </span><span class="k">AS</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">d</span><span class="p">.</span><span class="n">customer_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">d</span><span class="p">.</span><span class="n">profile_data</span><span class="p">,</span>
+<span class="w">    </span><span class="n">s</span><span class="p">.</span><span class="n">transaction_history</span><span class="p">,</span>
+<span class="w">    </span><span class="n">s</span><span class="p">.</span><span class="n">credit_score</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">delta_catalog</span><span class="p">.</span><span class="n">silver</span><span class="p">.</span><span class="n">customer_profiles</span><span class="w"> </span><span class="n">d</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">snowflake_catalog</span><span class="p">.</span><span class="n">analytics</span><span class="p">.</span><span class="n">customer_metrics</span><span class="w"> </span><span class="n">s</span>
+<span class="w">     </span><span class="k">ON</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">customer_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="p">.</span><span class="n">customer_id</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;active&#39;</span>
+</code></pre></div>
+
+<h4>Scenario 2: Migration Testing</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Compare results between systems during migration</span>
+<span class="n">source_count</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT COUNT(*) FROM postgres_catalog.prod.orders&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">target_count</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT COUNT(*) FROM delta_catalog.bronze.orders&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Source: </span><span class="si">{</span><span class="n">source_count</span><span class="si">}</span><span class="s2">, Target: </span><span class="si">{</span><span class="n">target_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Migration Progress: </span><span class="si">{</span><span class="p">(</span><span class="n">target_count</span><span class="o">/</span><span class="n">source_count</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h4>Scenario 3: Real-time Compliance Reporting</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Real-time GDPR compliance check across systems</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">customer_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">last_activity_date</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_retention_status</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="n">prod</span><span class="p">.</span><span class="n">customer_activity</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">last_activity_date</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">DATE_SUB</span><span class="p">(</span><span class="k">CURRENT_DATE</span><span class="p">(),</span><span class="w"> </span><span class="mi">1095</span><span class="p">)</span><span class="w"> </span><span class="c1">-- 3 years</span>
+<span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">gdpr_consent_withdrawn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span>
+</code></pre></div>
+
+<h3>Performance Optimization Patterns</h3>
+<h4>Query Pushdown</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Databricks automatically pushes predicates to source systems</span>
+<span class="c1"># This query only brings back filtered results:</span>
+<span class="n">filtered_orders</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT * FROM postgres_catalog.prod.orders </span>
+<span class="s2">WHERE order_date &gt;= &#39;2024-01-01&#39; </span>
+<span class="s2">  AND total_amount &gt; 100</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Explain plan shows pushdown optimization</span>
+<span class="n">filtered_orders</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<h4>Caching Strategy</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Cache frequently accessed federated data</span>
+<span class="n">federated_customers</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;postgres_catalog.prod.customers&quot;</span><span class="p">)</span>
+<span class="n">federated_customers</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+
+<span class="c1"># Use in multiple operations</span>
+<span class="n">customer_summary</span> <span class="o">=</span> <span class="n">federated_customers</span><span class="o">.</span><span class="n">groupBy</span><span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">vip_customers</span> <span class="o">=</span> <span class="n">federated_customers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_spent&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10000</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>Best Practices for Federation</h3>
+<h4>1. Connection Pooling</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Configure connection pooling for better performance</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;spark.sql.catalog.postgres_catalog.poolSize&quot;</span><span class="p">,</span> <span class="s2">&quot;10&quot;</span><span class="p">)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;spark.sql.catalog.postgres_catalog.connectionTimeout&quot;</span><span class="p">,</span> <span class="s2">&quot;30s&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h4>2. Query Pattern Optimization</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- GOOD: Push filters down to source</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">customer_id</span><span class="p">,</span><span class="w"> </span><span class="n">order_total</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="n">prod</span><span class="p">.</span><span class="n">orders</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">order_date</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="s1">&#39;2024-01-01&#39;</span><span class="w">  </span><span class="c1">-- Pushed to PostgreSQL</span>
+
+<span class="c1">-- AVOID: Large data movement then filter</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">customer_id</span><span class="p">,</span><span class="w"> </span><span class="n">order_total</span>
+<span class="k">FROM</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="n">prod</span><span class="p">.</span><span class="n">orders</span><span class="w">  </span><span class="c1">-- Brings all data</span>
+<span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">order_date</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="s1">&#39;2024-01-01&#39;</span><span class="w">  </span><span class="c1">-- Filters in Databricks</span>
+</code></pre></div>
+
+<h4>3. Security Considerations</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Use secret scope for connection credentials</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">CREATE CATALOG secure_postgres</span>
+<span class="s2">USING CONNECTION postgres_secure</span>
+<span class="s2">OPTIONS (</span>
+<span class="s2">  host &#39;${secrets/db_scope/postgres_host}&#39;,</span>
+<span class="s2">  user &#39;${secrets/db_scope/postgres_user}&#39;,</span>
+<span class="s2">  password &#39;${secrets/db_scope/postgres_password}&#39;</span>
+<span class="s2">)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>Common 2026 Exam Questions</h3>
+<p><strong>Q: When should you use Federation vs ETL?</strong><br />
+- <strong>Federation</strong>: Real-time dashboards, compliance reporting, cross-system joins, migration validation<br />
+- <strong>ETL</strong>: Heavy analytics, ML training, long-term storage, complex transformations</p>
+<p><strong>Q: How does query optimization work with federated sources?</strong><br />
+- Predicate pushdown to minimize data movement<br />
+- Join reordering (small federated table with large Delta table)<br />
+- Connection pooling and caching strategies</p>
+<p><strong>Q: What are the security implications?</strong><br />
+- Network security between Databricks and source systems<br />
+- Credential management through secret scopes<br />
+- Row-level security inheritance from source systems<br />
+- Data masking and column-level permissions</p>
+<h3>Security Best Practices for Foreign Catalogs</h3>
+<h4>Connection Security</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Always use secret scopes for credentials</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">CONNECTION</span><span class="w"> </span><span class="n">secure_postgres</span>
+<span class="k">TYPE</span><span class="w"> </span><span class="n">postgresql</span>
+<span class="k">OPTIONS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">host</span><span class="w"> </span><span class="s1">&#39;prod.company.com&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="n">port</span><span class="w"> </span><span class="s1">&#39;5432&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="k">user</span><span class="w"> </span><span class="n">secret</span><span class="p">(</span><span class="s1">&#39;prod_db_scope&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;readonly_user&#39;</span><span class="p">),</span>
+<span class="w">  </span><span class="n">password</span><span class="w"> </span><span class="n">secret</span><span class="p">(</span><span class="s1">&#39;prod_db_scope&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;readonly_password&#39;</span><span class="p">),</span>
+<span class="w">  </span><span class="c1">-- Enable SSL</span>
+<span class="w">  </span><span class="n">ssl</span><span class="w"> </span><span class="s1">&#39;true&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="n">sslmode</span><span class="w"> </span><span class="s1">&#39;require&#39;</span>
+<span class="p">);</span>
+</code></pre></div>
+
+<h4>Database User Privileges</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Create read-only user in source system (PostgreSQL example)</span>
+<span class="c1">-- Run this in your PostgreSQL database:</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="n">databricks_readonly</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="n">PASSWORD</span><span class="w"> </span><span class="s1">&#39;secure_password&#39;</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">CONNECT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">production</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">databricks_readonly</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">USAGE</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">databricks_readonly</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="n">TABLES</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">databricks_readonly</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="n">SEQUENCES</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">databricks_readonly</span><span class="p">;</span>
+
+<span class="c1">-- Prevent future writes</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="n">databricks_readonly</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">default_transaction_read_only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">on</span><span class="p">;</span>
+</code></pre></div>
+
+<h4>Row-Level Security (RLS) Integration</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- If source system has RLS, it&#39;s inherited through federation</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">customer_id</span><span class="p">,</span><span class="w"> </span><span class="n">order_total</span><span class="w"> </span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">postgres_catalog</span><span class="p">.</span><span class="k">public</span><span class="p">.</span><span class="n">orders</span><span class="w">  </span><span class="c1">-- RLS from PostgreSQL applied automatically</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">order_date</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="s1">&#39;2024-01-01&#39;</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>Troubleshooting Foreign Catalogs</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Check connection status</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SHOW CATALOGS&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Test connectivity  </span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT 1 FROM postgres_catalog.information_schema.tables LIMIT 1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Connection successful&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Connection failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Monitor query performance</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT * FROM postgres_catalog.public.orders </span>
+<span class="s2">WHERE order_date = &#39;2024-01-01&#39;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="s2">&quot;cost&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>Troubleshooting Federation Issues</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Check connection status</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SHOW CATALOGS&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Test connectivity</span>
+<span class="n">test_query</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT 1 as test FROM postgres_catalog.prod.customers LIMIT 1&quot;</span><span class="p">)</span>
+<span class="n">test_query</span><span class="o">.</span><span class="n">explain</span><span class="p">()</span>  <span class="c1"># Shows execution plan</span>
+
+<span class="c1"># Monitor query performance</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM postgres_catalog.prod.orders WHERE order_date = &#39;2024-01-01&#39;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">explain</span><span class="p">(</span><span class="s2">&quot;cost&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<div class="codehilite"><pre><span></span><code><span class="c1"># Check table schema</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;silver.customers&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">printSchema</span><span class="p">()</span>
+
+<span class="c1"># Count records</span>
+<span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+<span class="c1"># Show sample data</span>
+<span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">truncate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Describe statistics</span>
+<span class="n">df</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Check for nulls</span>
+<span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">([</span><span class="n">count</span><span class="p">(</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">(),</span> <span class="n">c</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Get distinct values</span>
+<span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;column_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Check Delta table history</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;DESCRIBE HISTORY silver.customers&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+
+<hr />
+<p><em>This cheat sheet covers the essential Bronze to Silver transformation patterns for the 2026 Databricks certification, including UPSERT operations, data quality frameworks, performance optimization techniques, and the critical new Lakehouse Federation capabilities for querying external data without movement.</em></p>
+</body>
+</html>

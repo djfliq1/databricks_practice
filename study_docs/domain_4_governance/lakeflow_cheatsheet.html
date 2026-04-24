@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lakeflow Declarative Pipelines — Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #0a0e14;
+    --bg2:      #0f1520;
+    --bg3:      #151d2e;
+    --border:   #1e2d45;
+    --cyan:     #00d4ff;
+    --amber:    #f5a623;
+    --green:    #39d98a;
+    --coral:    #ff6b6b;
+    --purple:   #b388ff;
+    --teal:     #26c6da;
+    --muted:    #4a6080;
+    --text:     #c8d8f0;
+    --textdim:  #6a85a8;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--cyan));
+    margin: 0 auto 20px;
+  }
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--cyan);
+    border: 1px solid var(--cyan);
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+  h1 {
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #fff;
+    line-height: 1.1;
+  }
+  h1 span { color: var(--cyan); }
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--textdim);
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+
+  /* ── Grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp 0.5s ease both;
+  }
+  .card.wide { grid-column: 1 / -1; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .card-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #fff;
+  }
+  .card-tag {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    opacity: 0.7;
+  }
+
+  /* ── Code Block ── */
+  pre {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    padding: 18px 20px;
+    overflow-x: auto;
+    flex: 1;
+    background: var(--bg);
+  }
+  .c-cyan    { color: var(--cyan); }
+  .c-amber   { color: var(--amber); }
+  .c-green   { color: var(--green); }
+  .c-coral   { color: var(--coral); }
+  .c-purple  { color: var(--purple); }
+  .c-teal    { color: var(--teal); }
+  .c-dim     { color: var(--textdim); }
+  .c-white   { color: #fff; }
+
+  /* ── Table ── */
+  .table-wrap { padding: 0 18px 18px; overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    color: var(--cyan);
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 1px;
+    font-size: 10px;
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #151d2e;
+    color: var(--text);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(0,212,255,0.03); }
+  td.key { color: var(--amber); }
+  td.val { color: var(--green); }
+  td.note { color: var(--textdim); font-size: 10px; }
+
+  /* ── Rule pills ── */
+  .rules { padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid;
+    line-height: 1.4;
+  }
+  .pill-cyan   { color: var(--cyan);   border-color: rgba(0,212,255,0.3);   background: rgba(0,212,255,0.06); }
+  .pill-amber  { color: var(--amber);  border-color: rgba(245,166,35,0.3);  background: rgba(245,166,35,0.06); }
+  .pill-green  { color: var(--green);  border-color: rgba(57,217,138,0.3);  background: rgba(57,217,138,0.06); }
+  .pill-coral  { color: var(--coral);  border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.06); }
+  .pill-purple { color: var(--purple); border-color: rgba(179,136,255,0.3); background: rgba(179,136,255,0.06); }
+
+  /* ── Section Label ── */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    max-width: 1200px;
+    margin: 32px auto 10px;
+    padding-left: 4px;
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    margin-top: 60px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+</style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="badge">DATABRICKS CERTIFIED DATA ENGINEER ASSOCIATE</div>
+  <h1>Lakeflow <span>Declarative</span> Pipelines</h1>
+  <p class="subtitle">pyspark.pipelines · dp syntax · 2026 · databricks_clar catalog</p>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<div class="section-label">01 — Foundation</div>
+<div class="grid">
+
+  <!-- Import -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(0,212,255,0.15)">⚡</div>
+      <span class="card-title">Import Pattern</span>
+      <span class="card-tag" style="color:var(--coral);border:1px solid rgba(255,107,107,0.3);background:rgba(255,107,107,0.06)">REQUIRED</span>
+    </div>
+    <pre><span class="c-dim"># dlt is deprecated — use pyspark.pipelines</span>
+<span class="c-coral">from</span> <span class="c-cyan">pyspark</span> <span class="c-coral">import</span> <span class="c-cyan">pipelines</span> <span class="c-coral">as</span> <span class="c-white">dp</span>
+<span class="c-coral">from</span> <span class="c-cyan">pyspark.sql.functions</span> <span class="c-coral">import</span> <span class="c-white">col, expr, lit</span>
+<span class="c-coral">from</span> <span class="c-cyan">pyspark.sql.types</span> <span class="c-coral">import</span> <span class="c-white">*</span></pre>
+  </div>
+
+  <!-- Reading Rules -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(245,166,35,0.15)">📖</div>
+      <span class="card-title">Reading Rules — Delta vs Files</span>
+    </div>
+    <pre><span class="c-dim"># Delta / catalog table</span>
+<span class="c-white">spark.readStream</span><span class="c-dim">.</span><span class="c-green">table</span>(<span class="c-amber">"catalog.schema.table"</span>)
+
+<span class="c-dim"># CSV / JSON files from Volumes (Auto Loader)</span>
+<span class="c-white">spark.readStream</span><span class="c-dim">.</span><span class="c-green">format</span>(<span class="c-amber">"cloudFiles"</span>)\
+  <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"cloudFiles.format"</span>, <span class="c-amber">"csv"</span>)\
+  <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"header"</span>, <span class="c-amber">"true"</span>)\
+  <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"inferSchema"</span>, <span class="c-amber">"true"</span>)\
+  <span class="c-dim">.</span><span class="c-green">load</span>(<span class="c-amber">"/Volumes/path/to/folder/"</span>)  <span class="c-dim"># folder not file</span></pre>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<div class="section-label">02 — Table Types</div>
+<div class="grid">
+
+  <!-- Streaming Table -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(0,212,255,0.15)">🌊</div>
+      <span class="card-title">Streaming Table</span>
+      <span class="card-tag" style="color:var(--cyan);border:1px solid rgba(0,212,255,0.3);background:rgba(0,212,255,0.06)">@dp.table</span>
+    </div>
+    <pre><span class="c-dim"># Continuous updates, append-only, stateful</span>
+<span class="c-dim"># Bronze / Silver layers</span>
+<span class="c-purple">@dp.table</span>(<span class="c-white">name</span>=<span class="c-amber">'sales_stg'</span>)
+<span class="c-coral">def</span> <span class="c-green">sales_stg</span>():
+    <span class="c-coral">return</span> spark.readStream\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"skipChangeCommits"</span>, <span class="c-cyan">True</span>)\
+        <span class="c-dim">.</span><span class="c-green">table</span>(<span class="c-amber">"databricks_clar.silver.sales_enriched"</span>)
+
+<span class="c-dim"># skipChangeCommits=True needed when source</span>
+<span class="c-dim"># table has updates/deletes (merge pattern)</span></pre>
+  </div>
+
+  <!-- Materialized View -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(57,217,138,0.15)">📦</div>
+      <span class="card-title">Materialized View</span>
+      <span class="card-tag" style="color:var(--green);border:1px solid rgba(57,217,138,0.3);background:rgba(57,217,138,0.06)">@dp.materialized_view</span>
+    </div>
+    <pre><span class="c-dim"># Batch processing, full refresh, aggregations</span>
+<span class="c-dim"># Gold layer / BI-ready</span>
+<span class="c-purple">@dp.materialized_view</span>(<span class="c-white">name</span>=<span class="c-amber">'sales_trn'</span>)
+<span class="c-coral">def</span> <span class="c-green">sales_trn</span>():
+    df = spark.read<span class="c-dim">.</span><span class="c-green">table</span>(<span class="c-amber">"sales_stg"</span>)
+    df = df.<span class="c-green">withColumn</span>(
+        <span class="c-amber">"priceAfterDiscount"</span>,
+        col(<span class="c-amber">"total_amount"</span>) - col(<span class="c-amber">"discount"</span>)
+    )
+    <span class="c-coral">return</span> df</pre>
+  </div>
+
+  <!-- Temp View Batch -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(179,136,255,0.15)">👁</div>
+      <span class="card-title">Temp View — Batch</span>
+      <span class="card-tag" style="color:var(--purple);border:1px solid rgba(179,136,255,0.3);background:rgba(179,136,255,0.06)">@dp.view</span>
+    </div>
+    <pre><span class="c-dim"># Intermediate querying, NOT persisted</span>
+<span class="c-dim"># Pipeline-scope only</span>
+<span class="c-purple">@dp.view</span>(<span class="c-white">name</span>=<span class="c-amber">'demo_batch_view'</span>)
+<span class="c-coral">def</span> <span class="c-green">demo_batch_view</span>():
+    df = spark.read<span class="c-dim">.</span><span class="c-green">table</span>(<span class="c-amber">"databricks_clar.silver.sales_enriched"</span>)
+    <span class="c-coral">return</span> df</pre>
+  </div>
+
+  <!-- Temp View Streaming -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(38,198,218,0.15)">🔄</div>
+      <span class="card-title">Temp View — Streaming</span>
+      <span class="card-tag" style="color:var(--teal);border:1px solid rgba(38,198,218,0.3);background:rgba(38,198,218,0.06)">@dp.view</span>
+    </div>
+    <pre><span class="c-dim"># Same decorator — reader determines behavior</span>
+<span class="c-dim"># Stateful, micro-batch, not stored to disk</span>
+<span class="c-purple">@dp.view</span>(<span class="c-white">name</span>=<span class="c-amber">'demo_stream_view'</span>)
+<span class="c-coral">def</span> <span class="c-green">demo_stream_view</span>():
+    df = spark.readStream<span class="c-dim">.</span><span class="c-green">table</span>(<span class="c-amber">"databricks_clar.silver.sales_enriched"</span>)
+    <span class="c-coral">return</span> df</pre>
+  </div>
+
+</div>
+
+<!-- Decorator vs Reader Matrix -->
+<div class="section-label">03 — Decorator + Reader Matrix</div>
+<div class="grid">
+  <div class="card wide">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(245,166,35,0.15)">🔀</div>
+      <span class="card-title">The Full Decision Matrix</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <tr>
+          <th>Object</th>
+          <th>Decorator</th>
+          <th>Reader</th>
+          <th>Persisted?</th>
+          <th>Use Case</th>
+        </tr>
+        <tr>
+          <td class="key">Streaming Table</td>
+          <td class="val">@dp.table</td>
+          <td class="val">spark.readStream</td>
+          <td style="color:var(--green)">✅ Yes</td>
+          <td class="note">Bronze/Silver continuous ingest</td>
+        </tr>
+        <tr>
+          <td class="key">Materialized View</td>
+          <td class="val">@dp.materialized_view</td>
+          <td class="val">spark.read</td>
+          <td style="color:var(--green)">✅ Yes</td>
+          <td class="note">Gold aggregations, BI-ready</td>
+        </tr>
+        <tr>
+          <td class="key">Temp View (batch)</td>
+          <td class="val">@dp.view</td>
+          <td class="val">spark.read</td>
+          <td style="color:var(--coral)">❌ No</td>
+          <td class="note">Intermediate reshape, no storage cost</td>
+        </tr>
+        <tr>
+          <td class="key">Temp View (stream)</td>
+          <td class="val">@dp.view</td>
+          <td class="val">spark.readStream</td>
+          <td style="color:var(--coral)">❌ No</td>
+          <td class="note">Stateful filter before streaming table</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<div class="section-label">04 — Auto Loader (Bronze Ingest)</div>
+<div class="grid">
+  <div class="card wide">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(0,212,255,0.15)">☁️</div>
+      <span class="card-title">Auto Loader — cloudFiles</span>
+      <span class="card-tag" style="color:var(--cyan);border:1px solid rgba(0,212,255,0.3);background:rgba(0,212,255,0.06)">BRONZE</span>
+    </div>
+    <pre><span class="c-purple">@dp.table</span>(<span class="c-white">name</span>=<span class="c-amber">'autoVolTable'</span>)
+<span class="c-coral">def</span> <span class="c-green">autoVolTable</span>():
+    <span class="c-coral">return</span> spark.readStream<span class="c-dim">.</span><span class="c-green">format</span>(<span class="c-amber">"cloudFiles"</span>)\         <span class="c-dim"># format() needs the call parens</span>
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"cloudFiles.format"</span>, <span class="c-amber">"csv"</span>)\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"header"</span>, <span class="c-amber">"true"</span>)\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"inferSchema"</span>, <span class="c-amber">"true"</span>)\
+        <span class="c-dim">.</span><span class="c-green">load</span>(<span class="c-amber">"/Volumes/databricks_clar/bronze/autovol/raw/"</span>)   <span class="c-dim"># folder not file!</span>
+
+<span class="c-dim"># Enriched Silver on top — add a column</span>
+<span class="c-purple">@dp.table</span>(<span class="c-white">name</span>=<span class="c-amber">'autoVolEnriched'</span>)
+<span class="c-coral">def</span> <span class="c-green">autoVolEnriched</span>():
+    <span class="c-coral">return</span> spark.readStream\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"skipChangeCommits"</span>, <span class="c-cyan">True</span>)\
+        <span class="c-dim">.</span><span class="c-green">table</span>(<span class="c-amber">"autoVolTable"</span>)\
+        <span class="c-dim">.</span><span class="c-green">withColumn</span>(<span class="c-amber">"isProcessed"</span>, lit(<span class="c-amber">"YES"</span>))</pre>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<div class="section-label">05 — Append Flow</div>
+<div class="grid">
+  <div class="card wide">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(57,217,138,0.15)">➕</div>
+      <span class="card-title">Append Flow — Multi-Source + Backfill</span>
+    </div>
+    <pre><span class="c-dim"># STEP 1 — Create the empty target bucket first</span>
+dp.<span class="c-green">create_streaming_table</span>(<span class="c-white">name</span>=<span class="c-amber">"append_table"</span>)
+
+<span class="c-dim"># STEP 2 — Flow 1 (CSV from Volume folder)</span>
+<span class="c-purple">@dp.append_flow</span>(<span class="c-white">target</span>=<span class="c-amber">"append_table"</span>, <span class="c-white">name</span>=<span class="c-amber">"flow_1"</span>)
+<span class="c-coral">def</span> <span class="c-green">flow_1</span>():
+    <span class="c-coral">return</span> spark.readStream<span class="c-dim">.</span><span class="c-green">format</span>(<span class="c-amber">"cloudFiles"</span>)\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"cloudFiles.format"</span>, <span class="c-amber">"csv"</span>)\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"header"</span>, <span class="c-amber">"true"</span>)\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"inferSchema"</span>, <span class="c-amber">"true"</span>)\
+        <span class="c-dim">.</span><span class="c-green">load</span>(<span class="c-amber">"/Volumes/databricks_clar/bronze/autovol/raw/flow_1/"</span>)
+
+<span class="c-dim"># STEP 3 — Flow 2 (second source into same target)</span>
+<span class="c-purple">@dp.append_flow</span>(<span class="c-white">target</span>=<span class="c-amber">"append_table"</span>, <span class="c-white">name</span>=<span class="c-amber">"flow_2"</span>)
+<span class="c-coral">def</span> <span class="c-green">flow_2</span>():
+    <span class="c-coral">return</span> spark.readStream<span class="c-dim">.</span><span class="c-green">format</span>(<span class="c-amber">"cloudFiles"</span>)\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"cloudFiles.format"</span>, <span class="c-amber">"csv"</span>)\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"header"</span>, <span class="c-amber">"true"</span>)\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"inferSchema"</span>, <span class="c-amber">"true"</span>)\
+        <span class="c-dim">.</span><span class="c-green">load</span>(<span class="c-amber">"/Volumes/databricks_clar/bronze/autovol/raw/flow_2/"</span>)
+
+<span class="c-dim"># BACKFILL — runs ONE time only (once=True)</span>
+<span class="c-purple">@dp.append_flow</span>(<span class="c-white">target</span>=<span class="c-amber">"append_table"</span>, <span class="c-white">name</span>=<span class="c-amber">"backfill"</span>, <span class="c-white">once</span>=<span class="c-cyan">True</span>)
+<span class="c-coral">def</span> <span class="c-green">backfill</span>():
+    <span class="c-coral">return</span> spark.readStream<span class="c-dim">.</span><span class="c-green">format</span>(<span class="c-amber">"cloudFiles"</span>)\
+        <span class="c-dim">.</span><span class="c-green">option</span>(<span class="c-amber">"cloudFiles.format"</span>, <span class="c-amber">"csv"</span>)\
+        <span class="c-dim">.</span><span class="c-green">load</span>(<span class="c-amber">"/Volumes/databricks_clar/bronze/autovol/backfill/"</span>)</pre>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<div class="section-label">06 — Auto CDC Flow (SCD)</div>
+<div class="grid">
+  <div class="card wide">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(255,107,107,0.15)">🔁</div>
+      <span class="card-title">Auto CDC Flow — SCD Type 1 + Type 2</span>
+      <span class="card-tag" style="color:var(--coral);border:1px solid rgba(255,107,107,0.3);background:rgba(255,107,107,0.06)">replaces apply_changes()</span>
+    </div>
+    <pre><span class="c-coral">from</span> <span class="c-cyan">pyspark</span> <span class="c-coral">import</span> <span class="c-cyan">pipelines</span> <span class="c-coral">as</span> <span class="c-white">dp</span>
+<span class="c-coral">from</span> <span class="c-cyan">pyspark.sql.functions</span> <span class="c-coral">import</span> <span class="c-white">col</span>
+
+<span class="c-dim"># STAGING TABLE — raw source ingest</span>
+<span class="c-purple">@dp.table</span>(<span class="c-white">name</span>=<span class="c-amber">"scd_stg"</span>)
+<span class="c-coral">def</span> <span class="c-green">scd_stg</span>():
+    <span class="c-coral">return</span> spark.readStream<span class="c-dim">.</span><span class="c-green">table</span>(<span class="c-amber">"databricks_clar.bronze.source"</span>)
+
+<span class="c-dim">### SCD TYPE 1 — overwrite, latest state only ###</span>
+dp.<span class="c-green">create_streaming_table</span>(<span class="c-white">name</span>=<span class="c-amber">"scd1_table"</span>)
+dp.<span class="c-green">create_auto_cdc_flow</span>(
+    <span class="c-white">target</span>             = <span class="c-amber">"scd1_table"</span>,
+    <span class="c-white">source</span>             = <span class="c-amber">"scd_stg"</span>,
+    <span class="c-white">keys</span>               = [<span class="c-amber">"product_id"</span>],
+    <span class="c-white">sequence_by</span>        = col(<span class="c-amber">"processDate"</span>),    <span class="c-dim"># col() required — not a string</span>
+    <span class="c-white">stored_as_scd_type</span> = <span class="c-cyan">1</span>
+)
+
+<span class="c-dim">### SCD TYPE 2 — keep full history ###</span>
+dp.<span class="c-green">create_streaming_table</span>(<span class="c-white">name</span>=<span class="c-amber">"scd2_table"</span>)
+dp.<span class="c-green">create_auto_cdc_flow</span>(
+    <span class="c-white">target</span>             = <span class="c-amber">"scd2_table"</span>,
+    <span class="c-white">source</span>             = <span class="c-amber">"scd_stg"</span>,
+    <span class="c-white">keys</span>               = [<span class="c-amber">"product_id"</span>],
+    <span class="c-white">sequence_by</span>        = col(<span class="c-amber">"processDate"</span>),
+    <span class="c-white">stored_as_scd_type</span> = <span class="c-cyan">2</span>,
+    <span class="c-white">except_column_list</span> = [<span class="c-amber">"processDate"</span>]     <span class="c-dim"># NOT except_columns</span>
+)</pre>
+  </div>
+
+  <!-- SCD comparison table -->
+  <div class="card wide">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(179,136,255,0.15)">📊</div>
+      <span class="card-title">SCD Type 1 vs Type 2</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Feature</th><th>SCD Type 1</th><th>SCD Type 2</th></tr>
+        <tr><td class="key">Behavior</td><td class="val">Overwrites record</td><td class="val">Keeps full history</td></tr>
+        <tr><td class="key">Use case</td><td class="val">Latest state only</td><td class="val">Audit trail, time travel</td></tr>
+        <tr><td class="key">Extra columns</td><td class="note">None</td><td class="val">__START_AT, __END_AT</td></tr>
+        <tr><td class="key">stored_as_scd_type</td><td class="val">1</td><td class="val">2</td></tr>
+        <tr><td class="key">Good for time series?</td><td style="color:var(--coral)">❌ No</td><td style="color:var(--coral)">❌ No — use @dp.table + watermarks</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<div class="section-label">07 — Key Rules & Traps</div>
+<div class="grid">
+  <div class="card wide">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(255,107,107,0.15)">⚠️</div>
+      <span class="card-title">Exam Traps + Key Rules</span>
+    </div>
+    <div class="rules">
+      <span class="pill pill-coral">Dry Run = sandbox only — no tables published</span>
+      <span class="pill pill-amber">Production mode = tables published to Unity Catalog</span>
+      <span class="pill pill-cyan">@dp.table = streaming tables ONLY (not mat views)</span>
+      <span class="pill pill-green">@dp.materialized_view = batch / full refresh only</span>
+      <span class="pill pill-purple">sequence_by needs col() — not a plain string</span>
+      <span class="pill pill-coral">except_column_list — NOT except_columns</span>
+      <span class="pill pill-amber">Flow rename = checkpoint dies = new flow</span>
+      <span class="pill pill-cyan">cloudFiles.load() = folder path, NOT file path</span>
+      <span class="pill pill-green">once=True in append_flow = backfill, runs once</span>
+      <span class="pill pill-purple">create_auto_cdc_flow replaces apply_changes()</span>
+      <span class="pill pill-coral">skipChangeCommits=True when source has updates/deletes</span>
+      <span class="pill pill-amber">transformations/ folder = src folder for pipeline logic</span>
+      <span class="pill pill-cyan">Delta source → .table() · Files → cloudFiles + .load()</span>
+      <span class="pill pill-green">Cannot target same table with both CDC flow types</span>
+    </div>
+  </div>
+</div>
+
+<footer>databricks_clar · Clarence Hairston · Databricks Certified Data Engineer Associate · 2026</footer>
+</body>
+</html>

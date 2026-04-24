@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Databricks DE Associate — Study Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           Databricks DE Associate — Study Hub
+           Cyber-tech dark theme
+           ============================================ */
+        :root {
+            --bg-base: #0a0c10;
+            --bg-card: #161b22;
+            --bg-elevated: #1c2128;
+            --bg-input: #0d1117;
+            --border: #30363d;
+            --border-hover: #484f58;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-cyan: #00e5ff;
+            --accent-cyan-dim: rgba(0, 229, 255, 0.15);
+            --accent-amber: #f0883e;
+            --accent-amber-dim: rgba(240, 136, 62, 0.15);
+            --accent-green: #3fb950;
+            --accent-green-dim: rgba(63, 185, 80, 0.15);
+            --accent-red: #f85149;
+            --accent-purple: #bc8cff;
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+        /* --- Header --- */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .progress-bar-wrap {
+            width: 200px;
+            height: 8px;
+            background: var(--bg-base);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- Controls Bar --- */
+        .controls {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.5rem 0.75rem 0.5rem 2.2rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: 'IBM Plex Sans', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .search-box::before {
+            content: '\1F50D';
+            position: absolute;
+            left: 0.7rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.85rem;
+            opacity: 0.5;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .filter-tab {
+            padding: 0.4rem 0.85rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-family: 'IBM Plex Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .filter-tab:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .filter-tab.active {
+            background: var(--accent-cyan-dim);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .progress-filter {
+            display: flex;
+            gap: 0.25rem;
+            margin-left: auto;
+        }
+
+        .progress-filter .filter-tab.pf-completed.active {
+            background: var(--accent-green-dim);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .progress-filter .filter-tab.pf-in-progress.active {
+            background: var(--accent-amber-dim);
+            border-color: var(--accent-amber);
+            color: var(--accent-amber);
+        }
+
+        /* --- Main Content --- */
+        .main {
+            padding: 1.5rem 2rem 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* --- Domain Section --- */
+        .domain-section {
+            margin-bottom: 2rem;
+        }
+
+        .domain-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .domain-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .domain-weight {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            background: var(--accent-amber-dim);
+            color: var(--accent-amber);
+            border: 1px solid rgba(240, 136, 62, 0.3);
+            border-radius: 4px;
+        }
+
+        .domain-count {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .domain-progress {
+            margin-left: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* --- Document Cards Grid --- */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .doc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .doc-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 229, 255, 0.08);
+        }
+
+        .doc-card-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+
+        .doc-card-desc {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .doc-card-footer {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: auto;
+            flex-wrap: wrap;
+        }
+
+        .tag-pill {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            background: var(--bg-base);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .status-dot.not-started { background: var(--border-hover); }
+        .status-dot.in-progress { background: var(--accent-amber); box-shadow: 0 0 6px rgba(240, 136, 62, 0.5); }
+        .status-dot.completed { background: var(--accent-green); box-shadow: 0 0 6px rgba(63, 185, 80, 0.5); }
+
+        /* --- Document Viewer --- */
+        .viewer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: var(--bg-base);
+            flex-direction: column;
+        }
+
+        .viewer-overlay.active {
+            display: flex;
+        }
+
+        .viewer-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            min-height: 52px;
+        }
+
+        .btn-back {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .viewer-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .progress-btns {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .btn-progress {
+            padding: 0.35rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-family: 'IBM Plex Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-progress:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+        .btn-progress.active-in-progress { background: var(--accent-amber-dim); border-color: var(--accent-amber); color: var(--accent-amber); }
+        .btn-progress.active-completed { background: var(--accent-green-dim); border-color: var(--accent-green); color: var(--accent-green); }
+
+        .viewer-iframe {
+            flex: 1;
+            border: none;
+            width: 100%;
+        }
+
+        /* --- Empty / Loading States --- */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* --- Search Results Mode --- */
+        .search-results-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-results-header span {
+            color: var(--accent-cyan);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .header { padding: 0.75rem 1rem; }
+            .controls { padding: 0.5rem 1rem; }
+            .main { padding: 1rem; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .progress-bar-wrap { width: 120px; }
+            .progress-filter { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="header-left">
+        <div>
+            <div class="logo">DB Study Hub</div>
+            <div class="logo-sub">Databricks DE Associate 2026</div>
+        </div>
+    </div>
+    <div class="progress-bar-container">
+        <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="globalProgressBar" style="width: 0%"></div>
+        </div>
+        <span class="progress-text" id="globalProgressText">0/0</span>
+    </div>
+</header>
+
+<!-- Controls -->
+<div class="controls">
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search documents..." autocomplete="off">
+    </div>
+    <div class="filter-tabs" id="domainFilters">
+        <button class="filter-tab active" data-domain="all">All</button>
+    </div>
+    <div class="progress-filter" id="progressFilter">
+        <button class="filter-tab active" data-progress="all">All</button>
+        <button class="filter-tab pf-in-progress" data-progress="in_progress">In Progress</button>
+        <button class="filter-tab pf-completed" data-progress="completed">Completed</button>
+        <button class="filter-tab" data-progress="not_started">Not Started</button>
+    </div>
+</div>
+
+<!-- Main Content -->
+<main class="main" id="mainContent">
+    <div class="empty-state">
+        <div class="empty-state-icon">...</div>
+        <div>Loading content...</div>
+    </div>
+</main>
+
+<!-- Document Viewer Overlay -->
+<div class="viewer-overlay" id="viewerOverlay">
+    <div class="viewer-toolbar">
+        <button class="btn-back" id="btnBack">
+            <span>&#8592;</span> Back
+        </button>
+        <div class="viewer-title" id="viewerTitle"></div>
+        <div class="progress-btns">
+            <button class="btn-progress" id="btnInProgress" data-status="in_progress">In Progress</button>
+            <button class="btn-progress" id="btnCompleted" data-status="completed">Completed</button>
+        </div>
+    </div>
+    <iframe class="viewer-iframe" id="viewerIframe"></iframe>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    // --- Embedded Data (no server needed) ---
+    const REGISTRY_DATA = [
+  {"id":1,"filename":"bronze_to_silver_pyspark_cheatsheet.html","domain":"domain_1_processing","domain_name":"Data Processing & Transformations","domain_weight":31,"title":"Bronze to Silver PySpark Cheat Sheet","description":"Medallion architecture, PySpark transformations, bronze to silver patterns","tags":["pyspark","medallion","bronze","silver","transformations"]},
+  {"id":2,"filename":"dab_cicd_cheatsheet.html","domain":"domain_3_pipelines","domain_name":"Productionizing Pipelines","domain_weight":18,"title":"Databricks Asset Bundles \u2014 CI/CD","description":"DABs for CI/CD, deployment configs, bundle structure, GitHub Actions","tags":["dab","ci-cd","deployment","asset-bundles"]},
+  {"id":3,"filename":"databricks-autoloader-cheat-sheet.html","domain":"domain_2_ingestion","domain_name":"Development & Ingestion","domain_weight":30,"title":"AutoLoader & COPY INTO \u2014 Complete","description":"Auto Loader configuration, schema evolution, COPY INTO patterns","tags":["autoloader","copy-into","ingestion","schema-evolution","streaming"]},
+  {"id":4,"filename":"databricks_exam_cheatsheet_2026_complete.html","domain":"cross_domain","domain_name":"Cross-Domain Reference","domain_weight":0,"title":"2026 Exam Master Cheat Sheet","description":"Comprehensive cross-domain exam reference covering all 5 domains","tags":["exam","master","comprehensive","all-domains"]},
+  {"id":5,"filename":"databricks_lakehouse_federation.html","domain":"domain_2_ingestion","domain_name":"Development & Ingestion","domain_weight":30,"title":"Lakehouse Federation","description":"Querying external databases via federation, foreign catalogs","tags":["federation","external-data","foreign-catalog"]},
+  {"id":6,"filename":"delta_lake_optimization_cheatsheet.html","domain":"domain_1_processing","domain_name":"Data Processing & Transformations","domain_weight":31,"title":"Delta Lake Optimization","description":"Z-ordering, compaction, vacuum, caching, and Delta Lake performance tuning","tags":["delta-lake","optimization","z-order","vacuum","compaction"]},
+  {"id":7,"filename":"exam_weights.html","domain":"cross_domain","domain_name":"Cross-Domain Reference","domain_weight":0,"title":"Exam Domain Weights","description":"Breakdown of exam domain percentages and focus areas","tags":["exam","weights","domains","percentages"]},
+  {"id":8,"filename":"for_each_sql_rows.html","domain":"domain_1_processing","domain_name":"Data Processing & Transformations","domain_weight":31,"title":"FOR EACH SQL Rows","description":"Iterating over SQL result sets with FOR EACH patterns","tags":["sql","for-each","iteration","lakeflow"]},
+  {"id":9,"filename":"full_pipeline_annotated.html","domain":"domain_1_processing","domain_name":"Data Processing & Transformations","domain_weight":31,"title":"Full Pipeline \u2014 Annotated","description":"Complete annotated data pipeline from ingestion to gold layer","tags":["pipeline","end-to-end","annotated","medallion"]},
+  {"id":10,"filename":"lakeflow_cheatsheet.html","domain":"domain_4_governance","domain_name":"Data Governance & Quality","domain_weight":11,"title":"LakeFlow Overview","description":"LakeFlow platform overview, governance integration, pipeline quality","tags":["lakeflow","overview","governance","quality"]},
+  {"id":11,"filename":"lakeflow_connect_certification_cheat_sheet.html","domain":"domain_2_ingestion","domain_name":"Development & Ingestion","domain_weight":30,"title":"LakeFlow Connect \u2014 Certification Focus","description":"Certification-focused LakeFlow Connect patterns and exam tips","tags":["lakeflow","connect","certification","exam-tips"]},
+  {"id":12,"filename":"lakeflow_connect_cheatsheet.html","domain":"domain_2_ingestion","domain_name":"Development & Ingestion","domain_weight":30,"title":"LakeFlow Connect","description":"LakeFlow Connect for data ingestion from external sources","tags":["lakeflow","connect","ingestion","connectors"]},
+  {"id":13,"filename":"lakeflow_declarative_pipelines_cheatsheet.html","domain":"domain_3_pipelines","domain_name":"Productionizing Pipelines","domain_weight":18,"title":"LakeFlow Declarative Pipelines (DLT)","description":"Delta Live Tables, expectations, materialized views, streaming tables","tags":["dlt","declarative","pipelines","expectations","streaming-tables"]},
+  {"id":14,"filename":"lakeflow_jobs_cheatsheet.html","domain":"domain_3_pipelines","domain_name":"Productionizing Pipelines","domain_weight":18,"title":"LakeFlow Jobs Cheat Sheet","description":"Job orchestration, task dependencies, scheduling in LakeFlow","tags":["lakeflow","jobs","orchestration","scheduling"]},
+  {"id":15,"filename":"lakeflow_jobs_dynamic_values.html","domain":"domain_3_pipelines","domain_name":"Productionizing Pipelines","domain_weight":18,"title":"LakeFlow Jobs \u2014 Dynamic Values","description":"Using dynamic values and parameters in LakeFlow job configurations","tags":["lakeflow","jobs","dynamic-values","parameters"]},
+  {"id":16,"filename":"lakeflow_jobs_static_solution.html","domain":"domain_3_pipelines","domain_name":"Productionizing Pipelines","domain_weight":18,"title":"LakeFlow Jobs \u2014 Static Solution","description":"Static configuration patterns for LakeFlow job workflows","tags":["lakeflow","jobs","static","configuration"]},
+  {"id":17,"filename":"lakehouse_cheat_sheet.html","domain":"domain_2_ingestion","domain_name":"Development & Ingestion","domain_weight":30,"title":"Lakehouse Architecture Cheat Sheet","description":"Lakehouse fundamentals, Delta Lake basics, architecture patterns","tags":["lakehouse","delta-lake","architecture"]},
+  {"id":18,"filename":"lakehouse_federation_cheatsheet.html","domain":"domain_2_ingestion","domain_name":"Development & Ingestion","domain_weight":30,"title":"Lakehouse Federation Cheat Sheet","description":"Quick reference for federation setup, connections, and query patterns","tags":["federation","connections","cheatsheet"]},
+  {"id":19,"filename":"large_array_sql_tables.html","domain":"domain_1_processing","domain_name":"Data Processing & Transformations","domain_weight":31,"title":"Large Array SQL Tables","description":"Working with arrays and complex types in Databricks SQL","tags":["sql","arrays","complex-types","explode"]},
+  {"id":20,"filename":"large_data_arrays_notebooks.html","domain":"domain_1_processing","domain_name":"Data Processing & Transformations","domain_weight":31,"title":"Large Data Arrays in Notebooks","description":"Handling large array data in Databricks notebooks with PySpark","tags":["notebooks","arrays","pyspark","data-processing"]},
+  {"id":21,"filename":"platform_io_reference.html","domain":"domain_5_platform","domain_name":"Databricks Intelligence Platform","domain_weight":10,"title":"Platform I/O Reference","description":"Databricks platform input/output reference, workspace management","tags":["platform","io","workspace","reference"]},
+  {"id":22,"filename":"schedules_triggers_lakeflow.html","domain":"domain_3_pipelines","domain_name":"Productionizing Pipelines","domain_weight":18,"title":"Schedules & Triggers in LakeFlow","description":"Cron schedules, file arrival triggers, continuous mode in LakeFlow","tags":["schedules","triggers","cron","continuous"]},
+  {"id":23,"filename":"sql_first_row_output.html","domain":"domain_1_processing","domain_name":"Data Processing & Transformations","domain_weight":31,"title":"SQL First Row Output","description":"SQL patterns for extracting first rows and ranking in Databricks","tags":["sql","window-functions","ranking"]},
+  {"id":24,"filename":"sql_rows_as_output.html","domain":"domain_1_processing","domain_name":"Data Processing & Transformations","domain_weight":31,"title":"SQL Rows as Output","description":"SQL output patterns and result handling in Databricks","tags":["sql","output","results"]},
+  {"id":25,"filename":"sql_warehouse_cheatsheet.html","domain":"domain_5_platform","domain_name":"Databricks Intelligence Platform","domain_weight":10,"title":"SQL Warehouse Cheat Sheet","description":"SQL warehouses, sizing, serverless, query optimization","tags":["sql-warehouse","serverless","query-optimization"]},
+  {"id":26,"filename":"unity-catalog-cheat-sheet.html","domain":"domain_4_governance","domain_name":"Data Governance & Quality","domain_weight":11,"title":"Unity Catalog \u2014 Complete","description":"Three-level namespace, permissions, data lineage, row/column security","tags":["unity-catalog","permissions","lineage","security"]},
+  {"id":27,"filename":"unity-catalog-cheat-sheet-md.html","domain":"domain_4_governance","domain_name":"Data Governance & Quality","domain_weight":11,"title":"Unity Catalog \u2014 Markdown Reference","description":"Quick-reference Unity Catalog patterns in markdown format","tags":["unity-catalog","reference","permissions"]},
+  {"id":28,"filename":"unity_catalog_udf_cheat_sheet.html","domain":"domain_4_governance","domain_name":"Data Governance & Quality","domain_weight":11,"title":"Unity Catalog UDFs","description":"User-defined functions in Unity Catalog, Python UDFs, SQL UDFs","tags":["unity-catalog","udf","python-udf","sql-udf"]}
+];
+
+    const DOMAIN_DATA = [
+  {"key":"domain_1_processing","name":"Data Processing & Transformations","weight":31,"doc_count":8},
+  {"key":"domain_2_ingestion","name":"Development & Ingestion","weight":30,"doc_count":6},
+  {"key":"domain_3_pipelines","name":"Productionizing Pipelines","weight":18,"doc_count":6},
+  {"key":"domain_4_governance","name":"Data Governance & Quality","weight":11,"doc_count":4},
+  {"key":"domain_5_platform","name":"Databricks Intelligence Platform","weight":10,"doc_count":2},
+  {"key":"cross_domain","name":"Cross-Domain Reference","weight":0,"doc_count":2}
+];
+
+    // --- State ---
+    const STORAGE_KEY = 'dbstudy_progress';
+    let allDocs = REGISTRY_DATA;
+    let domains = DOMAIN_DATA;
+    let activeDomain = 'all';
+    let activeProgress = 'all';
+    let searchResults = null;
+    let currentDoc = null;
+
+    // --- Progress Persistence (localStorage) ---
+    function loadProgress() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        } catch { return {}; }
+    }
+
+    function saveProgress(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function getDocStatus(docId) {
+        const p = loadProgress();
+        return (p[docId] && p[docId].status) || 'not_started';
+    }
+
+    function setDocStatus(docId, status) {
+        const p = loadProgress();
+        if (!p[docId]) p[docId] = {};
+        p[docId].status = status;
+        p[docId].last_viewed = new Date().toISOString();
+        saveProgress(p);
+    }
+
+    function markViewed(docId) {
+        const p = loadProgress();
+        if (!p[docId]) p[docId] = {};
+        p[docId].last_viewed = new Date().toISOString();
+        if (!p[docId].status) p[docId].status = 'not_started';
+        saveProgress(p);
+    }
+
+    // --- Client-Side Search ---
+    function searchDocs(query) {
+        const q = query.toLowerCase();
+        const results = [];
+        for (const doc of allDocs) {
+            let score = 0;
+            if (doc.title.toLowerCase().includes(q)) score += 10;
+            if (doc.description.toLowerCase().includes(q)) score += 5;
+            for (const tag of doc.tags) {
+                if (tag.toLowerCase().includes(q)) { score += 3; break; }
+            }
+            if (score > 0) results.push({...doc, relevance: score});
+        }
+        results.sort((a, b) => b.relevance - a.relevance);
+        return results;
+    }
+
+    // --- Rendering ---
+    function getCompletedCount() {
+        const p = loadProgress();
+        return allDocs.filter(d => p[d.id] && p[d.id].status === 'completed').length;
+    }
+
+    function updateGlobalProgress() {
+        const total = allDocs.length;
+        const done = getCompletedCount();
+        const pct = total > 0 ? (done / total * 100) : 0;
+        document.getElementById('globalProgressBar').style.width = pct + '%';
+        document.getElementById('globalProgressText').textContent = done + '/' + total + ' completed';
+    }
+
+    function buildDomainFilters() {
+        const container = document.getElementById('domainFilters');
+        container.innerHTML = '<button class="filter-tab active" data-domain="all">All</button>';
+        domains.forEach(d => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-tab';
+            btn.dataset.domain = d.key;
+            btn.textContent = d.name.split(' ').slice(0, 2).join(' ');
+            if (d.weight > 0) btn.textContent += ' (' + d.weight + '%)';
+            container.appendChild(btn);
+        });
+        bindDomainFilters();
+    }
+
+    function bindDomainFilters() {
+        document.querySelectorAll('#domainFilters .filter-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#domainFilters .filter-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeDomain = btn.dataset.domain;
+                searchResults = null;
+                document.getElementById('searchInput').value = '';
+                renderContent();
+            });
+        });
+    }
+
+    function bindProgressFilters() {
+        document.querySelectorAll('#progressFilter .filter-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#progressFilter .filter-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeProgress = btn.dataset.progress;
+                renderContent();
+            });
+        });
+    }
+
+    function filterDocs(docs) {
+        let filtered = docs;
+        if (activeDomain !== 'all') {
+            filtered = filtered.filter(d => d.domain === activeDomain);
+        }
+        if (activeProgress !== 'all') {
+            filtered = filtered.filter(d => getDocStatus(d.id) === activeProgress);
+        }
+        return filtered;
+    }
+
+    function renderDocCard(doc) {
+        const status = getDocStatus(doc.id);
+        const card = document.createElement('div');
+        card.className = 'doc-card';
+        card.addEventListener('click', () => openDocument(doc));
+
+        const tagsHtml = doc.tags.slice(0, 4).map(t =>
+            '<span class="tag-pill">' + escHtml(t) + '</span>'
+        ).join('');
+
+        card.innerHTML = `
+            <div class="doc-card-title">${escHtml(doc.title)}</div>
+            <div class="doc-card-desc">${escHtml(doc.description)}</div>
+            <div class="doc-card-footer">
+                ${tagsHtml}
+                <span class="status-dot ${status.replace('_', '-')}" title="${status.replace('_', ' ')}"></span>
+            </div>
+        `;
+        return card;
+    }
+
+    function renderContent() {
+        const main = document.getElementById('mainContent');
+        main.innerHTML = '';
+
+        if (searchResults !== null) {
+            renderSearchResults(main);
+            return;
+        }
+
+        const domainOrder = domains.map(d => d.key);
+        const filtered = filterDocs(allDocs);
+
+        if (filtered.length === 0) {
+            main.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128269;</div><div>No documents match your filters</div></div>';
+            updateGlobalProgress();
+            return;
+        }
+
+        const groups = {};
+        filtered.forEach(doc => {
+            if (!groups[doc.domain]) groups[doc.domain] = [];
+            groups[doc.domain].push(doc);
+        });
+
+        domainOrder.forEach(key => {
+            if (!groups[key]) return;
+            const domainInfo = domains.find(d => d.key === key);
+            if (!domainInfo) return;
+            const section = createDomainSection(domainInfo, groups[key]);
+            main.appendChild(section);
+        });
+
+        updateGlobalProgress();
+    }
+
+    function createDomainSection(domainInfo, docs) {
+        const section = document.createElement('div');
+        section.className = 'domain-section';
+
+        const domainDone = docs.filter(d => getDocStatus(d.id) === 'completed').length;
+
+        let weightBadge = '';
+        if (domainInfo.weight > 0) {
+            weightBadge = '<span class="domain-weight">' + domainInfo.weight + '% of exam</span>';
+        }
+
+        section.innerHTML = `
+            <div class="domain-header">
+                <span class="domain-name">${escHtml(domainInfo.name)}</span>
+                ${weightBadge}
+                <span class="domain-count">${docs.length} docs</span>
+                <span class="domain-progress">${domainDone}/${docs.length} done</span>
+            </div>
+        `;
+
+        const grid = document.createElement('div');
+        grid.className = 'cards-grid';
+        docs.forEach(doc => grid.appendChild(renderDocCard(doc)));
+        section.appendChild(grid);
+        return section;
+    }
+
+    function renderSearchResults(main) {
+        const filtered = filterDocs(searchResults);
+        const header = document.createElement('div');
+        header.className = 'search-results-header';
+        header.innerHTML = 'Found <span>' + filtered.length + '</span> result' + (filtered.length !== 1 ? 's' : '');
+        main.appendChild(header);
+
+        if (filtered.length === 0) {
+            main.innerHTML += '<div class="empty-state"><div class="empty-state-icon">&#128269;</div><div>No results match your filters</div></div>';
+            return;
+        }
+
+        const grid = document.createElement('div');
+        grid.className = 'cards-grid';
+        filtered.forEach(doc => grid.appendChild(renderDocCard(doc)));
+        main.appendChild(grid);
+        updateGlobalProgress();
+    }
+
+    // --- Document Viewer ---
+    function openDocument(doc) {
+        currentDoc = doc;
+        markViewed(doc.id);
+        const overlay = document.getElementById('viewerOverlay');
+        const iframe = document.getElementById('viewerIframe');
+        const title = document.getElementById('viewerTitle');
+
+        title.textContent = doc.title;
+        // Use relative path to content files
+        iframe.src = doc.domain + '/' + doc.filename;
+        overlay.classList.add('active');
+        updateViewerButtons();
+    }
+
+    function closeViewer() {
+        const overlay = document.getElementById('viewerOverlay');
+        const iframe = document.getElementById('viewerIframe');
+        overlay.classList.remove('active');
+        iframe.src = '';
+        currentDoc = null;
+        renderContent();
+    }
+
+    function updateViewerButtons() {
+        if (!currentDoc) return;
+        const status = getDocStatus(currentDoc.id);
+        const btnIp = document.getElementById('btnInProgress');
+        const btnDone = document.getElementById('btnCompleted');
+
+        btnIp.className = 'btn-progress' + (status === 'in_progress' ? ' active-in-progress' : '');
+        btnDone.className = 'btn-progress' + (status === 'completed' ? ' active-completed' : '');
+    }
+
+    function setViewerStatus(status) {
+        if (!currentDoc) return;
+        const current = getDocStatus(currentDoc.id);
+        if (current === status) {
+            setDocStatus(currentDoc.id, 'not_started');
+        } else {
+            setDocStatus(currentDoc.id, status);
+        }
+        updateViewerButtons();
+        updateGlobalProgress();
+    }
+
+    // --- Search ---
+    let searchTimeout = null;
+    function handleSearch(e) {
+        const q = e.target.value.trim();
+        clearTimeout(searchTimeout);
+        if (q.length === 0) {
+            searchResults = null;
+            renderContent();
+            return;
+        }
+        if (q.length < 2) return;
+        searchTimeout = setTimeout(() => {
+            searchResults = searchDocs(q);
+            renderContent();
+        }, 200);
+    }
+
+    // --- Keyboard ---
+    function handleKeydown(e) {
+        if (e.key === 'Escape' && document.getElementById('viewerOverlay').classList.contains('active')) {
+            closeViewer();
+        }
+    }
+
+    // --- Utilities ---
+    function escHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // --- Init ---
+    function init() {
+        buildDomainFilters();
+        bindProgressFilters();
+        renderContent();
+
+        document.getElementById('searchInput').addEventListener('input', handleSearch);
+        document.getElementById('btnBack').addEventListener('click', closeViewer);
+        document.getElementById('btnInProgress').addEventListener('click', () => setViewerStatus('in_progress'));
+        document.getElementById('btnCompleted').addEventListener('click', () => setViewerStatus('completed'));
+        document.addEventListener('keydown', handleKeydown);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>

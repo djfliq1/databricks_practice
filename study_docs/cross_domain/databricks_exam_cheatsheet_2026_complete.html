@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATABRICKS CERTIFIED DATA ENGINEER ASSOCIATE 2026 | COMPLETE EXAM REFERENCE</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --carbon: #0a0a0a;
+            --carbon-light: #161618;
+            --carbon-medium: #262626;
+            --carbon-border: #393939;
+            --cyan-primary: #00d4ff;
+            --cyan-secondary: #0ea5e9;
+            --cyan-dim: #164e63;
+            --amber: #fbbf24;
+            --amber-dim: #451a03;
+            --green: #22c55e;
+            --green-dim: #052e16;
+            --red: #ef4444;
+            --red-dim: #450a0a;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-dim: #64748b;
+            
+            /* Terminal effects */
+            --terminal-glow: 0 0 10px var(--cyan-primary);
+            --terminal-border: 1px solid var(--cyan-primary);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Sans', system-ui;
+            background: var(--carbon);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Terminal grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 30px;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, var(--carbon-light) 0%, var(--carbon-medium) 100%);
+            border: var(--terminal-border);
+            border-radius: 12px;
+            box-shadow: var(--terminal-glow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan-primary), transparent);
+            animation: scan 3s infinite;
+        }
+        
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(1.8rem, 4vw, 3.2rem);
+            font-weight: 700;
+            color: var(--cyan-primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px var(--cyan-primary);
+        }
+        
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        /* Navigation */
+        .nav-container {
+            margin-bottom: 40px;
+        }
+        
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 15px;
+            background: var(--carbon-light);
+            border: 1px solid var(--carbon-border);
+            border-radius: 8px;
+        }
+        
+        .nav-btn {
+            font-family: 'JetBrains Mono', monospace;
+            padding: 12px 20px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--carbon-border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-btn:hover {
+            color: var(--cyan-primary);
+            border-color: var(--cyan-primary);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .nav-btn.active {
+            background: var(--cyan-dim);
+            color: var(--cyan-primary);
+            border-color: var(--cyan-primary);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        }
+        
+        /* Sections */
+        .section {
+            display: none;
+            background: var(--carbon-light);
+            border: 1px solid var(--carbon-border);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .section.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.2rem;
+            color: var(--cyan-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--cyan-primary);
+            position: relative;
+        }
+        
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--amber);
+            animation: underlineGrow 1s ease-out 0.5s forwards;
+        }
+        
+        @keyframes underlineGrow {
+            to { width: 100px; }
+        }
+        
+        /* Content blocks */
+        .content-block {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: var(--carbon-medium);
+            border: 1px solid var(--carbon-border);
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .content-block h3 {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--amber);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .content-block h4 {
+            color: var(--green);
+            font-size: 1.1rem;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+        }
+        
+        /* Code blocks */
+        .code-block {
+            background: var(--carbon);
+            border: 1px solid var(--carbon-border);
+            border-left: 4px solid var(--cyan-primary);
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block::before {
+            content: 'SQL';
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: var(--cyan-primary);
+            color: var(--carbon);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            color: var(--text-primary);
+        }
+        
+        /* Comments in code */
+        .code-comment {
+            color: var(--text-dim);
+        }
+        
+        /* Tables */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--carbon-medium);
+            border: 1px solid var(--carbon-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .comparison-table th {
+            background: var(--carbon);
+            color: var(--cyan-primary);
+            padding: 15px;
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--carbon-border);
+        }
+        
+        .comparison-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--carbon-border);
+            color: var(--text-secondary);
+        }
+        
+        .comparison-table tr:hover {
+            background: var(--carbon-light);
+        }
+        
+        /* Alert boxes */
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid;
+            position: relative;
+        }
+        
+        .alert-critical {
+            background: var(--red-dim);
+            border-left-color: var(--red);
+            color: var(--text-primary);
+        }
+        
+        .alert-warning {
+            background: var(--amber-dim);
+            border-left-color: var(--amber);
+            color: var(--text-primary);
+        }
+        
+        .alert-success {
+            background: var(--green-dim);
+            border-left-color: var(--green);
+            color: var(--text-primary);
+        }
+        
+        .alert-info {
+            background: var(--cyan-dim);
+            border-left-color: var(--cyan-primary);
+            color: var(--text-primary);
+        }
+        
+        .alert strong {
+            color: inherit;
+            font-weight: 700;
+        }
+        
+        /* Lists */
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        
+        /* Interactive elements */
+        .toggle-section {
+            cursor: pointer;
+            user-select: none;
+            padding: 15px;
+            background: var(--carbon-medium);
+            border: 1px solid var(--carbon-border);
+            border-radius: 6px;
+            margin: 15px 0;
+            transition: all 0.2s ease;
+        }
+        
+        .toggle-section:hover {
+            border-color: var(--cyan-primary);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+        
+        .toggle-content {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--carbon-border);
+        }
+        
+        .toggle-content.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Highlight text */
+        .highlight {
+            background: linear-gradient(120deg, var(--amber), var(--amber));
+            background-size: 100% 30%;
+            background-position: 0 85%;
+            background-repeat: no-repeat;
+            color: var(--carbon);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        /* Exam points */
+        .exam-point {
+            background: var(--carbon);
+            border: 1px solid var(--green);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid var(--green);
+        }
+        
+        .exam-point::before {
+            content: '🎯 EXAM CRITICAL: ';
+            color: var(--green);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            margin-top: 60px;
+            background: var(--carbon-light);
+            border: var(--terminal-border);
+            border-radius: 12px;
+            box-shadow: var(--terminal-glow);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .section {
+                padding: 25px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .nav {
+                flex-direction: column;
+            }
+            
+            .nav-btn {
+                width: 100%;
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--carbon-medium);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--cyan-primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cyan-secondary);
+        }
+        
+        /* Selection */
+        ::selection {
+            background: var(--cyan-primary);
+            color: var(--carbon);
+        }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Databricks Certified Data Engineer Associate 2026</h1>
+            <p class="subtitle">COMPLETE EXAMINATION REFERENCE | SQL WAREHOUSES • SCHEDULING • PROFILING • CACHING</p>
+        </div>
+        
+        <div class="nav-container">
+            <nav class="nav">
+                <button class="nav-btn active" data-section="warehouses">SQL Warehouses</button>
+                <button class="nav-btn" data-section="scheduling">Query Scheduling</button>
+                <button class="nav-btn" data-section="profiling">Profiling & Monitoring</button>
+                <button class="nav-btn" data-section="caching">Query Caching</button>
+                <button class="nav-btn" data-section="exam-prep">Exam Preparation</button>
+            </nav>
+        </div>
+        
+        <!-- SQL WAREHOUSES SECTION -->
+        <div id="warehouses" class="section active">
+            <h2>SQL Warehouses Architecture</h2>
+            
+            <div class="content-block">
+                <h3>Warehouse Types Comprehensive Comparison</h3>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Serverless (Recommended)</th>
+                            <th>Pro</th>
+                            <th>Classic (Legacy)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Startup Time</strong></td>
+                            <td>2-6 seconds</td>
+                            <td>~4 minutes</td>
+                            <td>~4 minutes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Photon Engine</strong></td>
+                            <td>✅ Included</td>
+                            <td>✅ Included</td>
+                            <td>❌ Not available</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Predictive I/O</strong></td>
+                            <td>✅ Included</td>
+                            <td>✅ Included</td>
+                            <td>❌ Not available</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Remote Result Cache</strong></td>
+                            <td>✅ Unique feature</td>
+                            <td>❌ Not available</td>
+                            <td>❌ Not available</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Management</strong></td>
+                            <td>Fully managed by Databricks</td>
+                            <td>Customer cloud account</td>
+                            <td>Customer cloud account</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Scaling</strong></td>
+                            <td>Dynamic auto-scaling</td>
+                            <td>Manual configuration</td>
+                            <td>Manual configuration</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Networking</strong></td>
+                            <td>Databricks-managed</td>
+                            <td>Customer VPC/VNET</td>
+                            <td>Customer VPC/VNET</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cost Model</strong></td>
+                            <td>Pay-per-query execution</td>
+                            <td>Instance runtime cost</td>
+                            <td>Instance runtime cost</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Use Case</strong></td>
+                            <td>Variable workloads, BI dashboards</td>
+                            <td>Predictable workloads, custom networking</td>
+                            <td>Legacy support only</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="exam-point">
+                    Remote Result Cache is ONLY available on Serverless warehouses. This is a major exam differentiator.
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>SQL Editor 2026 Migration (Critical Exam Topic)</h3>
+                
+                <div class="alert alert-critical">
+                    <strong>LEGACY EDITOR RETIREMENT:</strong> July 2026 - All legacy SQL Editor features will be discontinued. Parameter syntax changes from {{mustache}} to :named_params.
+                </div>
+                
+                <h4>Parameter Syntax Migration</h4>
+                <div class="code-block">
+<pre>-- OLD Legacy Editor (retiring July 2026)
+SELECT product_name, category, price 
+FROM databricks_clar.silver.products_enriched
+WHERE category = '{{product_category}}'
+  AND price >= {{min_price}}
+ORDER BY price DESC;
+
+-- NEW SQL Editor (2026 standard)
+SELECT product_name, category, price 
+FROM databricks_clar.silver.products_enriched
+WHERE category = :product_category
+  AND price >= :min_price
+ORDER BY price DESC;</pre>
+                </div>
+                
+                <h4>Query Snippets (NEW 2026 Feature)</h4>
+                <p>Reusable query fragments with tab navigation and autocomplete integration.</p>
+                
+                <div class="code-block">
+<pre>-- Query Snippet: sales_analysis_template
+-- Access: SQL Editor → Kebab menu → View → Query snippets
+WITH ${1:base_table} AS (
+  SELECT 
+    ${2:date_column} as report_date,
+    ${3:category_column} as category,
+    ${4:SUM(amount_column)} as total_amount
+  FROM ${5:table_name}
+  WHERE ${2:date_column} >= ${6:'2026-01-01'}
+  GROUP BY ${2:date_column}, ${3:category_column}
+)
+SELECT 
+  category,
+  COUNT(*) as record_count,
+  AVG(total_amount) as avg_amount,
+  SUM(total_amount) as total_revenue
+FROM ${1:base_table}
+GROUP BY category
+ORDER BY total_revenue DESC${0}</pre>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Snippet Syntax:</strong><br>
+                    • ${1:placeholder} - First tab stop with placeholder text<br>
+                    • ${1:default_value} - Tab stop with default value<br>
+                    • ${0} - Final cursor position<br>
+                    • Autocomplete: Type 3+ characters or Ctrl+Space
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>Warehouse Configuration Best Practices</h3>
+                
+                <h4>Serverless Configuration</h4>
+                <ul>
+                    <li><strong>Auto-scaling:</strong> Dynamic based on query load</li>
+                    <li><strong>Cluster sizes:</strong> 2X-Small to 4X-Large available</li>
+                    <li><strong>Concurrency:</strong> Up to 12 concurrent queries per cluster</li>
+                    <li><strong>Auto-stop:</strong> 10 minutes default (configurable)</li>
+                </ul>
+                
+                <h4>Pro Warehouse Configuration</h4>
+                <ul>
+                    <li><strong>Cluster sizing:</strong> Manual selection (Small to 4X-Large)</li>
+                    <li><strong>Min/Max clusters:</strong> Configure scaling range</li>
+                    <li><strong>Auto-stop timer:</strong> 10 minutes to 120 minutes</li>
+                    <li><strong>Network access:</strong> VPC/Subnet configuration</li>
+                </ul>
+                
+                <div class="code-block">
+<pre>-- Test warehouse performance with sample query
+WITH performance_test AS (
+  SELECT 
+    s.date,
+    s.store_id,
+    s.product_id,
+    s.total_amount,
+    p.category,
+    st.region
+  FROM databricks_clar.silver.sales_enriched s
+  INNER JOIN databricks_clar.silver.products_enriched p 
+    ON s.product_id = p.product_id
+  INNER JOIN databricks_clar.silver.stores_enriched st
+    ON s.store_id = st.store_id
+  WHERE s.date >= CURRENT_DATE - INTERVAL 30 DAYS
+)
+SELECT 
+  region,
+  category,
+  COUNT(*) as transaction_count,
+  SUM(total_amount) as total_revenue,
+  AVG(total_amount) as avg_transaction_value
+FROM performance_test
+GROUP BY region, category
+ORDER BY total_revenue DESC;</pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- QUERY SCHEDULING SECTION -->
+        <div id="scheduling" class="section">
+            <h2>Query Scheduling & Automation</h2>
+            
+            <div class="content-block">
+                <h3>Four Scheduling Methods Overview</h3>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Access Point</th>
+                            <th>Best Use Case</th>
+                            <th>Features</th>
+                            <th>Limitations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Direct Query Scheduling</strong></td>
+                            <td>SQL Editor → Schedule → Add schedule</td>
+                            <td>Simple recurring queries</td>
+                            <td>Cron syntax, warehouse selection</td>
+                            <td>Single query only</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SQL Alerts</strong></td>
+                            <td>Alerts sidebar → Create Alert</td>
+                            <td>Threshold monitoring</td>
+                            <td>Conditions, notifications, history</td>
+                            <td>No parameters support</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Lakeflow Jobs</strong></td>
+                            <td>Jobs & Pipelines → Create Job</td>
+                            <td>Complex workflows</td>
+                            <td>Multiple tasks, dependencies</td>
+                            <td>More complex setup</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Materialized Views</strong></td>
+                            <td>CREATE MATERIALIZED VIEW</td>
+                            <td>Incremental data processing</td>
+                            <td>SCHEDULE, TRIGGER ON UPDATE</td>
+                            <td>Limited to view refreshes</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="exam-point">
+                    Alert schedule ≠ query schedule. These systems operate independently!
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>SQL Alerts Deep Dive (NEW 2026 Feature)</h3>
+                
+                <h4>Alert Components</h4>
+                <ul>
+                    <li><strong>Query:</strong> Must return a single numeric value</li>
+                    <li><strong>Schedule:</strong> Independent refresh frequency</li>
+                    <li><strong>Condition:</strong> Threshold comparison (>, <, =)</li>
+                    <li><strong>Notifications:</strong> Users, email, Slack, webhooks</li>
+                </ul>
+                
+                <h4>Alert States</h4>
+                <ul>
+                    <li><strong>TRIGGERED:</strong> Condition met on last execution</li>
+                    <li><strong>OK:</strong> Condition not met on last execution</li>
+                    <li><strong>ERROR:</strong> Error occurred during evaluation</li>
+                </ul>
+                
+                <div class="code-block">
+<pre>-- Alert Query: Daily Revenue Monitoring
+-- Returns single numeric value for threshold comparison
+SELECT 
+  SUM(s.total_amount) as daily_revenue
+FROM databricks_clar.silver.sales_enriched s
+WHERE s.date = CURRENT_DATE - INTERVAL 1 DAYS;
+
+-- Alert Configuration:
+-- Condition: daily_revenue < 50000
+-- Schedule: Every morning at 6:00 AM
+-- Notification: Finance team + Slack channel</pre>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>Parameter Limitation:</strong> SQL Alerts do not support parameters during the Public Preview period. Use dynamic expressions instead of parameterized queries.
+                </div>
+                
+                <div class="code-block">
+<pre>-- ❌ INCORRECT: Parameterized alert query
+SELECT COUNT(*) as missing_records
+FROM databricks_clar.silver.sales_enriched 
+WHERE date = :report_date;
+
+-- ✅ CORRECT: Dynamic expression for alerts
+SELECT COUNT(*) as missing_records
+FROM databricks_clar.silver.sales_enriched 
+WHERE date = CURRENT_DATE - INTERVAL 1 DAYS;</pre>
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>SQL Alert Tasks in Lakeflow Jobs (Beta 2026)</h3>
+                
+                <p>Major new feature for integrating alerts into workflow orchestration.</p>
+                
+                <h4>Key Features</h4>
+                <ul>
+                    <li>Available in Jobs & Pipelines → Add Task → SQL Alert</li>
+                    <li>Evaluates alerts independently from alert's own schedule</li>
+                    <li>Requires Serverless or Pro SQL warehouse</li>
+                    <li>Beta feature with ongoing improvements</li>
+                </ul>
+                
+                <div class="code-block">
+<pre>-- Multi-task job workflow example
+Job: "Daily Data Quality Pipeline"
+├── Task 1: Data Ingestion (SQL Task)
+│   └── COPY INTO silver tables from bronze
+├── Task 2: Quality Check (SQL Alert Task) 
+│   └── Alert: "Check for missing processDate"
+├── Task 3: Generate Summary (SQL Task - depends on Task 2)
+│   └── CREATE OR REPLACE TABLE daily_summary...
+└── Task 4: Anomaly Detection (SQL Alert Task)
+    └── Alert: "Revenue drop > 20%"</pre>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Task Dependencies:</strong> SQL Alert tasks can be dependencies for other tasks, enabling quality gates in data pipelines.
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>Advanced Scheduling Patterns</h3>
+                
+                <h4>Materialized View Scheduling</h4>
+                
+                <div class="code-block">
+<pre>-- Schedule-based refresh (time-driven)
+CREATE MATERIALIZED VIEW daily_category_performance
+SCHEDULE INTERVAL '4 HOURS'
+AS 
+SELECT 
+  category,
+  DATE(processDate) as report_date,
+  COUNT(*) as product_count,
+  AVG(price) as avg_price,
+  MAX(price) as max_price
+FROM databricks_clar.silver.products_enriched
+GROUP BY category, DATE(processDate);
+
+-- Trigger-based refresh (data-driven)
+CREATE MATERIALIZED VIEW sales_with_enrichment  
+TRIGGER ON UPDATE
+AS
+SELECT 
+  s.*,
+  p.category,
+  p.price,
+  st.region
+FROM databricks_clar.silver.sales_enriched s
+INNER JOIN databricks_clar.silver.products_enriched p 
+  ON s.product_id = p.product_id
+INNER JOIN databricks_clar.silver.stores_enriched st
+  ON s.store_id = st.store_id;</pre>
+                </div>
+                
+                <h4>Complex Workflow Example</h4>
+                
+                <div class="code-block">
+<pre>-- Daily ETL Pipeline with Error Handling
+-- Task 1: Data Quality Alert
+WITH data_quality_check AS (
+  SELECT COUNT(*) as null_count
+  FROM databricks_clar.silver.sales_enriched 
+  WHERE date IS NULL OR total_amount IS NULL
+)
+SELECT null_count FROM data_quality_check;
+-- Alert condition: null_count > 0
+
+-- Task 2: Business Logic (depends on Task 1 success)
+CREATE OR REPLACE TABLE daily_kpis AS
+WITH regional_metrics AS (
+  SELECT 
+    DATE(s.date) as report_date,
+    st.region,
+    COUNT(*) as transaction_count,
+    SUM(s.total_amount) as total_revenue,
+    AVG(s.total_amount) as avg_order_value,
+    COUNT(DISTINCT s.product_id) as unique_products
+  FROM databricks_clar.silver.sales_enriched s
+  INNER JOIN databricks_clar.silver.stores_enriched st
+    ON s.store_id = st.store_id
+  WHERE s.date = CURRENT_DATE - INTERVAL 1 DAYS
+  GROUP BY DATE(s.date), st.region
+),
+category_metrics AS (
+  SELECT 
+    DATE(s.date) as report_date,
+    p.category,
+    COUNT(*) as category_transactions,
+    SUM(s.total_amount) as category_revenue
+  FROM databricks_clar.silver.sales_enriched s
+  INNER JOIN databricks_clar.silver.products_enriched p
+    ON s.product_id = p.product_id
+  WHERE s.date = CURRENT_DATE - INTERVAL 1 DAYS
+  GROUP BY DATE(s.date), p.category
+)
+SELECT 
+  rm.report_date,
+  rm.region,
+  rm.transaction_count,
+  rm.total_revenue,
+  rm.avg_order_value,
+  rm.unique_products,
+  -- Add category metrics
+  (SELECT SUM(category_revenue) 
+   FROM category_metrics cm 
+   WHERE cm.report_date = rm.report_date) as total_category_revenue
+FROM regional_metrics rm;</pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PROFILING & MONITORING SECTION -->
+        <div id="profiling" class="section">
+            <h2>Query Profiling & Monitoring</h2>
+            
+            <div class="content-block">
+                <h3>Monitoring Ecosystem Overview</h3>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Tool</th>
+                            <th>Access Method</th>
+                            <th>Primary Use</th>
+                            <th>Key Metrics</th>
+                            <th>Permissions Required</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Query Profile</strong></td>
+                            <td>Query History → Click query</td>
+                            <td>Individual query analysis</td>
+                            <td>Execution plan, bottlenecks</td>
+                            <td>Query owner OR CAN MONITOR</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Warehouse Monitoring</strong></td>
+                            <td>SQL Warehouse → Monitoring tab</td>
+                            <td>Capacity planning</td>
+                            <td>Live stats, queue length</td>
+                            <td>CAN MONITOR or higher</td>
+                        </tr>
+                        <tr>
+                            <td><strong>System Tables</strong></td>
+                            <td>Query system.* tables</td>
+                            <td>Historical analysis</td>
+                            <td>Usage, costs, governance</td>
+                            <td>Table access permissions</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Notebook Performance</strong></td>
+                            <td>SQL cell → "See performance"</td>
+                            <td>Development debugging</td>
+                            <td>Cell-level execution times</td>
+                            <td>Notebook permissions</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="exam-point">
+                    Permission requirement: Query owner OR CAN MONITOR permission on the SQL warehouse that executed the query.
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>Query Profile Operations Deep Dive</h3>
+                
+                <h4>Core Operation Types (Memorize for Exam)</h4>
+                <ul>
+                    <li><strong>Scan:</strong> Data read from datasource, check for file pruning issues</li>
+                    <li><strong>Join:</strong> Rows combined from multiple relations, optimize join order</li>
+                    <li><strong>Union:</strong> Rows concatenated from relations with same schema</li>
+                    <li><strong>Shuffle:</strong> Data redistributed between executors (most expensive)</li>
+                    <li><strong>Hash/Sort:</strong> Grouping and aggregation operations</li>
+                </ul>
+                
+                <div class="code-block">
+<pre>-- Query designed to show interesting profile patterns
+-- This will demonstrate all major operation types
+WITH regional_sales AS (
+  -- SCAN operations: 3 table scans
+  SELECT 
+    st.region,
+    p.category,
+    DATE_TRUNC('month', s.date) as month,
+    SUM(s.total_amount) as monthly_revenue,
+    COUNT(*) as transaction_count
+  FROM databricks_clar.silver.sales_enriched s
+  -- JOIN operations: 2 INNER JOINs
+  INNER JOIN databricks_clar.silver.products_enriched p 
+    ON s.product_id = p.product_id
+  INNER JOIN databricks_clar.silver.stores_enriched st
+    ON s.store_id = st.store_id
+  WHERE s.date >= '2025-01-01'
+  -- SHUFFLE operation: GROUP BY aggregation
+  GROUP BY st.region, p.category, DATE_TRUNC('month', s.date)
+),
+ranked_performance AS (
+  SELECT 
+    region,
+    category,
+    month,
+    monthly_revenue,
+    -- SHUFFLE operation: Window functions
+    LAG(monthly_revenue) OVER (
+      PARTITION BY region, category 
+      ORDER BY month
+    ) as prev_month_revenue,
+    RANK() OVER (
+      PARTITION BY month 
+      ORDER BY monthly_revenue DESC
+    ) as revenue_rank
+  FROM regional_sales
+)
+-- SORT operation: Final ORDER BY
+SELECT * FROM ranked_performance
+ORDER BY month DESC, monthly_revenue DESC;</pre>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>Bottleneck Analysis:</strong><br>
+                    • File pruning issues → Scan nodes with 0 files pruned<br>
+                    • Expensive joins → Large row counts in join operations<br>
+                    • Shuffle operations → Data movement between nodes<br>
+                    • Enable verbose mode for complete operation details
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>System Tables for Governance</h3>
+                
+                <h4>Key System Tables</h4>
+                <ul>
+                    <li><strong>system.query.history:</strong> All query executions and performance</li>
+                    <li><strong>system.billing.usage:</strong> Cost and consumption analysis</li>
+                    <li><strong>system.compute.*:</strong> Cluster utilization data</li>
+                    <li><strong>system.workflow.*:</strong> Job performance metrics</li>
+                </ul>
+                
+                <div class="code-block">
+<pre>-- Top 10 slowest queries analysis (last 7 days)
+WITH slow_queries AS (
+  SELECT 
+    query_hash,
+    LEFT(query_text, 200) as query_preview,
+    user_name,
+    compute_name,
+    query_start_time,
+    total_duration_ms / 1000.0 as duration_seconds,
+    read_bytes / (1024 * 1024) as mb_read,
+    rows_read_count,
+    -- Calculate cost per query (approximate)
+    (total_duration_ms / 1000.0) * 0.0014 as estimated_cost_usd
+  FROM system.query.history
+  WHERE query_start_time >= CURRENT_DATE - INTERVAL 7 DAYS
+    AND total_duration_ms IS NOT NULL
+    AND query_text NOT LIKE 'SHOW%' -- Exclude metadata queries
+)
+SELECT 
+  query_hash,
+  query_preview,
+  user_name,
+  compute_name,
+  duration_seconds,
+  mb_read,
+  estimated_cost_usd,
+  CASE 
+    WHEN duration_seconds > 300 THEN 'Critical'
+    WHEN duration_seconds > 60 THEN 'Warning'
+    ELSE 'Normal'
+  END as performance_category
+FROM slow_queries
+ORDER BY duration_seconds DESC
+LIMIT 10;</pre>
+                </div>
+                
+                <div class="code-block">
+<pre>-- Warehouse utilization pattern analysis
+WITH hourly_usage AS (
+  SELECT 
+    compute_name,
+    DATE_TRUNC('hour', query_start_time) as hour,
+    COUNT(*) as query_count,
+    AVG(total_duration_ms) / 1000.0 as avg_duration_seconds,
+    SUM(read_bytes) / (1024 * 1024 * 1024) as total_gb_read,
+    COUNT(DISTINCT user_name) as unique_users
+  FROM system.query.history
+  WHERE query_start_time >= CURRENT_DATE - INTERVAL 7 DAYS
+    AND total_duration_ms IS NOT NULL
+  GROUP BY compute_name, DATE_TRUNC('hour', query_start_time)
+),
+usage_summary AS (
+  SELECT 
+    compute_name,
+    hour,
+    query_count,
+    avg_duration_seconds,
+    total_gb_read,
+    unique_users,
+    -- Peak detection
+    CASE 
+      WHEN query_count > AVG(query_count) OVER (PARTITION BY compute_name) * 1.5 
+      THEN 'Peak Hours'
+      WHEN query_count < AVG(query_count) OVER (PARTITION BY compute_name) * 0.5 
+      THEN 'Low Usage'
+      ELSE 'Normal'
+    END as usage_category
+  FROM hourly_usage
+)
+SELECT 
+  compute_name,
+  usage_category,
+  COUNT(*) as hours_in_category,
+  AVG(query_count) as avg_queries_per_hour,
+  AVG(total_gb_read) as avg_gb_per_hour
+FROM usage_summary
+GROUP BY compute_name, usage_category
+ORDER BY compute_name, usage_category;</pre>
+                </div>
+                
+                <div class="code-block">
+<pre>-- Daily cost analysis by warehouse and user
+SELECT 
+  usage_date,
+  usage_metadata.warehouse_name,
+  usage_metadata.user_name,
+  sku_name,
+  SUM(usage_quantity) as total_dbu,
+  SUM(dollar_amount) as total_cost_usd,
+  -- Cost per query calculation
+  CASE 
+    WHEN SUM(usage_quantity) > 0 
+    THEN SUM(dollar_amount) / SUM(usage_quantity) 
+    ELSE 0 
+  END as cost_per_dbu
+FROM system.billing.usage
+WHERE usage_date >= CURRENT_DATE - INTERVAL 30 DAYS
+  AND usage_metadata.warehouse_name IS NOT NULL
+GROUP BY 
+  usage_date, 
+  usage_metadata.warehouse_name,
+  usage_metadata.user_name,
+  sku_name
+HAVING SUM(dollar_amount) > 1.0 -- Focus on significant costs
+ORDER BY usage_date DESC, total_cost_usd DESC;</pre>
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>Performance Optimization Workflow</h3>
+                
+                <h4>Systematic Optimization Process</h4>
+                <ol>
+                    <li><strong>Identify:</strong> Query History → Sort by duration</li>
+                    <li><strong>Access Profile:</strong> Click query → View Query Profile</li>
+                    <li><strong>Analyze Bottlenecks:</strong> Look for expensive operations</li>
+                    <li><strong>Apply Optimizations:</strong> Query rewrite, indexing, partitioning</li>
+                    <li><strong>Verify Improvement:</strong> Re-run and compare profiles</li>
+                </ol>
+                
+                <div class="code-block">
+<pre>-- Example: Optimizing a slow aggregation query
+-- BEFORE: Inefficient query with full table scan
+SELECT 
+  category,
+  AVG(price) as avg_price,
+  COUNT(*) as product_count
+FROM databricks_clar.silver.products_enriched
+WHERE processDate >= '2026-01-01'
+GROUP BY category
+ORDER BY avg_price DESC;
+
+-- Check if table has proper partitioning
+DESCRIBE DETAIL databricks_clar.silver.products_enriched;
+
+-- OPTIMIZATION 1: Add Z-ORDER for better file pruning
+OPTIMIZE databricks_clar.silver.products_enriched 
+ZORDER BY (processDate, category);
+
+-- OPTIMIZATION 2: Use date partitioning if beneficial
+-- CREATE TABLE ... PARTITIONED BY (DATE(processDate))
+
+-- AFTER: Optimized query with same logic
+-- Should show better file pruning in Query Profile
+SELECT 
+  category,
+  AVG(price) as avg_price,
+  COUNT(*) as product_count
+FROM databricks_clar.silver.products_enriched
+WHERE processDate >= '2026-01-01'
+GROUP BY category
+ORDER BY avg_price DESC;</pre>
+                </div>
+                
+                <div class="alert alert-success">
+                    <strong>Optimization Tips:</strong><br>
+                    • Filter early and often to reduce data movement<br>
+                    • Use appropriate join types (broadcast vs shuffle)<br>
+                    • Consider data layout optimization (Z-ORDER, partitioning)<br>
+                    • Monitor cache effectiveness for repeated queries<br>
+                    • Use LIMIT clauses during development and testing
+                </div>
+            </div>
+        </div>
+        
+        <!-- QUERY CACHING SECTION -->
+        <div id="caching" class="section">
+            <h2>Query Caching Architecture</h2>
+            
+            <div class="content-block">
+                <h3>Multi-Layer Caching System</h3>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Cache Type</th>
+                            <th>Scope</th>
+                            <th>Lifetime</th>
+                            <th>Storage</th>
+                            <th>Warehouse Support</th>
+                            <th>Key Benefits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SQL UI Cache</strong></td>
+                            <td>Per-user</td>
+                            <td>7 days maximum</td>
+                            <td>Databricks filesystem</td>
+                            <td>All types</td>
+                            <td>Dashboard refresh speed</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Local Result Cache</strong></td>
+                            <td>Per-cluster</td>
+                            <td>24 hours from entry</td>
+                            <td>Cluster memory/local</td>
+                            <td>All types</td>
+                            <td>Identical query acceleration</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Remote Result Cache</strong></td>
+                            <td>Workspace-wide</td>
+                            <td>24 hours, survives restart</td>
+                            <td>Workspace system data</td>
+                            <td><strong>Serverless ONLY</strong></td>
+                            <td>Cross-warehouse sharing</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Disk Cache</strong></td>
+                            <td>Local cluster</td>
+                            <td>Until cluster restart</td>
+                            <td>Local SSD storage</td>
+                            <td>All types</td>
+                            <td>Data file acceleration</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="exam-point">
+                    Remote Result Cache is the PRIMARY differentiator for Serverless warehouses. It persists across restarts and is shared across all warehouses in a workspace.
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>Cache Lookup Hierarchy & Processing Flow</h3>
+                
+                <h4>Query Processing Steps</h4>
+                <ol>
+                    <li><strong>Local Cache Check:</strong> Search cluster memory for identical query</li>
+                    <li><strong>Remote Cache Check:</strong> Search workspace cache (Serverless only)</li>
+                    <li><strong>Execute Query:</strong> Full processing if no cache hit</li>
+                    <li><strong>Store Results:</strong> Cache results for future use</li>
+                </ol>
+                
+                <div class="code-block">
+<pre>-- Cache demonstration with Serverless warehouse
+-- First execution: Full processing, populates all caches
+SELECT 
+  category,
+  COUNT(*) as product_count,
+  AVG(price) as avg_price,
+  MIN(price) as min_price,
+  MAX(price) as max_price
+FROM databricks_clar.silver.products_enriched
+WHERE processDate >= '2026-04-01'
+GROUP BY category
+ORDER BY avg_price DESC;
+
+-- Second execution: Local cache hit (instant)
+-- Same query returns immediately from cluster memory
+
+-- Stop warehouse and start new Serverless warehouse
+-- Third execution: Remote cache hit (Serverless only!)
+-- NEW Serverless warehouse can use cached results from previous warehouse</pre>
+                </div>
+                
+                <h4>Cache States and Performance</h4>
+                <ul>
+                    <li><strong>Cold State:</strong> No cached data, full execution required (slowest)</li>
+                    <li><strong>Warm State:</strong> Disk cache available, faster data reads</li>
+                    <li><strong>Hot State:</strong> Result cache hit, instant return (fastest)</li>
+                </ul>
+            </div>
+            
+            <div class="content-block">
+                <h3>Cache Invalidation & Control</h3>
+                
+                <h4>Automatic Invalidation Triggers</h4>
+                <ul>
+                    <li><strong>Table Updates:</strong> Any DML operation (INSERT, UPDATE, DELETE, MERGE)</li>
+                    <li><strong>Schema Changes:</strong> ALTER TABLE operations</li>
+                    <li><strong>Time Expiration:</strong> 24-hour lifecycle for result caches, 7 days for UI cache</li>
+                    <li><strong>Cluster Restart:</strong> Disk cache cleared, remote cache survives (Serverless)</li>
+                    <li><strong>Dynamic Functions:</strong> CURRENT_TIMESTAMP(), CURRENT_DATE(), etc.</li>
+                </ul>
+                
+                <div class="code-block">
+<pre>-- Cache control for testing and benchmarking
+-- Disable caching for performance testing (testing only!)
+SET use_cached_result = false;
+
+-- Now run benchmark queries without cache interference
+WITH benchmark_query AS (
+  SELECT 
+    st.region,
+    COUNT(*) as store_count,
+    SUM(daily_revenue) as total_revenue,
+    AVG(daily_revenue) as avg_revenue_per_store
+  FROM (
+    SELECT 
+      s.store_id,
+      st.region,
+      SUM(s.total_amount) as daily_revenue
+    FROM databricks_clar.silver.sales_enriched s
+    INNER JOIN databricks_clar.silver.stores_enriched st 
+      ON s.store_id = st.store_id
+    WHERE s.date = DATE_SUB(CURRENT_DATE, 1) -- Static date for caching
+    GROUP BY s.store_id, st.region
+  ) daily_store_revenue
+  GROUP BY st.region
+)
+SELECT 
+  region,
+  store_count,
+  total_revenue,
+  avg_revenue_per_store,
+  RANK() OVER (ORDER BY total_revenue DESC) as revenue_rank
+FROM benchmark_query
+ORDER BY total_revenue DESC;
+
+-- Re-enable caching after benchmarking
+SET use_cached_result = true;</pre>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>Cache-Breaking Functions:</strong> Queries with CURRENT_TIMESTAMP(), CURRENT_DATE(), RAND(), or other non-deterministic functions will NOT use result cache.
+                </div>
+                
+                <div class="code-block">
+<pre>-- ❌ CACHE-UNFRIENDLY: Dynamic functions break caching
+SELECT 
+  category,
+  COUNT(*) as product_count,
+  CURRENT_TIMESTAMP() as query_time, -- Breaks caching!
+  CURRENT_DATE() as report_date      -- Breaks caching!
+FROM databricks_clar.silver.products_enriched
+WHERE processDate >= CURRENT_DATE - INTERVAL 30 DAYS -- Dynamic!
+GROUP BY category;
+
+-- ✅ CACHE-FRIENDLY: Static references enable caching
+SELECT 
+  category,
+  COUNT(*) as product_count,
+  '2026-04-24 15:30:00' as query_time, -- Static timestamp
+  '2026-04-24' as report_date          -- Static date
+FROM databricks_clar.silver.products_enriched
+WHERE processDate >= '2026-03-25'     -- Static date boundary
+GROUP BY category;</pre>
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>Advanced Caching Strategies</h3>
+                
+                <h4>Cache Warming Patterns</h4>
+                <p>Pre-populate caches with scheduled queries before peak usage hours.</p>
+                
+                <div class="code-block">
+<pre>-- Strategic cache warming query (schedule at 5:00 AM daily)
+-- Populates cache for common dashboard queries
+WITH daily_kpis AS (
+  SELECT 
+    DATE('2026-04-23') as report_date, -- Use yesterday's date
+    st.region,
+    p.category,
+    COUNT(*) as transaction_count,
+    SUM(s.total_amount) as revenue,
+    AVG(s.total_amount) as avg_order_value,
+    COUNT(DISTINCT s.product_id) as unique_products_sold,
+    COUNT(DISTINCT s.store_id) as active_stores
+  FROM databricks_clar.silver.sales_enriched s
+  INNER JOIN databricks_clar.silver.products_enriched p 
+    ON s.product_id = p.product_id
+  INNER JOIN databricks_clar.silver.stores_enriched st
+    ON s.store_id = st.store_id
+  WHERE DATE(s.date) = '2026-04-23' -- Static date for caching
+  GROUP BY st.region, p.category
+),
+regional_summary AS (
+  SELECT 
+    report_date,
+    region,
+    SUM(transaction_count) as total_transactions,
+    SUM(revenue) as total_revenue,
+    AVG(avg_order_value) as region_avg_order_value
+  FROM daily_kpis
+  GROUP BY report_date, region
+),
+category_summary AS (
+  SELECT 
+    report_date,
+    category,
+    SUM(transaction_count) as category_transactions,
+    SUM(revenue) as category_revenue
+  FROM daily_kpis
+  GROUP BY report_date, category
+)
+-- Cache all three result sets for dashboard consumption
+SELECT 'detailed' as summary_level, * FROM daily_kpis
+UNION ALL
+SELECT 'regional' as summary_level, region, total_transactions, total_revenue, region_avg_order_value, NULL as category, NULL as unique_products_sold, NULL as active_stores FROM regional_summary
+UNION ALL
+SELECT 'category' as summary_level, NULL as region, category_transactions, category_revenue, NULL as region_avg_order_value, category, NULL as unique_products_sold, NULL as active_stores FROM category_summary;</pre>
+                </div>
+                
+                <h4>Cache-Optimized Query Design</h4>
+                
+                <div class="code-block">
+<pre>-- Design Pattern: Reusable base queries for multiple dashboards
+-- Create cacheable foundation that multiple queries can build upon
+
+-- Base query (gets cached once)
+WITH sales_base_enriched AS (
+  SELECT 
+    s.date,
+    s.store_id,
+    s.product_id,
+    s.total_amount,
+    p.category,
+    p.price,
+    st.region
+  FROM databricks_clar.silver.sales_enriched s
+  INNER JOIN databricks_clar.silver.products_enriched p 
+    ON s.product_id = p.product_id
+  INNER JOIN databricks_clar.silver.stores_enriched st
+    ON s.store_id = st.store_id
+  WHERE s.date = '2026-04-23' -- Static date enables caching
+)
+-- Multiple dashboard queries can reuse this cached base
+-- Query 1: Regional performance
+SELECT 
+  region,
+  COUNT(*) as transactions,
+  SUM(total_amount) as revenue
+FROM sales_base_enriched
+GROUP BY region;
+
+-- Query 2: Category analysis (will reuse cached joins)
+-- SELECT category, AVG(total_amount), COUNT(*) FROM sales_base_enriched GROUP BY category;
+
+-- Query 3: Price tier analysis (will reuse cached joins)  
+-- SELECT 
+--   CASE 
+--     WHEN price < 100 THEN 'Budget'
+--     WHEN price < 300 THEN 'Mid-Range' 
+--     ELSE 'Premium'
+--   END as price_tier,
+--   COUNT(*), SUM(total_amount)
+-- FROM sales_base_enriched
+-- GROUP BY price_tier;</pre>
+                </div>
+                
+                <h4>Monitoring Cache Effectiveness</h4>
+                
+                <div class="code-block">
+<pre>-- Query to monitor cache hit rates and performance
+WITH cache_analysis AS (
+  SELECT 
+    DATE_TRUNC('hour', query_start_time) as hour,
+    compute_name,
+    COUNT(*) as total_queries,
+    -- Identify potential cache hits (very fast queries)
+    COUNT(CASE WHEN total_duration_ms < 1000 THEN 1 END) as fast_queries,
+    -- Average execution time
+    AVG(total_duration_ms) / 1000.0 as avg_duration_seconds,
+    -- Data processed
+    AVG(read_bytes) / (1024 * 1024) as avg_mb_read
+  FROM system.query.history
+  WHERE query_start_time >= CURRENT_DATE - INTERVAL 7 DAYS
+    AND total_duration_ms IS NOT NULL
+    AND compute_name IS NOT NULL
+  GROUP BY DATE_TRUNC('hour', query_start_time), compute_name
+)
+SELECT 
+  hour,
+  compute_name,
+  total_queries,
+  fast_queries,
+  ROUND((fast_queries * 100.0) / total_queries, 2) as cache_hit_rate_pct,
+  avg_duration_seconds,
+  avg_mb_read,
+  CASE 
+    WHEN (fast_queries * 100.0) / total_queries > 50 THEN 'High Cache Utilization'
+    WHEN (fast_queries * 100.0) / total_queries > 20 THEN 'Moderate Cache Utilization'
+    ELSE 'Low Cache Utilization'
+  END as cache_effectiveness
+FROM cache_analysis
+WHERE total_queries >= 5 -- Focus on meaningful sample sizes
+ORDER BY hour DESC, cache_hit_rate_pct DESC;</pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- EXAM PREPARATION SECTION -->
+        <div id="exam-prep" class="section">
+            <h2>Exam Preparation & Strategy</h2>
+            
+            <div class="content-block">
+                <h3>2026 Exam Focus Areas</h3>
+                
+                <div class="alert alert-critical">
+                    <strong>NEW 2026 FEATURES (High Exam Weight):</strong><br>
+                    • Remote Result Cache (Serverless exclusive)<br>
+                    • SQL Alert Tasks in Lakeflow Jobs (Beta)<br>
+                    • Query Snippets with tab navigation<br>
+                    • Legacy Editor retirement (July 2026)<br>
+                    • Parameter syntax migration (:named vs {{mustache}})
+                </div>
+                
+                <h4>Critical Exam Concepts by Domain</h4>
+                
+                <div class="toggle-section" onclick="toggleContent('warehouse-concepts')">
+                    <strong>📊 SQL Warehouses (25% weight)</strong>
+                    <div id="warehouse-concepts" class="toggle-content">
+                        <ul>
+                            <li><strong>Warehouse Types:</strong> Serverless (2-6s start) vs Pro (~4min) vs Classic (legacy)</li>
+                            <li><strong>Unique Features:</strong> Photon, Predictive I/O, Remote Cache (Serverless only)</li>
+                            <li><strong>2026 Migration:</strong> Legacy editor retirement, parameter syntax changes</li>
+                            <li><strong>Query Snippets:</strong> ${1:placeholder}, ${0} final position, autocomplete</li>
+                            <li><strong>Configuration:</strong> Auto-scaling, cluster sizing, network access</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="toggle-section" onclick="toggleContent('scheduling-concepts')">
+                    <strong>⏰ Query Scheduling (20% weight)</strong>
+                    <div id="scheduling-concepts" class="toggle-content">
+                        <ul>
+                            <li><strong>Four Methods:</strong> Direct, Alerts, Jobs, Materialized Views</li>
+                            <li><strong>SQL Alerts:</strong> Independent schedules, no parameters, condition thresholds</li>
+                            <li><strong>SQL Alert Tasks:</strong> Beta integration with Lakeflow Jobs</li>
+                            <li><strong>Dependencies:</strong> Task orchestration, quality gates</li>
+                            <li><strong>Limitations:</strong> Parameter restrictions, warehouse requirements</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="toggle-section" onclick="toggleContent('monitoring-concepts')">
+                    <strong>📈 Monitoring & Profiling (25% weight)</strong>
+                    <div id="monitoring-concepts" class="toggle-content">
+                        <ul>
+                            <li><strong>Three Layers:</strong> Query Profile, Warehouse Monitoring, System Tables</li>
+                            <li><strong>Operations:</strong> Scan, Join, Shuffle (expensive), Hash/Sort</li>
+                            <li><strong>Permissions:</strong> Query owner OR CAN MONITOR warehouse</li>
+                            <li><strong>Bottlenecks:</strong> File pruning, join optimization, shuffle reduction</li>
+                            <li><strong>System Tables:</strong> query.history, billing.usage for governance</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="toggle-section" onclick="toggleContent('caching-concepts')">
+                    <strong>⚡ Query Caching (30% weight)</strong>
+                    <div id="caching-concepts" class="toggle-content">
+                        <ul>
+                            <li><strong>Four Types:</strong> UI (7d), Local (24h), Remote (24h, Serverless), Disk (restart)</li>
+                            <li><strong>Hierarchy:</strong> Local → Remote → Execute (Serverless path)</li>
+                            <li><strong>Invalidation:</strong> Table updates, schema changes, dynamic functions</li>
+                            <li><strong>Control:</strong> SET use_cached_result = false (testing only)</li>
+                            <li><strong>Optimization:</strong> Cache-friendly query design, warming strategies</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>High-Probability Exam Questions</h3>
+                
+                <h4>SQL Warehouses Questions</h4>
+                <ol>
+                    <li>Which warehouse type provides the fastest startup time and includes Remote Result Cache?</li>
+                    <li>Convert this legacy parameter syntax to 2026 format: <code>WHERE date = '{{start_date}}'</code></li>
+                    <li>When does legacy SQL Editor support end and what changes are required?</li>
+                    <li>Create a query snippet for sales analysis with proper tab stops and final position</li>
+                    <li>Compare Serverless vs Pro warehouse features and recommend for given requirements</li>
+                </ol>
+                
+                <h4>Scheduling Questions</h4>
+                <ol>
+                    <li>An alert uses a scheduled query. If the query runs every 30 minutes and the alert checks every hour, how often is the alert evaluated?</li>
+                    <li>Why can't SQL Alerts use parameterized queries and what's the workaround?</li>
+                    <li>Configure a SQL Alert Task in Lakeflow Jobs as a quality gate for a data pipeline</li>
+                    <li>Design a multi-task job with dependencies and error handling</li>
+                    <li>Explain the difference between SCHEDULE and TRIGGER ON UPDATE for materialized views</li>
+                </ol>
+                
+                <h4>Monitoring Questions</h4>
+                <ol>
+                    <li>A query profile shows expensive Shuffle operations. What optimization strategies would you recommend?</li>
+                    <li>How do you grant access to view query profiles for all warehouse queries to a data analyst?</li>
+                    <li>Write a system table query to identify the top 5 most expensive queries by DBU consumption</li>
+                    <li>What's the difference between Query Profile and Warehouse Monitoring use cases?</li>
+                    <li>Explain how to identify file pruning issues in query profiles</li>
+                </ol>
+                
+                <h4>Caching Questions</h4>
+                <ol>
+                    <li>Which cache types are available on Pro warehouses vs Serverless warehouses?</li>
+                    <li>What happens to Remote Result Cache when a Serverless warehouse is restarted?</li>
+                    <li>Why doesn't this query use result cache: <code>SELECT *, CURRENT_TIMESTAMP() FROM sales</code></li>
+                    <li>Design a cache warming strategy for a dashboard that refreshes every morning</li>
+                    <li>How do you disable caching for performance benchmarking and why is this needed?</li>
+                </ol>
+            </div>
+            
+            <div class="content-block">
+                <h3>Hands-On Practice Scenarios</h3>
+                
+                <h4>Scenario 1: Performance Optimization</h4>
+                <div class="code-block">
+<pre>-- Given this slow query, identify and fix performance issues
+SELECT 
+  p.category,
+  AVG(s.total_amount) as avg_sale,
+  COUNT(*) as sale_count
+FROM sales_table s
+JOIN product_table p ON s.product_id = p.product_id
+WHERE s.sale_date >= '2026-01-01'
+GROUP BY p.category
+ORDER BY avg_sale DESC;
+
+-- Tasks:
+-- 1. Run query and examine Query Profile
+-- 2. Identify bottlenecks (Scan, Join, Shuffle operations)
+-- 3. Apply optimizations (Z-ORDER, filtering, join strategies)
+-- 4. Measure improvement in execution time</pre>
+                </div>
+                
+                <h4>Scenario 2: Caching Strategy</h4>
+                <div class="code-block">
+<pre>-- Design caching strategy for this dashboard query
+-- Requirements: Runs every 15 minutes during business hours
+-- Data updates: Daily batch load at 2 AM
+-- Users: 50+ analysts across different time zones
+
+-- Your tasks:
+-- 1. Identify cache-friendly vs cache-unfriendly patterns
+-- 2. Design cache warming schedule
+-- 3. Choose appropriate warehouse type
+-- 4. Monitor cache effectiveness</pre>
+                </div>
+                
+                <h4>Scenario 3: Alert Configuration</h4>
+                <div class="code-block">
+<pre>-- Configure monitoring for data quality pipeline
+-- Requirements:
+-- - Alert if daily record count drops > 10%
+-- - Alert if any nulls in critical columns  
+-- - Integration with Slack notifications
+-- - Quality gates in ETL workflow
+
+-- Your tasks:
+-- 1. Create SQL Alert queries (remember: no parameters!)
+-- 2. Configure thresholds and notifications
+-- 3. Add SQL Alert tasks to Lakeflow Job
+-- 4. Set up dependencies and error handling</pre>
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>Exam Day Strategy</h3>
+                
+                <h4>Time Management</h4>
+                <ul>
+                    <li><strong>Total Time:</strong> 90 minutes for 65 questions (1.4 min/question)</li>
+                    <li><strong>Question Types:</strong> Multiple choice, multiple select, drag-and-drop</li>
+                    <li><strong>Strategy:</strong> Flag difficult questions, answer easy ones first</li>
+                    <li><strong>Review:</strong> Reserve 15 minutes for flagged questions</li>
+                </ul>
+                
+                <h4>Key Mnemonics</h4>
+                <div class="alert alert-success">
+                    <strong>CACHE Hierarchy:</strong> <strong>L</strong>ocal → <strong>R</strong>emote → <strong>E</strong>xecute<br>
+                    <strong>SQL Warehouse Features:</strong> <strong>S</strong>erverless has <strong>R</strong>emote cache<br>
+                    <strong>Alert Independence:</strong> <strong>A</strong>lert schedule ≠ <strong>Q</strong>uery schedule<br>
+                    <strong>Profile Permissions:</strong> <strong>O</strong>wner <strong>OR</strong> <strong>M</strong>onitor<br>
+                    <strong>2026 Parameters:</strong> <strong>:</strong>named_params (not {{mustache}})
+                </div>
+                
+                <h4>Common Exam Traps</h4>
+                <ul>
+                    <li><strong>Remote Cache Availability:</strong> Only Serverless, not Pro/Classic</li>
+                    <li><strong>Alert Parameters:</strong> Not supported, use dynamic expressions</li>
+                    <li><strong>Cache Invalidation:</strong> Dynamic functions break result caching</li>
+                    <li><strong>Editor Migration:</strong> July 2026 deadline for parameter syntax</li>
+                    <li><strong>Permission Requirements:</strong> CAN MONITOR needed for query profiles</li>
+                </ul>
+                
+                <div class="exam-point">
+                    Remember: Databricks prioritizes cloud-native, serverless-first architecture. When in doubt, choose the option that emphasizes automation, managed services, and serverless capabilities.
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>Final Study Checklist</h3>
+                
+                <h4>Two Weeks Before Exam</h4>
+                <ul>
+                    <li>✅ Complete hands-on practice with each warehouse type</li>
+                    <li>✅ Create and test SQL Alerts with different conditions</li>
+                    <li>✅ Build Lakeflow Jobs with SQL Alert tasks</li>
+                    <li>✅ Profile slow queries and optimize them</li>
+                    <li>✅ Test caching behavior in different scenarios</li>
+                </ul>
+                
+                <h4>One Week Before Exam</h4>
+                <ul>
+                    <li>✅ Memorize key differences between warehouse types</li>
+                    <li>✅ Practice system table queries for monitoring</li>
+                    <li>✅ Review 2026 feature changes and migration timelines</li>
+                    <li>✅ Test query snippet creation and tab navigation</li>
+                    <li>✅ Understand cache hierarchy and invalidation triggers</li>
+                </ul>
+                
+                <h4>Day Before Exam</h4>
+                <ul>
+                    <li>✅ Review this cheat sheet completely</li>
+                    <li>✅ Memorize key exam points and mnemonics</li>
+                    <li>✅ Practice quick question recognition patterns</li>
+                    <li>✅ Ensure good rest and exam environment setup</li>
+                    <li>✅ Have ID and required materials ready</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>DATABRICKS CERTIFIED DATA ENGINEER ASSOCIATE 2026</strong></p>
+            <p>Complete Reference Guide | Focus on NEW features: Remote Result Cache • SQL Alert Tasks • Query Snippets</p>
+            <p>Good luck with your certification! 🚀</p>
+        </div>
+    </div>
+    
+    <script>
+        // Navigation functionality
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active from all buttons and sections
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                
+                // Add active to clicked button
+                this.classList.add('active');
+                
+                // Show corresponding section
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+        
+        // Toggle functionality for expandable sections
+        function toggleContent(id) {
+            const content = document.getElementById(id);
+            content.classList.toggle('visible');
+        }
+        
+        // Add some terminal-style effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add scanning effect to random elements occasionally
+            setInterval(() => {
+                const sections = document.querySelectorAll('.content-block');
+                const randomSection = sections[Math.floor(Math.random() * sections.length)];
+                if (randomSection && Math.random() > 0.95) {
+                    randomSection.style.boxShadow = '0 0 20px rgba(0, 212, 255, 0.3)';
+                    setTimeout(() => {
+                        randomSection.style.boxShadow = '';
+                    }, 2000);
+                }
+            }, 5000);
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Alt + number keys to navigate sections
+            if (e.altKey && e.key >= '1' && e.key <= '5') {
+                e.preventDefault();
+                const buttons = document.querySelectorAll('.nav-btn');
+                const index = parseInt(e.key) - 1;
+                if (buttons[index]) {
+                    buttons[index].click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

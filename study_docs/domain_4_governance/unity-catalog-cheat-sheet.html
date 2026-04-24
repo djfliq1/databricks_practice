@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity Catalog Cheat Sheet</title>
+    <style>
+        :root {
+            --color-primary: #1a1a1a;
+            --color-secondary: #666;
+            --color-background: #ffffff;
+            --color-surface: #f8f9fa;
+            --color-border: rgba(0,0,0,0.12);
+            --color-code-bg: #f5f5f5;
+            --color-accent: #0066cc;
+            --color-success: #28a745;
+            --color-warning: #ffc107;
+            --color-danger: #dc3545;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-primary: #ffffff;
+                --color-secondary: #b0b0b0;
+                --color-background: #1a1a1a;
+                --color-surface: #2d2d2d;
+                --color-border: rgba(255,255,255,0.12);
+                --color-code-bg: #2d2d2d;
+                --color-accent: #4da3ff;
+                --color-success: #40c464;
+                --color-warning: #ffd43b;
+                --color-danger: #f85149;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--color-primary);
+            background-color: var(--color-background);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: var(--color-surface);
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--color-accent);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--color-secondary);
+            font-style: italic;
+        }
+
+        .toc {
+            background: var(--color-surface);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--color-border);
+        }
+
+        .toc h2 {
+            margin-bottom: 15px;
+            color: var(--color-accent);
+        }
+
+        .toc ul {
+            list-style: none;
+            columns: 2;
+            column-gap: 30px;
+        }
+
+        .toc a {
+            color: var(--color-primary);
+            text-decoration: none;
+            padding: 5px 0;
+            display: block;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .toc a:hover {
+            background-color: var(--color-border);
+            padding-left: 8px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 40px 0 20px 0;
+            color: var(--color-accent);
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin: 30px 0 15px 0;
+            color: var(--color-primary);
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin: 25px 0 15px 0;
+            color: var(--color-secondary);
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        .diagram-container {
+            background: var(--color-surface);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            border: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        .diagram-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--color-accent);
+        }
+
+        code {
+            background-color: var(--color-code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: var(--color-code-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 1px solid var(--color-border);
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .code-header {
+            background: var(--color-surface);
+            padding: 8px 16px;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid var(--color-border);
+            border-bottom: none;
+            font-size: 0.9rem;
+            color: var(--color-secondary);
+            margin-bottom: 0;
+        }
+
+        .code-header + pre {
+            margin-top: 0;
+            border-radius: 0 0 8px 8px;
+        }
+
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, var(--color-accent) 0%, var(--color-accent) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 0.2em;
+            background-position: 0 88%;
+            padding: 2px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .badge-managed {
+            background-color: var(--color-success);
+            color: white;
+        }
+
+        .badge-external {
+            background-color: var(--color-warning);
+            color: black;
+        }
+
+        .badge-volume {
+            background-color: var(--color-accent);
+            color: white;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .comparison-table th {
+            background-color: var(--color-surface);
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+
+        .comparison-table tr:hover {
+            background-color: var(--color-surface);
+        }
+
+        .info-box {
+            background: var(--color-surface);
+            border-left: 4px solid var(--color-accent);
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning-box {
+            background: var(--color-surface);
+            border-left: 4px solid var(--color-warning);
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .back-to-top:hover {
+            opacity: 1;
+        }
+
+        /* SVG Diagram Styles */
+        .architecture-svg {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+        }
+
+        /* Color classes for SVG - light mode */
+        .c-purple rect { fill: #EEEDFE; stroke: #534AB7; }
+        .c-purple .th, .c-purple .t { fill: #26215C; }
+        .c-purple .ts { fill: #3C3489; }
+
+        .c-teal rect { fill: #E1F5EE; stroke: #0F6E56; }
+        .c-teal .th, .c-teal .t { fill: #04342C; }
+        .c-teal .ts { fill: #085041; }
+
+        .c-green rect { fill: #EAF3DE; stroke: #3B6D11; }
+        .c-green .th, .c-green .t { fill: #173404; }
+        .c-green .ts { fill: #27500A; }
+
+        .c-coral rect { fill: #FAECE7; stroke: #993C1D; }
+        .c-coral .th, .c-coral .t { fill: #4A1B0C; }
+        .c-coral .ts { fill: #712B13; }
+
+        .c-amber rect { fill: #FAEEDA; stroke: #854F0B; }
+        .c-amber .th, .c-amber .t { fill: #412402; }
+        .c-amber .ts { fill: #633806; }
+
+        .c-blue rect { fill: #E6F1FB; stroke: #185FA5; }
+        .c-blue .th, .c-blue .t { fill: #042C53; }
+        .c-blue .ts { fill: #0C447C; }
+
+        .box rect { fill: var(--color-surface); stroke: var(--color-border); }
+        .box .t, .box .ts, .box .th { fill: var(--color-primary); }
+
+        .t { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; font-weight: 400; }
+        .ts { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12px; font-weight: 400; }
+        .th { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; font-weight: 500; }
+
+        .arr { stroke: var(--color-secondary); stroke-width: 1.5px; }
+
+        /* Dark mode SVG adjustments */
+        @media (prefers-color-scheme: dark) {
+            .c-purple rect { fill: #3C3489; stroke: #AFA9EC; }
+            .c-purple .th, .c-purple .t { fill: #CECBF6; }
+            .c-purple .ts { fill: #AFA9EC; }
+
+            .c-teal rect { fill: #085041; stroke: #5DCAA5; }
+            .c-teal .th, .c-teal .t { fill: #9FE1CB; }
+            .c-teal .ts { fill: #5DCAA5; }
+
+            .c-green rect { fill: #27500A; stroke: #97C459; }
+            .c-green .th, .c-green .t { fill: #C0DD97; }
+            .c-green .ts { fill: #97C459; }
+
+            .c-coral rect { fill: #712B13; stroke: #F0997B; }
+            .c-coral .th, .c-coral .t { fill: #F5C4B3; }
+            .c-coral .ts { fill: #F0997B; }
+
+            .c-amber rect { fill: #633806; stroke: #EF9F27; }
+            .c-amber .th, .c-amber .t { fill: #FAC775; }
+            .c-amber .ts { fill: #EF9F27; }
+
+            .c-blue rect { fill: #0C447C; stroke: #85B7EB; }
+            .c-blue .th, .c-blue .t { fill: #B5D4F4; }
+            .c-blue .ts { fill: #85B7EB; }
+        }
+
+        .node {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .node:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .toc ul {
+                columns: 1;
+            }
+            
+            .back-to-top {
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+    <div class="header">
+        <h1>Unity Catalog Cheat Sheet</h1>
+        <p class="subtitle">Databricks' unified governance layer for data and AI</p>
+    </div>
+
+    <div class="toc">
+        <h2>📑 Table of Contents</h2>
+        <ul>
+            <li><a href="#architecture">Architecture Overview</a></li>
+            <li><a href="#namespace">Namespace Structure</a></li>
+            <li><a href="#environments">Environment Patterns</a></li>
+            <li><a href="#managed-external">Managed vs External Tables</a></li>
+            <li><a href="#volumes">Volumes</a></li>
+            <li><a href="#permissions">Permissions & Security</a></li>
+            <li><a href="#discovery">Discovery & Documentation</a></li>
+            <li><a href="#migration">Migration</a></li>
+            <li><a href="#dbutils">dbutils Reference</a></li>
+            <li><a href="#best-practices">Best Practices</a></li>
+            <li><a href="#sql-patterns">Common SQL Patterns</a></li>
+        </ul>
+    </div>
+
+    <section id="core-concepts" class="section">
+        <h2>🎯 Core Concepts</h2>
+        
+        <h3>What is Unity Catalog?</h3>
+        <p>Unity Catalog is a <span class="highlight">centralized data governance solution</span> that provides unified metadata, security, and discovery across all Databricks workspaces in a region.</p>
+        
+        <div class="info-box">
+            <strong>Key Benefits:</strong>
+            <ul>
+                <li>Single metastore per region serves multiple workspaces</li>
+                <li>Three-level namespace: <code>catalog.schema.table</code></li>
+                <li>ANSI SQL GRANT/REVOKE permissions</li>
+                <li>Automatic lineage tracking</li>
+                <li>Cross-workspace data access without duplication</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="architecture" class="section">
+        <h2>🏗️ Architecture Overview</h2>
+        
+        <div class="diagram-container">
+            <div class="diagram-title">Unity Catalog Architecture</div>
+            <svg class="architecture-svg" viewBox="0 0 680 420" role="img">
+                <title>Unity Catalog Architecture</title>
+                <desc>Hierarchical diagram showing metastore containing catalogs with schemas, tables, and workspace connections</desc>
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </marker>
+                </defs>
+
+                <!-- Metastore container (outermost) -->
+                <g class="c-purple">
+                    <rect x="40" y="40" width="600" height="320" rx="20" stroke-width="0.5"/>
+                    <text class="th" x="340" y="72" text-anchor="middle">Unity Catalog Metastore</text>
+                    <text class="ts" x="340" y="90" text-anchor="middle">Regional metadata repository</text>
+                </g>
+
+                <!-- Managed Catalog -->
+                <g class="c-teal">
+                    <rect x="70" y="120" width="260" height="220" rx="12" stroke-width="0.5"/>
+                    <text class="th" x="200" y="148" text-anchor="middle">sales_catalog</text>
+                    <text class="ts" x="200" y="166" text-anchor="middle">Managed tables</text>
+
+                    <!-- Schema inside managed catalog -->
+                    <g class="c-green">
+                        <rect x="90" y="180" width="220" height="140" rx="8" stroke-width="0.5"/>
+                        <text class="th" x="200" y="204" text-anchor="middle">transactions_schema</text>
+
+                        <!-- Tables in schema -->
+                        <rect class="box" x="110" y="220" width="80" height="32" rx="4" stroke-width="0.5"/>
+                        <text class="ts" x="150" y="238" text-anchor="middle">orders</text>
+
+                        <rect class="box" x="210" y="220" width="80" height="32" rx="4" stroke-width="0.5"/>
+                        <text class="ts" x="250" y="238" text-anchor="middle">payments</text>
+
+                        <rect class="box" x="110" y="270" width="80" height="32" rx="4" stroke-width="0.5"/>
+                        <text class="ts" x="150" y="288" text-anchor="middle">customers</text>
+
+                        <rect class="box" x="210" y="270" width="80" height="32" rx="4" stroke-width="0.5"/>
+                        <text class="ts" x="250" y="288" text-anchor="middle">daily_summary</text>
+                    </g>
+                </g>
+
+                <!-- External Catalog -->
+                <g class="c-coral">
+                    <rect x="350" y="120" width="260" height="220" rx="12" stroke-width="0.5"/>
+                    <text class="th" x="480" y="148" text-anchor="middle">external_catalog</text>
+                    <text class="ts" x="480" y="166" text-anchor="middle">External tables</text>
+
+                    <!-- Schema inside external catalog -->
+                    <g class="c-amber">
+                        <rect x="370" y="180" width="220" height="140" rx="8" stroke-width="0.5"/>
+                        <text class="th" x="480" y="204" text-anchor="middle">legacy_schema</text>
+
+                        <!-- External tables -->
+                        <rect class="box" x="390" y="220" width="80" height="32" rx="4" stroke-width="0.5"/>
+                        <text class="ts" x="430" y="238" text-anchor="middle">old_orders</text>
+
+                        <rect class="box" x="490" y="220" width="80" height="32" rx="4" stroke-width="0.5"/>
+                        <text class="ts" x="530" y="238" text-anchor="middle">archive_logs</text>
+
+                        <rect class="box" x="390" y="270" width="80" height="32" rx="4" stroke-width="0.5"/>
+                        <text class="ts" x="430" y="288" text-anchor="middle">s3_exports</text>
+
+                        <rect class="box" x="490" y="270" width="80" height="32" rx="4" stroke-width="0.5"/>
+                        <text class="ts" x="530" y="288" text-anchor="middle">raw_events</text>
+                    </g>
+                </g>
+
+                <!-- Workspace connections (below metastore) -->
+                <g class="c-blue node">
+                    <rect x="80" y="380" width="120" height="32" rx="6" stroke-width="0.5"/>
+                    <text class="ts" x="140" y="398" text-anchor="middle">dev_workspace</text>
+                </g>
+
+                <g class="c-blue node">
+                    <rect x="280" y="380" width="120" height="32" rx="6" stroke-width="0.5"/>
+                    <text class="ts" x="340" y="398" text-anchor="middle">prod_workspace</text>
+                </g>
+
+                <g class="c-blue node">
+                    <rect x="480" y="380" width="120" height="32" rx="6" stroke-width="0.5"/>
+                    <text class="ts" x="540" y="398" text-anchor="middle">ml_workspace</text>
+                </g>
+
+                <!-- Connection arrows from workspaces to metastore -->
+                <line x1="140" y1="380" x2="200" y2="360" class="arr" marker-end="url(#arrow)"/>
+                <line x1="340" y1="380" x2="340" y2="360" class="arr" marker-end="url(#arrow)"/>
+                <line x1="540" y1="380" x2="480" y2="360" class="arr" marker-end="url(#arrow)"/>
+
+                <!-- Data storage indicators -->
+                <text class="ts" x="200" y="330" text-anchor="middle">Data in UC storage</text>
+                <text class="ts" x="480" y="330" text-anchor="middle">Data in S3/ADLS</text>
+            </svg>
+        </div>
+
+        <p>The <strong>metastore</strong> is the centralized metadata repository that holds all information about your data assets. One metastore per region serves multiple workspaces, creating unified governance across your entire Databricks environment.</p>
+    </section>
+
+    <section id="namespace" class="section">
+        <h2>🗂️ Namespace Structure</h2>
+        
+        <h3>Three-Level Hierarchy</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Full qualified name
+SELECT * FROM catalog_name.schema_name.table_name;
+
+-- Examples
+SELECT * FROM sales.transactions.orders;
+SELECT * FROM ml.experiments.feature_table;
+SELECT * FROM external.legacy.customer_archive;</code></pre>
+
+        <h3>Catalog → Schema → Objects</h3>
+        <ul>
+            <li><strong>Catalog</strong>: Top-level container (department/domain)</li>
+            <li><strong>Schema</strong>: Logical grouping within catalog (functional area)</li>
+            <li><strong>Objects</strong>: Tables, views, functions, volumes, ML models</li>
+        </ul>
+    </section>
+
+    <section id="environments" class="section">
+        <h2>🌍 Environment Patterns</h2>
+        
+        <h3>Catalog-per-Environment</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Development
+CREATE CATALOG dev_sales;
+CREATE SCHEMA dev_sales.transactions;
+CREATE TABLE dev_sales.transactions.orders (...);
+
+-- Staging
+CREATE CATALOG staging_sales;
+CREATE SCHEMA staging_sales.transactions;
+CREATE TABLE staging_sales.transactions.orders LIKE dev_sales.transactions.orders;
+
+-- Production
+CREATE CATALOG prod_sales;
+CREATE SCHEMA prod_sales.transactions;
+CREATE TABLE prod_sales.transactions.orders LIKE staging_sales.transactions.orders;</code></pre>
+
+        <h3>Workspace-per-Environment</h3>
+        <ul>
+            <li><code>dev-workspace</code> → Access all three catalogs</li>
+            <li><code>staging-workspace</code> → Access staging + prod (read-only)</li>
+            <li><code>prod-workspace</code> → Access prod only</li>
+        </ul>
+    </section>
+
+    <section id="managed-external" class="section">
+        <h2>📊 Managed vs External Tables</h2>
+        
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Aspect</th>
+                    <th><span class="badge badge-managed">Managed Tables</span></th>
+                    <th><span class="badge badge-external">External Tables</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Data Ownership</strong></td>
+                    <td>Unity Catalog owns metadata + data</td>
+                    <td>UC manages metadata, you own data</td>
+                </tr>
+                <tr>
+                    <td><strong>Storage Location</strong></td>
+                    <td>UC-managed location</td>
+                    <td>Your specified S3/ADLS path</td>
+                </tr>
+                <tr>
+                    <td><strong>DROP TABLE Effect</strong></td>
+                    <td>Deletes metadata + data files</td>
+                    <td>Only removes metadata</td>
+                </tr>
+                <tr>
+                    <td><strong>Recovery</strong></td>
+                    <td>7-day undrop window</td>
+                    <td>No undrop available</td>
+                </tr>
+                <tr>
+                    <td><strong>Optimization</strong></td>
+                    <td>Automatic compaction</td>
+                    <td>Manual management required</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Managed Tables</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Create managed table
+CREATE TABLE sales.customers.profiles (
+    customer_id BIGINT,
+    email STRING,
+    created_at TIMESTAMP
+) -- Data stored in UC-managed location</code></pre>
+
+        <h3>External Tables</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Create external table
+CREATE TABLE sales.customers.external_profiles (
+    customer_id BIGINT,
+    email STRING,
+    created_at TIMESTAMP
+)
+LOCATION 's3://my-bucket/customer-data/'</code></pre>
+
+        <div class="warning-box">
+            <strong>⚠️ Important:</strong> When you <code>DROP TABLE</code> on a managed table, both the metadata AND the actual data files are deleted (with a 7-day undrop window). For external tables, only the metadata is removed.
+        </div>
+    </section>
+
+    <section id="volumes" class="section">
+        <h2>📁 Volumes (Non-Tabular Data Governance)</h2>
+        
+        <p>Volumes extend Unity Catalog governance to <strong>non-tabular data</strong> like PDFs, images, ML models, and raw logs.</p>
+
+        <h3>Managed Volumes</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- UC creates and manages the storage location
+CREATE VOLUME ml.experiments.model_artifacts;
+
+-- Files automatically organized under:
+-- /metastore-root/ml/experiments/model_artifacts/</code></pre>
+
+        <h3>External Volumes</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Point to existing storage location
+CREATE VOLUME sales.analytics.legacy_reports 
+LOCATION 's3://my-data-bucket/reports/quarterly/';</code></pre>
+
+        <h3>Volume Operations with dbutils</h3>
+        <div class="code-header">Python</div>
+        <pre><code># List volume contents
+dbutils.fs.ls('/Volumes/ml/experiments/model_artifacts/')
+
+# Copy files to volume
+dbutils.fs.cp('local_file.pkl', '/Volumes/ml/experiments/model_artifacts/model_v1.pkl')
+
+# Access volume files in code
+with open('/Volumes/ml/experiments/model_artifacts/config.json', 'r') as f:
+    config = json.load(f)</code></pre>
+    </section>
+
+    <section id="permissions" class="section">
+        <h2>🔐 Permissions and Security</h2>
+        
+        <h3>SQL GRANT/REVOKE</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Catalog-level permissions
+GRANT USE CATALOG sales TO `data-analysts`;
+GRANT CREATE SCHEMA ON CATALOG sales TO `data-engineers`;
+
+-- Schema-level permissions  
+GRANT USE SCHEMA sales.transactions TO `finance-team`;
+GRANT CREATE TABLE ON SCHEMA sales.transactions TO `senior-engineers`;
+
+-- Table-level permissions
+GRANT SELECT ON TABLE sales.customers.profiles TO `marketing-team`;
+GRANT INSERT ON TABLE sales.transactions.orders TO `order-service`;
+
+-- Volume permissions
+GRANT READ FILES ON VOLUME ml.experiments.model_artifacts TO `data-scientists`;
+GRANT WRITE FILES ON VOLUME ml.experiments.model_artifacts TO `senior-ml-engineers`;
+
+-- Row-level security
+CREATE OR REPLACE FUNCTION sales.customers.row_filter(region STRING)
+RETURN IF(IS_ACCOUNT_GROUP_MEMBER('region-managers'), TRUE, region = 'US');
+
+ALTER TABLE sales.customers.profiles 
+SET ROW FILTER sales.customers.row_filter(region);</code></pre>
+
+        <h3>External Location Management</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Create storage credential
+CREATE STORAGE CREDENTIAL s3_cred 
+USING SERVICE PRINCIPAL 
+OPTIONS (
+  'roleArn' = 'arn:aws:iam::123456789:role/unity-catalog-role'
+);
+
+-- Create external location
+CREATE EXTERNAL LOCATION s3_data_lake
+URL 's3://company-data-lake/raw/'
+WITH (STORAGE CREDENTIAL s3_cred);
+
+-- Grant access to external location
+GRANT READ FILES ON EXTERNAL LOCATION s3_data_lake TO `data-engineers`;</code></pre>
+    </section>
+
+    <section id="discovery" class="section">
+        <h2>🔍 Discovery and Documentation</h2>
+        
+        <h3>Tagging</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Add tags to catalog
+ALTER CATALOG sales SET TAGS ('environment' = 'prod', 'owner' = 'data-team');
+
+-- Add tags to table
+ALTER TABLE sales.customers.profiles SET TAGS ('pii' = 'true', 'retention' = '7-years');
+
+-- Search by tags
+SHOW TABLES IN sales.customers WHERE TAGS.pii = 'true';</code></pre>
+
+        <h3>Comments and Documentation</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Add table comments
+ALTER TABLE sales.customers.profiles 
+SET TBLPROPERTIES ('comment' = 'Customer profile data with PII');
+
+-- Add column comments
+ALTER TABLE sales.customers.profiles 
+ALTER COLUMN email COMMENT 'Customer primary email address';</code></pre>
+
+        <h3>Information Schema Queries</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Find tables by name pattern
+SELECT * FROM information_schema.tables 
+WHERE table_name LIKE '%customer%';
+
+-- Find columns containing PII
+SELECT * FROM information_schema.columns 
+WHERE column_comment LIKE '%email%' OR column_name LIKE '%email%';
+
+-- View table lineage
+SELECT * FROM information_schema.table_lineage 
+WHERE target_table_name = 'customer_summary';</code></pre>
+    </section>
+
+    <section id="migration" class="section">
+        <h2>🚀 Migration from Hive Metastore</h2>
+        
+        <h3>Sync Command</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Sync existing Hive tables to Unity Catalog
+SYNC TABLE sales.customers.legacy_profiles 
+FROM hive_metastore.default.customers;
+
+-- Create Unity Catalog table from Hive table
+CREATE TABLE sales.customers.migrated_profiles 
+AS SELECT * FROM hive_metastore.default.customers;</code></pre>
+
+        <h3>UCX (Unity Catalog Migration Toolkit)</h3>
+        <div class="code-header">Python</div>
+        <pre><code># Install UCX
+%pip install databricks-labs-ucx
+
+# Assessment of current workspace
+ucx assessment
+
+# Generate migration plan
+ucx migrate-tables --from hive_metastore.schema_name</code></pre>
+    </section>
+
+    <section id="dbutils" class="section">
+        <h2>🛠️ dbutils Reference</h2>
+        
+        <h3>File System Operations</h3>
+        <div class="code-header">Python</div>
+        <pre><code># List files (works with UC volumes)
+dbutils.fs.ls('/Volumes/catalog/schema/volume/')
+dbutils.fs.ls('s3://bucket/path/')
+
+# Copy and move files
+dbutils.fs.cp('source', 'destination')
+dbutils.fs.mv('old_path', 'new_path')
+
+# Delete files
+dbutils.fs.rm('path', recurse=True)
+
+# File information
+dbutils.fs.head('file_path', max_bytes=1024)</code></pre>
+
+        <h3>Secrets Management</h3>
+        <div class="code-header">Python</div>
+        <pre><code># Access secrets from secret scopes
+api_key = dbutils.secrets.get(scope="external-apis", key="service-token")
+db_password = dbutils.secrets.get(scope="database-creds", key="prod-password")
+
+# List available secret scopes
+dbutils.secrets.listScopes()</code></pre>
+
+        <h3>Notebook Workflows</h3>
+        <div class="code-header">Python</div>
+        <pre><code># Create parameterized widgets
+dbutils.widgets.text("environment", "dev", "Target Environment")
+dbutils.widgets.dropdown("region", "us-east-1", ["us-east-1", "us-west-2", "eu-west-1"])
+
+# Get widget values
+env = dbutils.widgets.get("environment")
+region = dbutils.widgets.get("region")
+
+# Run another notebook
+result = dbutils.notebook.run(
+    "./data-processing", 
+    timeout_seconds=3600, 
+    arguments={"date": "2024-01-15", "env": env}
+)
+
+# Exit with return value
+dbutils.notebook.exit("Processing completed successfully")</code></pre>
+
+        <h3>Getting Help</h3>
+        <div class="code-header">Python</div>
+        <pre><code># General help
+dbutils.help()
+
+# Module-specific help
+dbutils.fs.help()
+dbutils.secrets.help()
+dbutils.widgets.help()
+dbutils.notebook.help()
+
+# Command-specific help
+dbutils.fs.help("ls")
+dbutils.fs.help("cp")
+dbutils.widgets.help("dropdown")</code></pre>
+    </section>
+
+    <section id="best-practices" class="section">
+        <h2>💡 Best Practices</h2>
+        
+        <h3>Naming Conventions</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Catalogs: domain/department based
+CREATE CATALOG sales;
+CREATE CATALOG marketing; 
+CREATE CATALOG engineering;
+
+-- Schemas: functional areas within domain
+CREATE SCHEMA sales.transactions;
+CREATE SCHEMA sales.customers;
+CREATE SCHEMA sales.reporting;
+
+-- Tables: descriptive, avoid generic names
+CREATE TABLE sales.transactions.order_line_items;  -- Good
+CREATE TABLE sales.transactions.data;              -- Bad</code></pre>
+
+        <h3>Environment Strategy</h3>
+        <ol>
+            <li><strong>Catalog-per-environment</strong> for complete isolation</li>
+            <li><strong>Workspace-per-environment</strong> for compute isolation</li>
+            <li>Use consistent naming: <code>{env}_{domain}</code> (e.g., <code>prod_sales</code>, <code>dev_sales</code>)</li>
+        </ol>
+
+        <h3>Security Strategy</h3>
+        <ol>
+            <li>Start with least privilege access</li>
+            <li>Use groups instead of individual user grants</li>
+            <li>Implement row-level security for sensitive data</li>
+            <li>Regular audit of permissions using <code>SHOW GRANTS</code></li>
+        </ol>
+
+        <h3>Data Organization</h3>
+        <ol>
+            <li>Use managed tables for new, Unity Catalog-native workflows</li>
+            <li>Use external tables for existing data lakes during migration</li>
+            <li>Leverage volumes for ML artifacts and non-tabular data</li>
+            <li>Implement consistent tagging strategy early</li>
+        </ol>
+
+        <h3>Performance</h3>
+        <ol>
+            <li>Use Delta Lake format for all new tables</li>
+            <li>Implement proper partitioning strategy</li>
+            <li>Regular <code>OPTIMIZE</code> and <code>VACUUM</code> operations</li>
+            <li>Monitor query performance through Unity Catalog lineage</li>
+        </ol>
+    </section>
+
+    <section id="sql-patterns" class="section">
+        <h2>🔧 Common SQL Patterns</h2>
+        
+        <h3>Data Discovery</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Find all tables in a catalog
+SHOW TABLES IN sales;
+
+-- Search for tables by pattern
+SHOW TABLES IN sales LIKE '*customer*';
+
+-- View table schema
+DESCRIBE EXTENDED sales.customers.profiles;
+
+-- Check table properties and metadata
+SHOW TBLPROPERTIES sales.customers.profiles;</code></pre>
+
+        <h3>Cross-Catalog Queries</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Join tables from different catalogs
+SELECT 
+    p.customer_id,
+    p.email,
+    o.order_total
+FROM prod_sales.customers.profiles p
+JOIN dev_sales.transactions.orders o 
+    ON p.customer_id = o.customer_id;</code></pre>
+
+        <h3>Time Travel and Versioning</h3>
+        <div class="code-header">SQL</div>
+        <pre><code>-- Query table at specific timestamp
+SELECT * FROM sales.customers.profiles 
+TIMESTAMP AS OF '2024-01-01 00:00:00';
+
+-- Query table at specific version
+SELECT * FROM sales.customers.profiles VERSION AS OF 123;
+
+-- View table history
+DESCRIBE HISTORY sales.customers.profiles;</code></pre>
+    </section>
+
+    <footer style="margin-top: 60px; text-align: center; color: var(--color-secondary); border-top: 1px solid var(--color-border); padding-top: 20px;">
+        <p>This cheat sheet covers the essential Unity Catalog concepts, commands, and patterns for effective data governance in Databricks environments.</p>
+        <p style="margin-top: 10px; font-size: 0.9rem;">Generated from Unity Catalog discussion • <strong>Evani</strong></p>
+    </footer>
+
+    <button class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Back to top">↑</button>
+
+    <script>
+        // Show/hide back to top button
+        window.addEventListener('scroll', function() {
+            const button = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                button.style.display = 'block';
+            } else {
+                button.style.display = 'none';
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

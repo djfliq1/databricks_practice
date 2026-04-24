@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LakeFlow Jobs — Static Solution</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<h1>🚀 LakeFlow Jobs Static Solution</h1>
+<p><strong>Databricks Data Engineer Associate 2026 Certification</strong></p>
+<h2>Problem Statement</h2>
+<p>Orchestrate a complete Medallion architecture pipeline using LakeFlow Jobs, starting with the Bronze PySpark notebook that processes product and customer data, flowing through Silver transformations, and ending with Gold aggregations.</p>
+<hr />
+<h2>📋 Solution Architecture</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">graph</span><span class="w"> </span><span class="n">TD</span>
+<span class="w">    </span><span class="n">subgraph</span><span class="w"> </span><span class="s">&quot;Data Sources&quot;</span>
+<span class="w">        </span><span class="n">CSV1</span><span class="p">[</span><span class="n">Products</span><span class="w"> </span><span class="n">CSV</span><span class="p">]</span>
+<span class="w">        </span><span class="n">CSV2</span><span class="p">[</span><span class="n">Customers</span><span class="w"> </span><span class="n">CSV</span><span class="p">]</span>
+<span class="w">    </span><span class="n">end</span>
+
+<span class="w">    </span><span class="n">subgraph</span><span class="w"> </span><span class="s">&quot;LakeFlow Job: medallion_pipeline&quot;</span>
+<span class="w">        </span><span class="n">T1</span><span class="p">[</span><span class="n">Task</span><span class="w"> </span><span class="mi">1</span><span class="o">:</span><span class="w"> </span><span class="n">Bronze</span><span class="w"> </span><span class="n">Ingestion</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span><span class="n">PySpark</span><span class="w"> </span><span class="n">Notebook</span><span class="p">]</span>
+<span class="w">        </span><span class="n">T2</span><span class="p">[</span><span class="n">Task</span><span class="w"> </span><span class="mi">2</span><span class="o">:</span><span class="w"> </span><span class="n">Data</span><span class="w"> </span><span class="n">Quality</span><span class="w"> </span><span class="n">Check</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span><span class="n">Condition</span><span class="w"> </span><span class="n">Task</span><span class="p">]</span>
+<span class="w">        </span><span class="n">T3</span><span class="p">[</span><span class="n">Task</span><span class="w"> </span><span class="mi">3</span><span class="o">:</span><span class="w"> </span><span class="n">Silver</span><span class="w"> </span><span class="n">Processing</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span><span class="n">Declarative</span><span class="w"> </span><span class="n">Pipeline</span><span class="p">]</span>
+<span class="w">        </span><span class="n">T4</span><span class="p">[</span><span class="n">Task</span><span class="w"> </span><span class="mi">4</span><span class="o">:</span><span class="w"> </span><span class="n">Gold</span><span class="w"> </span><span class="n">Aggregation</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span><span class="n">SQL</span><span class="w"> </span><span class="n">Task</span><span class="p">]</span>
+<span class="w">        </span><span class="n">T5</span><span class="p">[</span><span class="n">Task</span><span class="w"> </span><span class="mi">5</span><span class="o">:</span><span class="w"> </span><span class="n">Alert</span><span class="w"> </span><span class="n">Handler</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span><span class="n">Notebook</span><span class="w"> </span><span class="n">Task</span><span class="p">]</span>
+
+<span class="w">        </span><span class="n">T1</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">T2</span>
+<span class="w">        </span><span class="n">T2</span><span class="w"> </span><span class="o">--&gt;|</span><span class="err">✅</span><span class="w"> </span><span class="n">Quality</span><span class="w"> </span><span class="n">Pass</span><span class="o">|</span><span class="w"> </span><span class="n">T3</span>
+<span class="w">        </span><span class="n">T2</span><span class="w"> </span><span class="o">--&gt;|</span><span class="err">❌</span><span class="w"> </span><span class="n">Quality</span><span class="w"> </span><span class="n">Fail</span><span class="o">|</span><span class="w"> </span><span class="n">T5</span>
+<span class="w">        </span><span class="n">T3</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">T4</span>
+<span class="w">    </span><span class="n">end</span>
+
+<span class="w">    </span><span class="n">subgraph</span><span class="w"> </span><span class="s">&quot;Storage&quot;</span>
+<span class="w">        </span><span class="n">Bronze</span><span class="p">[(</span><span class="n">Bronze</span><span class="w"> </span><span class="n">Layer</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span><span class="n">Unity</span><span class="w"> </span><span class="n">Catalog</span><span class="p">)]</span>
+<span class="w">        </span><span class="n">Silver</span><span class="p">[(</span><span class="n">Silver</span><span class="w"> </span><span class="n">Layer</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span><span class="n">Unity</span><span class="w"> </span><span class="n">Catalog</span><span class="p">)]</span>
+<span class="w">        </span><span class="n">Gold</span><span class="p">[(</span><span class="n">Gold</span><span class="w"> </span><span class="n">Layer</span><span class="o">&lt;</span><span class="n">br</span><span class="o">/&gt;</span><span class="n">Unity</span><span class="w"> </span><span class="n">Catalog</span><span class="p">)]</span>
+<span class="w">    </span><span class="n">end</span>
+
+<span class="w">    </span><span class="n">CSV1</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">T1</span>
+<span class="w">    </span><span class="n">CSV2</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">T1</span>
+<span class="w">    </span><span class="n">T1</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Bronze</span>
+<span class="w">    </span><span class="n">T3</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Silver</span>
+<span class="w">    </span><span class="n">T4</span><span class="w"> </span><span class="o">--&gt;</span><span class="w"> </span><span class="n">Gold</span>
+
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">T1</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="mf">1e88</span><span class="n">e5</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">T2</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">ffc107</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">T3</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="mi">43</span><span class="n">a047</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">T4</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">e53935</span>
+<span class="w">    </span><span class="n">style</span><span class="w"> </span><span class="n">T5</span><span class="w"> </span><span class="n">fill</span><span class="o">:</span><span class="err">#</span><span class="n">ff7043</span>
+</code></pre></div>
+
+<hr />
+<h2>🗂️ Project Structure</h2>
+<div class="codehilite"><pre><span></span><code><span class="n">databricks_lakehouse_project</span><span class="o">/</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">databricks</span><span class="p">.</span><span class="n">yml</span><span class="w">                    </span><span class="p">#</span><span class="w"> </span><span class="n">Asset</span><span class="w"> </span><span class="n">Bundle</span><span class="w"> </span><span class="n">definition</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">notebooks</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="mh">01</span><span class="n">_bronze_ingestion</span><span class="p">.</span><span class="n">py</span><span class="w">        </span><span class="p">#</span><span class="w"> </span><span class="n">Based</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">your</span><span class="w"> </span><span class="n">Bronze</span><span class="w"> </span><span class="n">PySpark</span><span class="w"> </span><span class="n">notebook</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="mh">02</span><span class="n">_data_quality_check</span><span class="p">.</span><span class="n">py</span><span class="w">      </span><span class="p">#</span><span class="w"> </span><span class="n">Validation</span><span class="w"> </span><span class="kt">logic</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="mh">03</span><span class="n">_gold_aggregation</span><span class="p">.</span><span class="n">sql</span><span class="w">       </span><span class="p">#</span><span class="w"> </span><span class="n">Business</span><span class="w"> </span><span class="n">metrics</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="mh">04</span><span class="n">_alert_handler</span><span class="p">.</span><span class="n">py</span><span class="w">           </span><span class="p">#</span><span class="w"> </span><span class="n">Error</span><span class="w"> </span><span class="n">notification</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">pipelines</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">silver_declarative</span><span class="p">.</span><span class="n">yml</span><span class="w">        </span><span class="p">#</span><span class="w"> </span><span class="n">Lakeflow</span><span class="w"> </span><span class="n">Declarative</span><span class="w"> </span><span class="n">Pipeline</span>
+<span class="err">└──</span><span class="w"> </span><span class="n">resources</span><span class="o">/</span>
+<span class="w">    </span><span class="err">└──</span><span class="w"> </span><span class="n">job_definitions</span><span class="p">.</span><span class="n">yml</span><span class="w">           </span><span class="p">#</span><span class="w"> </span><span class="n">Job</span><span class="w"> </span><span class="n">configuration</span>
+</code></pre></div>
+
+<hr />
+<h2>1️⃣ Task 1: Bronze Ingestion (Enhanced Version of Your Notebook)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/01_bronze_ingestion.py</span>
+<span class="c1"># Enhanced version of your 2_bronze_PySpark notebook</span>
+
+<span class="c1"># Databricks notebook source</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Bronze Layer Ingestion - Products &amp; Customers</span>
+<span class="c1"># MAGIC **Part of LakeFlow Jobs Medallion Pipeline**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Import libraries</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.types</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">delta.tables</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeltaTable</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ### Configure Job Parameters</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Widget parameters for job flexibility</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;catalog_name&quot;</span><span class="p">,</span> <span class="s2">&quot;databricks_clar&quot;</span><span class="p">,</span> <span class="s2">&quot;Unity Catalog Name&quot;</span><span class="p">)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;schema_name&quot;</span><span class="p">,</span> <span class="s2">&quot;bronze&quot;</span><span class="p">,</span> <span class="s2">&quot;Schema Name&quot;</span><span class="p">)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;source_path&quot;</span><span class="p">,</span> <span class="s2">&quot;/Volumes/databricks_clar/bronze/bronze_volume/&quot;</span><span class="p">,</span> <span class="s2">&quot;Source Data Path&quot;</span><span class="p">)</span>
+
+<span class="n">catalog_name</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;catalog_name&quot;</span><span class="p">)</span>
+<span class="n">schema_name</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;schema_name&quot;</span><span class="p">)</span>
+<span class="n">source_path</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source_path&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing data for </span><span class="si">{</span><span class="n">catalog_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">schema_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ### Products Processing (From Your CSV)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Load products data (your original logic enhanced)</span>
+<span class="n">df_products</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;inferSchema&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_path</span><span class="si">}</span><span class="s2">products/&quot;</span><span class="p">)</span>
+
+<span class="c1"># Add audit columns for data lineage</span>
+<span class="n">df_products_enhanced</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_id&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_name&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;processDate&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;source_process_date&quot;</span><span class="p">),</span>
+    <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;bronze_ingestion_timestamp&quot;</span><span class="p">),</span>
+    <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;products_csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;source_system&quot;</span><span class="p">),</span>
+    <span class="nb">hash</span><span class="p">(</span><span class="n">concat_ws</span><span class="p">(</span><span class="s2">&quot;||&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">df_products</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;source_hash&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Data quality metrics for downstream validation</span>
+<span class="n">product_row_count</span> <span class="o">=</span> <span class="n">df_products_enhanced</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">product_null_count</span> <span class="o">=</span> <span class="n">df_products_enhanced</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">()</span> <span class="o">|</span> 
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">()</span> <span class="o">|</span> 
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">()</span>
+<span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Products processed: </span><span class="si">{</span><span class="n">product_row_count</span><span class="si">}</span><span class="s2"> rows, </span><span class="si">{</span><span class="n">product_null_count</span><span class="si">}</span><span class="s2"> nulls&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ### Customers Processing</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Load customers data (your original logic)</span>
+<span class="n">df_customers</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;inferSchema&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source_path</span><span class="si">}</span><span class="s2">customers/&quot;</span><span class="p">)</span>
+
+<span class="c1"># Extract domain from email for your domain analysis</span>
+<span class="n">df_customers_enhanced</span> <span class="o">=</span> <span class="n">df_customers</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;location&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;signup_date&quot;</span><span class="p">),</span>
+    <span class="n">regexp_extract</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">),</span> <span class="s2">&quot;@(.+)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;domain&quot;</span><span class="p">),</span>
+    <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;bronze_ingestion_timestamp&quot;</span><span class="p">),</span>
+    <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;customers_csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;source_system&quot;</span><span class="p">),</span>
+    <span class="nb">hash</span><span class="p">(</span><span class="n">concat_ws</span><span class="p">(</span><span class="s2">&quot;||&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">df_customers</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;source_hash&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">customer_row_count</span> <span class="o">=</span> <span class="n">df_customers_enhanced</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">customer_null_count</span> <span class="o">=</span> <span class="n">df_customers_enhanced</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">()</span> <span class="o">|</span> 
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">()</span>
+<span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Customers processed: </span><span class="si">{</span><span class="n">customer_row_count</span><span class="si">}</span><span class="s2"> rows, </span><span class="si">{</span><span class="n">customer_null_count</span><span class="si">}</span><span class="s2"> nulls&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ### Write to Bronze Layer (Delta Tables)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Write products to Bronze</span>
+<span class="n">products_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">catalog_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">schema_name</span><span class="si">}</span><span class="s2">.products_bronze&quot;</span>
+
+<span class="c1"># Your original upsert logic enhanced</span>
+<span class="k">if</span> <span class="n">spark</span><span class="o">.</span><span class="n">catalog</span><span class="o">.</span><span class="n">tableExists</span><span class="p">(</span><span class="n">products_table</span><span class="p">):</span>
+    <span class="n">dlt_products</span> <span class="o">=</span> <span class="n">DeltaTable</span><span class="o">.</span><span class="n">forName</span><span class="p">(</span><span class="n">spark</span><span class="p">,</span> <span class="n">products_table</span><span class="p">)</span>
+    <span class="n">dlt_products</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;trg&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_products_enhanced</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;src&quot;</span><span class="p">),</span> <span class="s2">&quot;trg.product_id = src.product_id&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">whenMatchedUpdateAll</span><span class="p">()</span> \
+        <span class="o">.</span><span class="n">whenNotMatchedInsertAll</span><span class="p">()</span> \
+        <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Merged </span><span class="si">{</span><span class="n">product_row_count</span><span class="si">}</span><span class="s2"> products into </span><span class="si">{</span><span class="n">products_table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">df_products_enhanced</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">products_table</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Created </span><span class="si">{</span><span class="n">products_table</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">product_row_count</span><span class="si">}</span><span class="s2"> products&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Write customers to Bronze</span>
+<span class="n">customers_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">catalog_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">schema_name</span><span class="si">}</span><span class="s2">.customers_bronze&quot;</span>
+
+<span class="k">if</span> <span class="n">spark</span><span class="o">.</span><span class="n">catalog</span><span class="o">.</span><span class="n">tableExists</span><span class="p">(</span><span class="n">customers_table</span><span class="p">):</span>
+    <span class="n">dlt_customers</span> <span class="o">=</span> <span class="n">DeltaTable</span><span class="o">.</span><span class="n">forName</span><span class="p">(</span><span class="n">spark</span><span class="p">,</span> <span class="n">customers_table</span><span class="p">)</span>
+    <span class="n">dlt_customers</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;trg&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_customers_enhanced</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;src&quot;</span><span class="p">),</span> <span class="s2">&quot;trg.customer_id = src.customer_id&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">whenMatchedUpdateAll</span><span class="p">()</span> \
+        <span class="o">.</span><span class="n">whenNotMatchedInsertAll</span><span class="p">()</span> \
+        <span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Merged </span><span class="si">{</span><span class="n">customer_row_count</span><span class="si">}</span><span class="s2"> customers into </span><span class="si">{</span><span class="n">customers_table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">df_customers_enhanced</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">customers_table</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Created </span><span class="si">{</span><span class="n">customers_table</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">customer_row_count</span><span class="si">}</span><span class="s2"> customers&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ### Output Metrics for Downstream Tasks</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return values for job orchestration</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;</span><span class="p">{{</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;SUCCESS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;products_row_count&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">product_row_count</span><span class="p">},</span>
+    <span class="s2">&quot;customers_row_count&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">customer_row_count</span><span class="p">},</span>
+    <span class="s2">&quot;total_null_count&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">product_null_count</span> <span class="o">+</span> <span class="n">customer_null_count</span><span class="p">},</span>
+    <span class="s2">&quot;execution_time&quot;</span><span class="p">:</span> <span class="s2">&quot;{datetime.datetime.now().isoformat()}&quot;</span>
+<span class="p">}}</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h2>2️⃣ Task 2: Data Quality Check (Condition Task)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/02_data_quality_check.py</span>
+
+<span class="c1"># Databricks notebook source</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Data Quality Validation</span>
+<span class="c1"># MAGIC **Condition task to validate Bronze layer data quality**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Get upstream task results</span>
+<span class="n">upstream_result</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bronze_result&quot;</span><span class="p">)</span>
+<span class="n">result_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">upstream_result</span><span class="p">)</span>
+
+<span class="n">products_count</span> <span class="o">=</span> <span class="n">result_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;products_row_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">customers_count</span> <span class="o">=</span> <span class="n">result_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;customers_row_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">null_count</span> <span class="o">=</span> <span class="n">result_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total_null_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Products: </span><span class="si">{</span><span class="n">products_count</span><span class="si">}</span><span class="s2">, Customers: </span><span class="si">{</span><span class="n">customers_count</span><span class="si">}</span><span class="s2">, Nulls: </span><span class="si">{</span><span class="n">null_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Quality rules (align with your data)</span>
+<span class="n">MIN_PRODUCTS</span> <span class="o">=</span> <span class="mi">90</span>  <span class="c1"># Your CSV has 100 products</span>
+<span class="n">MIN_CUSTOMERS</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># Adjust based on your data</span>
+<span class="n">MAX_NULL_RATIO</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># 5% max nulls</span>
+
+<span class="n">total_records</span> <span class="o">=</span> <span class="n">products_count</span> <span class="o">+</span> <span class="n">customers_count</span>
+<span class="n">null_ratio</span> <span class="o">=</span> <span class="n">null_count</span> <span class="o">/</span> <span class="n">total_records</span> <span class="k">if</span> <span class="n">total_records</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
+
+<span class="n">quality_passed</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">products_count</span> <span class="o">&gt;=</span> <span class="n">MIN_PRODUCTS</span> <span class="ow">and</span>
+    <span class="n">customers_count</span> <span class="o">&gt;=</span> <span class="n">MIN_CUSTOMERS</span> <span class="ow">and</span>
+    <span class="n">null_ratio</span> <span class="o">&lt;=</span> <span class="n">MAX_NULL_RATIO</span>
+<span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Output for condition evaluation</span>
+<span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;quality_passed&quot;</span><span class="p">:</span> <span class="n">quality_passed</span><span class="p">,</span>
+    <span class="s2">&quot;products_count&quot;</span><span class="p">:</span> <span class="n">products_count</span><span class="p">,</span>
+    <span class="s2">&quot;customers_count&quot;</span><span class="p">:</span> <span class="n">customers_count</span><span class="p">,</span>
+    <span class="s2">&quot;null_ratio&quot;</span><span class="p">:</span> <span class="n">null_ratio</span><span class="p">,</span>
+    <span class="s2">&quot;quality_rules&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;min_products&quot;</span><span class="p">:</span> <span class="n">MIN_PRODUCTS</span><span class="p">,</span>
+        <span class="s2">&quot;min_customers&quot;</span><span class="p">:</span> <span class="n">MIN_CUSTOMERS</span><span class="p">,</span>
+        <span class="s2">&quot;max_null_ratio&quot;</span><span class="p">:</span> <span class="n">MAX_NULL_RATIO</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Quality check: </span><span class="si">{</span><span class="s1">&#39;✅ PASSED&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">quality_passed</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;❌ FAILED&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>3️⃣ Task 3: Silver Processing (Declarative Pipeline)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># pipelines/silver_declarative.yml</span>
+<span class="c1"># Lakeflow Spark Declarative Pipeline definition</span>
+
+<span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">databricks_clar.silver</span>
+<span class="nt">configuration</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">bundle.sourcePath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/Workspace/Users/your_email@company.com/medallion_pipeline</span>
+
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customers_enriched</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">STREAMING_TABLE</span>
+<span class="w">    </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Silver</span><span class="nv"> </span><span class="s">layer</span><span class="nv"> </span><span class="s">customer</span><span class="nv"> </span><span class="s">data</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">enrichments&quot;</span>
+
+<span class="w">    </span><span class="nt">definition</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">      </span><span class="no">SELECT </span>
+<span class="w">        </span><span class="no">customer_id,</span>
+<span class="w">        </span><span class="no">name,</span>
+<span class="w">        </span><span class="no">email,</span>
+<span class="w">        </span><span class="no">domain,</span>
+<span class="w">        </span><span class="no">location,</span>
+<span class="w">        </span><span class="no">signup_date,</span>
+<span class="w">        </span><span class="no">bronze_ingestion_timestamp,</span>
+<span class="w">        </span><span class="no">CASE </span>
+<span class="w">          </span><span class="no">WHEN domain IN (&#39;gmail.com&#39;, &#39;yahoo.com&#39;, &#39;hotmail.com&#39;) THEN &#39;Personal&#39;</span>
+<span class="w">          </span><span class="no">ELSE &#39;Business&#39;</span>
+<span class="w">        </span><span class="no">END as customer_type,</span>
+<span class="w">        </span><span class="no">datediff(current_date(), signup_date) as days_since_signup,</span>
+<span class="w">        </span><span class="no">source_hash</span>
+<span class="w">      </span><span class="no">FROM STREAM(databricks_clar.bronze.customers_bronze)</span>
+<span class="w">      </span><span class="no">WHERE email IS NOT NULL</span>
+<span class="w">        </span><span class="no">AND customer_id IS NOT NULL</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products_enriched</span><span class="w">  </span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">STREAMING_TABLE</span>
+<span class="w">    </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Silver</span><span class="nv"> </span><span class="s">layer</span><span class="nv"> </span><span class="s">product</span><span class="nv"> </span><span class="s">data</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">category</span><span class="nv"> </span><span class="s">analysis&quot;</span>
+
+<span class="w">    </span><span class="nt">definition</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">      </span><span class="no">SELECT </span>
+<span class="w">        </span><span class="no">product_id,</span>
+<span class="w">        </span><span class="no">product_name,</span>
+<span class="w">        </span><span class="no">category,</span>
+<span class="w">        </span><span class="no">price,</span>
+<span class="w">        </span><span class="no">source_process_date,</span>
+<span class="w">        </span><span class="no">bronze_ingestion_timestamp,</span>
+<span class="w">        </span><span class="no">CASE </span>
+<span class="w">          </span><span class="no">WHEN price &lt; 100 THEN &#39;Low&#39;</span>
+<span class="w">          </span><span class="no">WHEN price &lt; 300 THEN &#39;Medium&#39;</span>
+<span class="w">          </span><span class="no">ELSE &#39;High&#39;</span>
+<span class="w">        </span><span class="no">END as price_tier,</span>
+<span class="w">        </span><span class="no">round(price * 1.2, 2) as price_with_margin,</span>
+<span class="w">        </span><span class="no">source_hash</span>
+<span class="w">      </span><span class="no">FROM STREAM(databricks_clar.bronze.products_bronze)</span>
+<span class="w">      </span><span class="no">WHERE price &gt; 0</span>
+<span class="w">        </span><span class="no">AND product_id IS NOT NULL</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">category_summary</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MATERIALIZED_VIEW</span><span class="w">  </span>
+<span class="w">    </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Pre-aggregated</span><span class="nv"> </span><span class="s">category</span><span class="nv"> </span><span class="s">metrics</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Gold</span><span class="nv"> </span><span class="s">layer&quot;</span>
+
+<span class="w">    </span><span class="nt">definition</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">      </span><span class="no">SELECT </span>
+<span class="w">        </span><span class="no">category,</span>
+<span class="w">        </span><span class="no">count(*) as product_count,</span>
+<span class="w">        </span><span class="no">avg(price) as avg_price,</span>
+<span class="w">        </span><span class="no">min(price) as min_price,</span>
+<span class="w">        </span><span class="no">max(price) as max_price,</span>
+<span class="w">        </span><span class="no">sum(price) as total_value,</span>
+<span class="w">        </span><span class="no">current_timestamp() as last_updated</span>
+<span class="w">      </span><span class="no">FROM databricks_clar.silver.products_enriched</span>
+<span class="w">      </span><span class="no">GROUP BY category</span>
+</code></pre></div>
+
+<hr />
+<h2>4️⃣ Task 4: Gold Aggregation (SQL Task)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- notebooks/03_gold_aggregation.sql</span>
+<span class="c1">-- Business intelligence aggregations</span>
+
+<span class="c1">-- Create business metrics tables</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">gold</span><span class="p">.</span><span class="n">product_analytics</span><span class="w"> </span><span class="k">AS</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">category</span><span class="p">,</span>
+<span class="w">  </span><span class="n">price_tier</span><span class="p">,</span>
+<span class="w">  </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">product_count</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">price</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_price</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ROUND</span><span class="p">(</span><span class="k">SUM</span><span class="p">(</span><span class="n">price</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">total_value</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">price_with_margin</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_margin_price</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">silver</span><span class="p">.</span><span class="n">products_enriched</span>
+<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">category</span><span class="p">,</span><span class="w"> </span><span class="n">price_tier</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">category</span><span class="p">,</span><span class="w"> </span><span class="n">price_tier</span><span class="p">;</span>
+
+<span class="c1">-- Customer segmentation analysis  </span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">gold</span><span class="p">.</span><span class="n">customer_segments</span><span class="w"> </span><span class="k">AS</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">customer_type</span><span class="p">,</span>
+<span class="w">  </span><span class="k">location</span><span class="p">,</span>
+<span class="w">  </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">customer_count</span><span class="p">,</span>
+<span class="w">  </span><span class="k">AVG</span><span class="p">(</span><span class="n">days_since_signup</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_days_active</span><span class="p">,</span>
+<span class="w">  </span><span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="k">domain</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">unique_domains</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">silver</span><span class="p">.</span><span class="n">customers_enriched</span><span class="w">  </span>
+<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">customer_type</span><span class="p">,</span><span class="w"> </span><span class="k">location</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">customer_count</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span>
+
+<span class="c1">-- Category performance (based on your original analysis)</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">gold</span><span class="p">.</span><span class="n">category_performance</span><span class="w"> </span><span class="k">AS</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">category</span><span class="p">,</span>
+<span class="w">  </span><span class="n">product_count</span><span class="p">,</span>
+<span class="w">  </span><span class="n">avg_price</span><span class="p">,</span>
+<span class="w">  </span><span class="n">total_value</span><span class="p">,</span>
+<span class="w">  </span><span class="n">RANK</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">avg_price</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">price_rank</span><span class="p">,</span>
+<span class="w">  </span><span class="n">RANK</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">product_count</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">volume_rank</span><span class="p">,</span>
+<span class="w">  </span><span class="n">last_updated</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">silver</span><span class="p">.</span><span class="n">category_summary</span><span class="p">;</span>
+</code></pre></div>
+
+<hr />
+<h2>5️⃣ Task 5: Alert Handler</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/04_alert_handler.py</span>
+
+<span class="c1"># Databricks notebook source  </span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Data Quality Alert Handler</span>
+<span class="c1"># MAGIC **Triggered when quality checks fail**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="c1"># Get quality check results</span>
+<span class="n">quality_result</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;quality_result&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">quality_result</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Format alert message</span>
+<span class="n">alert_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">🚨 DATA QUALITY ALERT - MEDALLION PIPELINE</span>
+
+<span class="s2">Timestamp: </span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="si">}</span>
+<span class="s2">Pipeline: medallion_pipeline  </span>
+<span class="s2">Status: QUALITY CHECK FAILED</span>
+
+<span class="s2">Metrics:</span>
+<span class="s2">- Products Count: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;products_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (Required: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;quality_rules&#39;</span><span class="p">][</span><span class="s1">&#39;min_products&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)</span>
+<span class="s2">- Customers Count: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;customers_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (Required: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;quality_rules&#39;</span><span class="p">][</span><span class="s1">&#39;min_customers&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)  </span>
+<span class="s2">- Null Ratio: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;null_ratio&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> (Max Allowed: </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;quality_rules&#39;</span><span class="p">][</span><span class="s1">&#39;max_null_ratio&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)</span>
+
+<span class="s2">Action Required: Investigate data source issues</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">alert_message</span><span class="p">)</span>
+
+<span class="c1"># In production, you&#39;d send this via:</span>
+<span class="c1"># - Email (using SendGrid/SMTP)  </span>
+<span class="c1"># - Slack webhook</span>
+<span class="c1"># - PagerDuty</span>
+<span class="c1"># - Custom webhook</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Log to system tables for monitoring</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">INSERT INTO databricks_clar.monitoring.pipeline_alerts</span>
+<span class="s2">VALUES (</span>
+<span class="s2">  &#39;</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;,</span>
+<span class="s2">  &#39;medallion_pipeline&#39;,</span>
+<span class="s2">  &#39;QUALITY_CHECK_FAILED&#39;, </span>
+<span class="s2">  &#39;</span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;,</span>
+<span class="s2">  &#39;</span><span class="si">{</span><span class="n">alert_message</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;&#39;&#39;&quot;</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;</span>
+<span class="s2">)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ALERT_SENT&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h2>🛠️ Databricks Asset Bundle (DAB) Configuration</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># databricks.yml</span>
+<span class="nt">bundle</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">medallion_pipeline</span>
+
+<span class="nt">variables</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">catalog_name</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Unity Catalog name</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">databricks_clar</span>
+
+<span class="w">  </span><span class="nt">schema_bronze</span><span class="p">:</span><span class="w">  </span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Bronze schema name</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze</span>
+
+<span class="w">  </span><span class="nt">schema_silver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Silver schema name</span><span class="w">  </span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">silver</span>
+
+<span class="w">  </span><span class="nt">schema_gold</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Gold schema name</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gold</span>
+
+<span class="nt">targets</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dev</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">workspace</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://your-workspace.cloud.databricks.com</span>
+<span class="w">    </span><span class="nt">variables</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">catalog_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">databricks_clar_dev</span>
+
+<span class="w">  </span><span class="nt">prod</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">workspace</span><span class="p">:</span><span class="w"> </span>
+<span class="w">      </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://your-workspace.cloud.databricks.com</span>
+<span class="w">    </span><span class="nt">variables</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">catalog_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">databricks_clar_prod</span>
+
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># The Declarative Pipeline</span>
+<span class="w">  </span><span class="nt">pipelines</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">silver_pipeline</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">medallion_silver_pipeline</span>
+<span class="w">      </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${var.catalog_name}.${var.schema_silver}</span>
+<span class="w">      </span><span class="nt">libraries</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./pipelines/silver_declarative.yml</span>
+<span class="w">      </span><span class="nt">clusters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">num_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">          </span><span class="nt">spark_version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;14.3.x-scala2.12&quot;</span>
+<span class="w">          </span><span class="nt">node_type_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;i3.xlarge&quot;</span>
+<span class="w">      </span><span class="nt">serverless</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="w">  </span><span class="c1"># The orchestration job</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">medallion_job</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">medallion_pipeline_job</span>
+
+<span class="w">      </span><span class="c1"># Schedule - daily at 2 AM EST  </span>
+<span class="w">      </span><span class="nt">schedule</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">quartz_cron_expression</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?&quot;</span>
+<span class="w">        </span><span class="nt">timezone_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;America/New_York&quot;</span>
+<span class="w">        </span><span class="nt">pause_status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">UNPAUSED</span>
+
+<span class="w">      </span><span class="c1"># Notifications</span>
+<span class="w">      </span><span class="nt">email_notifications</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">on_start</span><span class="p">:</span><span class="w"> </span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">clarence@company.com</span>
+<span class="w">        </span><span class="nt">on_failure</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">clarence@company.com</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data-team@company.com</span>
+<span class="w">        </span><span class="nt">on_success</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">clarence@company.com</span>
+
+<span class="w">      </span><span class="c1"># The DAG tasks</span>
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># Task 1: Bronze ingestion (your PySpark notebook)</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_ingestion</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/01_bronze_ingestion.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">catalog_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${var.catalog_name}</span>
+<span class="w">              </span><span class="nt">schema_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${var.schema_bronze}</span>
+<span class="w">              </span><span class="nt">source_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/Volumes/${var.catalog_name}/${var.schema_bronze}/bronze_volume/&quot;</span>
+<span class="w">          </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1800</span><span class="w">  </span><span class="c1"># 30 minutes</span>
+<span class="w">          </span><span class="nt">max_retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+
+<span class="w">        </span><span class="c1"># Task 2: Quality validation  </span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data_quality_check</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_ingestion</span>
+<span class="w">          </span><span class="nt">condition_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;GREATER_THAN&quot;</span><span class="w"> </span>
+<span class="w">            </span><span class="nt">left</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.bronze_ingestion.values.total_null_count}}&quot;</span>
+<span class="w">            </span><span class="nt">right</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;10&quot;</span>
+
+<span class="w">        </span><span class="c1"># Task 3: Silver processing (only if quality passes)</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">silver_processing</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data_quality_check</span><span class="w">  </span>
+<span class="w">              </span><span class="nt">outcome</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;false&quot;</span><span class="w">  </span><span class="c1"># null count &lt;= 10</span>
+<span class="w">          </span><span class="nt">pipeline_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">pipeline_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${resources.pipelines.silver_pipeline.id}</span>
+<span class="w">            </span><span class="nt">full_refresh</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+
+<span class="w">        </span><span class="c1"># Task 4: Gold aggregation</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gold_aggregation</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">silver_processing</span>
+<span class="w">          </span><span class="nt">sql_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">file</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/03_gold_aggregation.sql</span>
+<span class="w">            </span><span class="nt">warehouse_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;your_sql_warehouse_id&quot;</span>
+
+<span class="w">        </span><span class="c1"># Task 5: Alert handler (if quality fails)</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quality_alert</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data_quality_check</span>
+<span class="w">              </span><span class="nt">outcome</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span><span class="w">  </span><span class="c1"># null count &gt; 10 </span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/04_alert_handler.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">quality_result</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.data_quality_check.values.result}}&quot;</span>
+
+<span class="w">      </span><span class="c1"># Performance settings</span>
+<span class="w">      </span><span class="nt">queue</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">max_concurrent_runs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</code></pre></div>
+
+<hr />
+<h2>🚀 Deployment Commands</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Validate the bundle</span>
+databricks<span class="w"> </span>bundle<span class="w"> </span>validate
+
+<span class="c1"># Deploy to dev</span>
+databricks<span class="w"> </span>bundle<span class="w"> </span>deploy<span class="w"> </span>--target<span class="w"> </span>dev
+
+<span class="c1"># Run the job manually  </span>
+databricks<span class="w"> </span>bundle<span class="w"> </span>run<span class="w"> </span>medallion_job<span class="w"> </span>--target<span class="w"> </span>dev
+
+<span class="c1"># Deploy to production</span>
+databricks<span class="w"> </span>bundle<span class="w"> </span>deploy<span class="w"> </span>--target<span class="w"> </span>prod
+
+<span class="c1"># Monitor job status</span>
+databricks<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>runs<span class="w"> </span>list<span class="w"> </span>--job-id<span class="w"> </span>&lt;job_id&gt;<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span>
+</code></pre></div>
+
+<hr />
+<h2>📊 Monitoring &amp; Observability</h2>
+<h3>System Tables Queries</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Job run performance</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">j</span><span class="p">.</span><span class="n">job_name</span><span class="p">,</span>
+<span class="w">  </span><span class="n">r</span><span class="p">.</span><span class="n">run_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">r</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span>
+<span class="w">  </span><span class="n">r</span><span class="p">.</span><span class="n">end_time</span><span class="p">,</span>
+<span class="w">  </span><span class="n">r</span><span class="p">.</span><span class="n">result_state</span><span class="p">,</span>
+<span class="w">  </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">duration_seconds</span>
+<span class="k">FROM</span><span class="w"> </span><span class="k">system</span><span class="p">.</span><span class="n">lakeflow</span><span class="p">.</span><span class="n">job_runs</span><span class="w"> </span><span class="n">r</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="k">system</span><span class="p">.</span><span class="n">lakeflow</span><span class="p">.</span><span class="n">jobs</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">job_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">j</span><span class="p">.</span><span class="n">job_id</span><span class="w">  </span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">j</span><span class="p">.</span><span class="n">job_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;medallion_pipeline_job&#39;</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">start_time</span><span class="w"> </span><span class="k">DESC</span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+
+<span class="c1">-- Task-level metrics</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">r</span><span class="p">.</span><span class="n">run_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">t</span><span class="p">.</span><span class="n">task_key</span><span class="p">,</span>
+<span class="w">  </span><span class="n">t</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span>
+<span class="w">  </span><span class="n">t</span><span class="p">.</span><span class="n">end_time</span><span class="p">,</span><span class="w"> </span>
+<span class="w">  </span><span class="n">t</span><span class="p">.</span><span class="n">result_state</span><span class="p">,</span>
+<span class="w">  </span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">end_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">duration_seconds</span>
+<span class="k">FROM</span><span class="w"> </span><span class="k">system</span><span class="p">.</span><span class="n">lakeflow</span><span class="p">.</span><span class="n">task_runs</span><span class="w"> </span><span class="n">t</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="k">system</span><span class="p">.</span><span class="n">lakeflow</span><span class="p">.</span><span class="n">job_runs</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">run_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">run_id</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">job_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;medallion_pipeline_job&#39;</span>
+<span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">start_time</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="k">current_timestamp</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="n">DAYS</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">start_time</span><span class="w"> </span><span class="k">DESC</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">start_time</span><span class="p">;</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 Exam Key Points</h2>
+<h3>LakeFlow Jobs Concepts Tested:</h3>
+<ol>
+<li><strong>Task Dependencies</strong>: Bronze → Quality Check → Silver → Gold (linear + conditional)</li>
+<li><strong>Condition Tasks</strong>: Quality gate that routes to success or alert path</li>
+<li><strong>Serverless Compute</strong>: Default for all task types (notebook, SQL, pipeline)</li>
+<li><strong>Retries</strong>: Auto-optimization enabled by default on serverless</li>
+<li><strong>Asset Bundles</strong>: Infrastructure as Code for CI/CD</li>
+<li><strong>System Tables</strong>: Monitoring job performance and costs</li>
+<li><strong>Triggers</strong>: Cron schedule (daily 2 AM) vs. continuous vs. file arrival</li>
+<li><strong>Task Types</strong>: Notebook, Pipeline, SQL, Condition - each serves a purpose</li>
+</ol>
+<h3>Common Exam Traps:</h3>
+<ul>
+<li>❌ "Use all-purpose compute for production jobs" → Use serverless/jobs compute</li>
+<li>❌ "Condition task outcome 'true' means success" → 'true' means condition was met (could be failure case)</li>
+<li>❌ "All downstream tasks run regardless of upstream status" → Failed tasks skip downstream unless configured otherwise</li>
+<li>❌ "Job parameters and task parameters are the same" → Job params cascade, task params are scoped</li>
+</ul>
+<p>This solution demonstrates the <strong>complete LakeFlow Jobs orchestration pattern</strong> that's central to the 2026 Databricks Data Engineer Associate certification. It shows your Bronze PySpark notebook as the foundation of a production-ready Medallion architecture with proper error handling, monitoring, and CI/CD practices.</p>
+</body>
+</html>

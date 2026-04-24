@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lakeflow Declarative Pipelines — Cheat Sheet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0c10;--card:#161b22;--border:#21262d;--cyan:#00e5ff;--green:#39d353;--yellow:#f0c040;--red:#f85149;--purple:#bc8cff;--orange:#ff8c42;--muted:#6e7681;--text:#c9d1d9;--heading:#f0f6fc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6;padding:32px 24px;max-width:1200px;margin:0 auto;}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px;display:flex;align-items:flex-end;gap:20px;}
+.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
+h1{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--heading);}
+h1 span{color:var(--cyan);}
+.badge{margin-left:auto;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;border-radius:4px;white-space:nowrap;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+.full{margin-bottom:16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 20px;}
+.ct{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.c1{border-top:2px solid var(--cyan);}.c1 .dot{background:var(--cyan);}
+.c2{border-top:2px solid var(--green);}.c2 .dot{background:var(--green);}
+.c3{border-top:2px solid var(--yellow);}.c3 .dot{background:var(--yellow);}
+.c4{border-top:2px solid var(--purple);}.c4 .dot{background:var(--purple);}
+.c5{border-top:2px solid var(--orange);}.c5 .dot{background:var(--orange);}
+.c6{border-top:2px solid var(--red);}.c6 .dot{background:var(--red);}
+pre{background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;overflow-x:auto;margin:10px 0;line-height:1.8;}
+.kw{color:var(--purple);}.str{color:var(--green);}.cmt{color:var(--muted);font-style:italic;}.key{color:var(--cyan);}.val{color:var(--orange);}.dec{color:var(--yellow);}
+ul{list-style:none;}
+ul li{padding:5px 0;padding-left:16px;position:relative;font-size:13px;border-bottom:1px solid #1a1f27;}
+ul li:last-child{border-bottom:none;}
+ul li::before{content:'›';position:absolute;left:0;color:var(--muted);}
+ul li strong{color:var(--heading);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#0d1117;color:var(--heading);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:9px 12px;border-bottom:1px solid #1a1f27;vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+td:first-child{color:var(--heading);font-weight:500;}
+.trap{background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.25);border-left:3px solid var(--red);border-radius:4px;padding:12px 14px;margin:8px 0;font-size:13px;}
+.tl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--red);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+.tip{background:rgba(57,211,83,.07);border:1px solid rgba(57,211,83,.2);border-left:3px solid var(--green);border-radius:4px;padding:12px 14px;margin:8px 0;font-size:13px;}
+.tipl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+.div{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin:28px 0 14px;display:flex;align-items:center;gap:12px;}
+.div::before,.div::after{content:'';flex:1;height:1px;background:var(--border);}
+.div::before{flex:0 0 16px;}
+.check{color:var(--green);}.cross{color:var(--red);}
+.pill{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;margin:3px;}
+.p1{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.2);}
+.p2{background:rgba(57,211,83,.1);color:var(--green);border:1px solid rgba(57,211,83,.2);}
+.p3{background:rgba(240,192,64,.1);color:var(--yellow);border:1px solid rgba(240,192,64,.2);}
+.p4{background:rgba(248,81,73,.1);color:var(--red);border:1px solid rgba(248,81,73,.2);}
+.ftr{border-top:1px solid var(--border);margin-top:32px;padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+</style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<div class="hdr">
+  <div>
+    <div class="tag">Section 11 · [NEW 2026]</div>
+    <h1>Lakeflow <span>Declarative Pipelines</span></h1>
+    <div style="font-size:13px;color:var(--muted);margin-top:6px;">formerly Delta Live Tables · databricks_clar</div>
+  </div>
+  <div class="badge">EXAM DOMAIN: Data Processing 31%</div>
+</div>
+
+<div class="card c1 full">
+  <div class="ct"><span class="dot"></span>Cortana TL;DR</div>
+  <ul>
+    <li><strong>Import:</strong> <code>from pyspark import pipelines as dp</code> — NOT <code>import dlt</code> anymore</li>
+    <li><strong>Four table types:</strong> @dp.table (streaming), @dp.materialized_view (batch), staging view (temp), append flow (multi-source)</li>
+    <li><strong>Dry Run</strong> = dev mode, no data published. <strong>Production</strong> = tables published to Unity Catalog</li>
+    <li><strong>Expectations</strong> = data quality decorators — warn, drop, or fail per violation</li>
+    <li><strong>Auto CDC</strong> = <code>create_auto_cdc_flow()</code> — replaces old <code>apply_changes()</code></li>
+  </ul>
+</div>
+
+<div class="div">Import Pattern & Table Types</div>
+<div class="grid2">
+  <div class="card c2">
+    <div class="ct"><span class="dot"></span>@dp.table — Streaming Table</div>
+    <pre><span class="kw">from</span> pyspark <span class="kw">import</span> pipelines <span class="kw">as</span> dp
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> col, upper, lit
+
+<span class="dec">@dp.table</span>(name=<span class="str">"bronze_products"</span>)
+<span class="kw">def</span> <span class="key">bronze_products</span>():
+    <span class="kw">return</span> spark.readStream \
+        .format(<span class="str">"cloudFiles"</span>) \
+        .option(<span class="str">"cloudFiles.format"</span>, <span class="str">"csv"</span>) \
+        .option(<span class="str">"header"</span>, <span class="str">"true"</span>) \
+        .option(<span class="str">"inferSchema"</span>, <span class="str">"true"</span>) \
+        .load(<span class="str">"/Volumes/databricks_clar/bronze/autovol/raw/products/"</span>)</pre>
+  </div>
+  <div class="card c3">
+    <div class="ct"><span class="dot"></span>@dp.materialized_view — Batch</div>
+    <pre><span class="dec">@dp.materialized_view</span>(name=<span class="str">"gold_category_summary"</span>)
+<span class="kw">def</span> <span class="key">gold_category_summary</span>():
+    <span class="kw">return</span> spark.sql(<span class="str">"""
+        SELECT
+          category,
+          COUNT(*) as product_count,
+          AVG(price) as avg_price,
+          MAX(price) as max_price
+        FROM databricks_clar.silver.products_enriched
+        GROUP BY category
+    """</span>)</pre>
+    <ul>
+      <li>Batch / full refresh — no streaming</li>
+      <li>Cannot use <code>@dp.table</code> decorator for this</li>
+    </ul>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="card c4">
+    <div class="ct"><span class="dot"></span>Staging View — Temp Transform</div>
+    <pre><span class="dec">@dp.view</span>(name=<span class="str">"products_staging"</span>)
+<span class="kw">def</span> <span class="key">products_staging</span>():
+    <span class="kw">return</span> spark.readStream \
+        .option(<span class="str">"skipChangeCommits"</span>, <span class="val">True</span>) \
+        .table(<span class="str">"bronze_products"</span>) \
+        .withColumn(<span class="str">"category"</span>, upper(col(<span class="str">"category"</span>))) \
+        .withColumn(<span class="str">"flag"</span>, lit(<span class="str">"processed"</span>))
+
+<span class="cmt"># Never published — temp pipeline step only</span></pre>
+  </div>
+  <div class="card c5">
+    <div class="ct"><span class="dot"></span>Append Flow — Multi-Source</div>
+    <pre><span class="dec">@dp.table</span>(name=<span class="str">"silver_products"</span>)
+<span class="kw">def</span> <span class="key">silver_products</span>(): <span class="kw">pass</span>
+
+<span class="dec">@dp.append_flow</span>(target=<span class="str">"silver_products"</span>)
+<span class="kw">def</span> <span class="key">load_from_bronze</span>():
+    <span class="kw">return</span> spark.readStream.table(<span class="str">"bronze_products"</span>)
+
+<span class="cmt"># Backfill (runs once)</span>
+<span class="dec">@dp.append_flow</span>(target=<span class="str">"silver_products"</span>, once=<span class="val">True</span>)
+<span class="kw">def</span> <span class="key">backfill_legacy</span>():
+    <span class="kw">return</span> spark.read.table(<span class="str">"old_products_archive"</span>)</pre>
+  </div>
+</div>
+
+<div class="div">Data Quality Expectations</div>
+<div class="card full">
+  <div class="ct"><span class="dot" style="background:var(--cyan)"></span>Three Modes</div>
+  <table>
+    <tr><th>Decorator</th><th>On Violation</th><th>Use When</th></tr>
+    <tr><td><code>@dp.expect</code></td><td class="check">WARN — keep row, log metric</td><td>Monitoring only, non-critical quality</td></tr>
+    <tr><td><code>@dp.expect_or_drop</code></td><td style="color:var(--yellow)">DROP — remove bad row</td><td>Bad rows shouldn't pollute downstream</td></tr>
+    <tr><td><code>@dp.expect_or_fail</code></td><td class="cross">FAIL — stop the pipeline</td><td>Zero-tolerance, must-be-clean data</td></tr>
+  </table>
+  <pre style="margin-top:14px;"><span class="cmt"># Stack expectations on products table</span>
+<span class="dec">@dp.table</span>(name=<span class="str">"silver_products_clean"</span>)
+<span class="dec">@dp.expect</span>(<span class="str">"price_positive"</span>, <span class="str">"price &gt; 0"</span>)
+<span class="dec">@dp.expect_or_drop</span>(<span class="str">"product_id_not_null"</span>, <span class="str">"product_id IS NOT NULL"</span>)
+<span class="dec">@dp.expect_or_fail</span>(<span class="str">"no_negative_price"</span>, <span class="str">"price &gt;= 0"</span>)
+<span class="kw">def</span> <span class="key">silver_products_clean</span>():
+    <span class="kw">return</span> spark.readStream \
+        .option(<span class="str">"skipChangeCommits"</span>, <span class="val">True</span>) \
+        .table(<span class="str">"bronze_products"</span>)
+
+<span class="cmt"># expect_all — dict pattern</span>
+<span class="dec">@dp.expect_all</span>({
+    <span class="str">"price_positive"</span>: <span class="str">"price &gt; 0"</span>,
+    <span class="str">"category_not_null"</span>: <span class="str">"category IS NOT NULL"</span>
+})
+<span class="kw">def</span> <span class="key">silver_products_strict</span>(): ...</pre>
+</div>
+
+<div class="div">Auto CDC (SCD1 + SCD2)</div>
+<div class="grid2">
+  <div class="card c2">
+    <div class="ct"><span class="dot"></span>SCD Type 1 — Upsert</div>
+    <pre>dp.create_auto_cdc_flow(
+  source=<span class="str">"bronze_products_cdc"</span>,
+  target=<span class="str">"silver_products_current"</span>,
+  keys=[<span class="str">"product_id"</span>],
+  sequence_by=col(<span class="str">"processDate"</span>),
+  <span class="cmt"># SCD1 = default, no stored_as_scd_type</span>
+)</pre>
+  </div>
+  <div class="card c4">
+    <div class="ct"><span class="dot"></span>SCD Type 2 — Full History</div>
+    <pre>dp.create_auto_cdc_flow(
+  source=<span class="str">"bronze_products_cdc"</span>,
+  target=<span class="str">"silver_products_history"</span>,
+  keys=[<span class="str">"product_id"</span>],
+  sequence_by=col(<span class="str">"processDate"</span>),
+  stored_as_scd_type=<span class="val">2</span>,
+  track_history_column_list=[<span class="str">"price"</span>, <span class="str">"category"</span>]
+)</pre>
+  </div>
+</div>
+
+<div class="div">Exam Traps</div>
+<div class="full">
+  <div class="trap"><div class="tl">⚠ Trap 01</div><strong>Import is <code>from pyspark import pipelines as dp</code></strong> — NOT <code>import dlt</code>. The rebrand to Lakeflow changed the import path entirely.</div>
+  <div class="trap"><div class="tl">⚠ Trap 02</div><strong>@dp.table = streaming ONLY.</strong> If you need a batch/full-refresh table, use <code>@dp.materialized_view</code>. Mixing them up is a classic exam trap.</div>
+  <div class="trap"><div class="tl">⚠ Trap 03</div><strong>sequence_by requires <code>col()</code></strong> — not a plain string. <code>sequence_by="processDate"</code> is WRONG. Use <code>sequence_by=col("processDate")</code>.</div>
+  <div class="trap"><div class="tl">⚠ Trap 04</div><strong>once=True in append_flow = backfill.</strong> It runs exactly once as a batch load. After that, it's done — no future triggers.</div>
+  <div class="trap"><div class="tl">⚠ Trap 05</div><strong>Renaming a flow kills the checkpoint.</strong> If you rename an append_flow function, its checkpoint is orphaned and the flow starts fresh from the beginning.</div>
+  <div class="tip"><div class="tipl">✓ Key Point</div><strong>Dry Run = sandbox only.</strong> No tables are published to Unity Catalog in Dry Run mode — it's purely for development and validation.</div>
+  <div class="tip"><div class="tipl">✓ Key Point</div><strong>skipChangeCommits=True</strong> when reading a CDC-enabled Delta source into a streaming table. Without it, update/delete records cause errors.</div>
+</div>
+
+<div class="ftr">
+  <span>databricks_clar · Section 11 — Lakeflow Declarative Pipelines</span>
+  <span>April 2026 · Certified Data Engineer Associate Prep</span>
+</div>
+</body>
+</html>

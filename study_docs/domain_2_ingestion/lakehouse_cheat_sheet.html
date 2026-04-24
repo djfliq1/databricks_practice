@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lakehouse Core Fundamentals Cheat Sheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #e8eaed;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: #1f1f1f;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+
+        h1 {
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #b0b3b8;
+            font-size: 1.2em;
+        }
+
+        .section {
+            background: #1f1f1f;
+            margin: 20px 0;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-left: 5px solid #64b5f6;
+            border: 1px solid #333;
+        }
+
+        .section h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .section h3 {
+            color: #e8eaed;
+            margin: 20px 0 15px 0;
+            font-size: 1.3em;
+        }
+
+        .diagram {
+            background: #2a2a2a;
+            border: 2px solid #404040;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: monospace;
+            color: #e8eaed;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+            position: relative;
+        }
+
+        .flow-arrow {
+            font-size: 1.5em;
+            color: #64b5f6;
+        }
+
+        .code-block {
+            background: #0d1117;
+            color: #e6edf3;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Fira Code', Consolas, monospace;
+            position: relative;
+            border: 1px solid #30363d;
+        }
+
+        .code-block::before {
+            content: attr(data-lang);
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: #f85149;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+
+        .highlight {
+            background: #ffc107;
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .arch-component {
+            background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .medallion-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .medallion-layer {
+            padding: 25px;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .bronze {
+            background: linear-gradient(135deg, #CD7F32 0%, #B8860B 100%);
+        }
+
+        .silver {
+            background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+            color: #000;
+        }
+
+        .gold {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+        }
+
+        .compute-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .compute-card {
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+
+        .all-purpose { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .job-compute { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .serverless { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .sql-warehouse { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .pools { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+        .two-plane {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .plane {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .control-plane {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .compute-plane {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .key-points {
+            background: #1a2e1a;
+            border-left: 5px solid #4caf50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border: 1px solid #2e5e2e;
+        }
+
+        .warning {
+            background: #2a2416;
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            border: 1px solid #4a3e16;
+        }
+
+        .nav-menu {
+            background: #1f1f1f;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border: 1px solid #333;
+        }
+
+        .nav-menu ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-menu a {
+            color: #64b5f6;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-menu a:hover {
+            background: #2a2a2a;
+        }
+
+        @media (max-width: 768px) {
+            .flow-diagram, .medallion-diagram, .two-plane {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .compute-types {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Lakehouse Core Fundamentals</h1>
+            <p class="subtitle">Your comprehensive guide to modern data architecture</p>
+        </div>
+
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#pillars">Five Pillars</a></li>
+                <li><a href="#delta">Delta Lake</a></li>
+                <li><a href="#spark">Apache Spark</a></li>
+                <li><a href="#databricks">Databricks</a></li>
+                <li><a href="#medallion">Medallion</a></li>
+                <li><a href="#dlt">DLT</a></li>
+                <li><a href="#patterns">Best Practices</a></li>
+            </ul>
+        </nav>
+
+        <section id="overview" class="section">
+            <h2>🌊 What is a Lakehouse?</h2>
+            <div class="key-points">
+                <p><strong>Lakehouse = Data Lake + SQL Interface</strong></p>
+                <p>Combines cheap, flexible storage with transactional rigor of data warehouses</p>
+            </div>
+
+            <div class="flow-diagram">
+                <div class="flow-step">Data Lake<br><small>Cheap Storage</small></div>
+                <div class="flow-arrow">+</div>
+                <div class="flow-step">SQL Interface<br><small>Database Experience</small></div>
+                <div class="flow-arrow">=</div>
+                <div class="flow-step">Lakehouse<br><small>Best of Both</small></div>
+            </div>
+        </section>
+
+        <section id="pillars" class="section">
+            <h2>🏛️ The Five Pillars</h2>
+            
+            <div class="architecture-grid">
+                <div class="arch-component">
+                    <h3>1. Open File Formats</h3>
+                    <p>Parquet, ORC on object storage<br>No vendor lock-in</p>
+                </div>
+                <div class="arch-component">
+                    <h3>2. Open Table Formats ⭐</h3>
+                    <p>Delta Lake, Iceberg, Hudi<br>SQL management of data lakes</p>
+                </div>
+                <div class="arch-component">
+                    <h3>3. Decoupled Compute</h3>
+                    <p>Scale storage & compute independently<br>Multiple engines, same data</p>
+                </div>
+                <div class="arch-component">
+                    <h3>4. Unified Metadata</h3>
+                    <p>Unity Catalog, Glue<br>Single source of truth</p>
+                </div>
+                <div class="arch-component">
+                    <h3>5. Medallion Architecture</h3>
+                    <p>Bronze → Silver → Gold<br>Progressive data refinement</p>
+                </div>
+            </div>
+
+            <div class="key-points">
+                <h3>🎯 The Magic of Open Table Formats</h3>
+                <div class="diagram">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                        <div style="text-align: center;">
+                            <div style="background: #e74c3c; color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                                <strong>Without Open Table Formats</strong><br>
+                                Scan 50,000+ files<br>
+                                💸💸💸 Expensive + Slow
+                            </div>
+                        </div>
+                        <div style="font-size: 2em; color: #3498db;">VS</div>
+                        <div style="text-align: center;">
+                            <div style="background: #27ae60; color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                                <strong>With Open Table Formats</strong><br>
+                                Smart index → Target 3 files<br>
+                                ⚡ Fast + Cheap
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="delta" class="section">
+            <h2>📊 Delta Lake Deep Dive</h2>
+            
+            <div class="key-points">
+                <p><strong>Delta Lake = Open table format on top of Parquet files</strong></p>
+                <p>The transaction log is the file that stores all transactions</p>
+            </div>
+
+            <h3>Transaction Log Structure</h3>
+            <div class="code-block" data-lang="structure">
+_delta_log/
+├── 00000000000000000000.json  ← Transaction 0 (table creation)
+├── 00000000000000000001.json  ← Transaction 1 (first INSERT)
+├── 00000000000000000002.json  ← Transaction 2 (UPDATE)
+├── 00000000000000000003.json  ← Transaction 3 (DELETE)
+            </div>
+
+            <h3>Transaction File Contents</h3>
+            <div class="code-block" data-lang="json">
+{
+  "commitInfo": {
+    "timestamp": 1640995200000,
+    "operation": "WRITE",
+    "operationParameters": {"mode": "Append"}
+  },
+  "add": {
+    "path": "part-00001.parquet",
+    "size": 1024,
+    "modificationTime": 1640995200000,
+    "dataChange": true
+  }
+}
+            </div>
+
+            <h3>ACID Operations</h3>
+            <div class="code-block" data-lang="sql">
+-- Delete operations
+DELETE FROM orders WHERE order_date < '2023-01-01';
+
+-- Updates  
+UPDATE orders SET status = 'shipped' WHERE id = 123;
+
+-- Upserts (Merge)
+MERGE INTO customers USING new_data ON customer_id = id
+WHEN MATCHED THEN UPDATE SET *
+WHEN NOT MATCHED THEN INSERT *;
+
+-- Time Travel
+SELECT * FROM orders VERSION AS OF '2024-01-01';
+SELECT * FROM orders TIMESTAMP AS OF '2024-01-01 10:00:00';
+            </div>
+        </section>
+
+        <section id="spark" class="section">
+            <h2>⚡ Apache Spark Fundamentals</h2>
+            
+            <div class="key-points">
+                <p><strong>Apache Spark = Distributed computing engine</strong></p>
+                <p>Spreads jobs across cluster of machines and does most work in memory (10-100x faster)</p>
+            </div>
+
+            <h3>Spark's Distributed Processing</h3>
+            <div class="flow-diagram">
+                <div class="flow-step">1TB Dataset</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">Split into<br>1000 chunks</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">Distribute to<br>50 workers</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">Process in<br>parallel</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">Combine<br>results</div>
+            </div>
+
+            <h3>Memory vs Disk Processing</h3>
+            <div class="diagram">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                    <div style="text-align: center; flex: 1;">
+                        <div style="background: #e74c3c; color: white; padding: 15px; border-radius: 10px;">
+                            <strong>Traditional MapReduce</strong><br>
+                            Disk → Process → Disk → Process → Disk<br>
+                            <small>Slow I/O bottleneck</small>
+                        </div>
+                    </div>
+                    <div style="text-align: center; flex: 1;">
+                        <div style="background: #27ae60; color: white; padding: 15px; border-radius: 10px;">
+                            <strong>Spark Approach</strong><br>
+                            Disk → Memory → Process → Process → Process<br>
+                            <small>10-100x faster</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>In-Memory Caching Example</h3>
+            <div class="code-block" data-lang="python">
+# Cache hot datasets in memory
+df = spark.read.parquet("s3://huge-dataset/")
+df.cache()  # or df.persist(StorageLevel.MEMORY_AND_DISK)
+
+# All subsequent operations use cached data
+result1 = df.filter("status = 'active'").count()        # Cache miss - loads to memory
+result2 = df.groupBy("region").sum("revenue")           # Cache hit - blazing fast  
+result3 = df.join(other_df, "key")                      # Cache hit - instant
+            </div>
+
+            <h3>Common Spark Use Cases</h3>
+            
+            <h4>ETL Pipeline</h4>
+            <div class="code-block" data-lang="python">
+# Read from multiple sources
+orders = spark.read.jdbc("jdbc:postgresql://...", "orders")
+customers = spark.read.parquet("s3://lake/customers/")
+products = spark.read.delta("s3://lake/products/")
+
+# Transform & join
+enriched = (orders
+  .join(customers, "customer_id")
+  .join(products, "product_id")
+  .withColumn("profit_margin", col("price") - col("cost"))
+)
+
+# Write to lakehouse
+enriched.write.mode("overwrite").delta("s3://lake/gold/sales_fact/")
+            </div>
+
+            <h4>Real-time Streaming</h4>
+            <div class="code-block" data-lang="python">
+# Kafka to Delta Lake streaming
+stream = (spark.readStream
+  .format("kafka")
+  .option("kafka.bootstrap.servers", "localhost:9092")
+  .option("subscribe", "user_events")
+  .load()
+)
+
+query = (parsed.writeStream
+  .format("delta")
+  .option("checkpointLocation", "/checkpoint/")
+  .trigger(processingTime='30 seconds')
+  .start("s3://lake/bronze/events/")
+)
+            </div>
+        </section>
+
+        <section id="databricks" class="section">
+            <h2>🧱 Databricks Architecture</h2>
+            
+            <div class="key-points">
+                <p><strong>Databricks = Apache Spark + Enterprise Platform</strong></p>
+                <p>Two-plane architecture: Control Plane (Databricks) + Compute Plane (Your Cloud)</p>
+            </div>
+
+            <h3>Two-Plane Architecture</h3>
+            <div class="two-plane">
+                <div class="plane control-plane">
+                    <h4>Control Plane</h4>
+                    <p><strong>Databricks SaaS</strong></p>
+                    <ul style="text-align: left; margin-top: 15px;">
+                        <li>Web UI & notebooks</li>
+                        <li>Job scheduling</li>
+                        <li>Cluster management</li>
+                        <li>Unity Catalog metadata</li>
+                        <li>User authentication</li>
+                        <li>MLflow tracking</li>
+                    </ul>
+                </div>
+                <div class="plane compute-plane">
+                    <h4>Compute Plane</h4>
+                    <p><strong>Your Cloud Account</strong></p>
+                    <ul style="text-align: left; margin-top: 15px;">
+                        <li>Spark clusters</li>
+                        <li>Data processing</li>
+                        <li>Storage access</li>
+                        <li>Network security</li>
+                        <li>Customer VPC</li>
+                        <li>Compliance controls</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Compute Types</h3>
+            <div class="compute-types">
+                <div class="compute-card all-purpose">
+                    <h4>All-Purpose</h4>
+                    <p><strong>Development</strong></p>
+                    <small>Interactive notebooks, exploration, debugging</small>
+                </div>
+                <div class="compute-card job-compute">
+                    <h4>Job Compute</h4>
+                    <p><strong>Production</strong></p>
+                    <small>Scheduled ETL, auto-created, cost-efficient</small>
+                </div>
+                <div class="compute-card serverless">
+                    <h4>Serverless</h4>
+                    <p><strong>Hands-off</strong></p>
+                    <small>Auto-scaling, pay-per-use, zero management</small>
+                </div>
+                <div class="compute-card sql-warehouse">
+                    <h4>SQL Warehouse</h4>
+                    <p><strong>BI & Analytics</strong></p>
+                    <small>Optimized for SELECT queries, BI tools</small>
+                </div>
+                <div class="compute-card pools">
+                    <h4>Pools</h4>
+                    <p><strong>Pre-warmed VMs</strong></p>
+                    <small>Lower startup times, shared resources</small>
+                </div>
+            </div>
+
+            <div class="warning">
+                <h4>🎯 Compute Distribution</h4>
+                <p><strong>Databricks Cloud:</strong> Control Plane + Serverless Compute</p>
+                <p><strong>Your Cloud Account:</strong> Storage + Classic Compute + Security</p>
+            </div>
+
+            <h3>Pool Configuration Example</h3>
+            <div class="code-block" data-lang="python">
+# Pool settings for cost optimization
+min_idle_instances = 2    # Always keep 2 VMs warm
+max_capacity = 10         # Don't exceed 10 VMs total
+idle_instance_autotermination_minutes = 15  # Return unused VMs
+
+# Startup time comparison:
+# Without Pools: Create Job → Provision VMs → Install Spark → 5-10 min
+# With Pools: Create Job → Grab pre-warmed VM → 30 seconds
+            </div>
+        </section>
+
+        <section id="medallion" class="section">
+            <h2>🥇 Medallion Architecture</h2>
+            
+            <div class="key-points">
+                <p><strong>Progressive Data Refinement:</strong> Raw → Clean → Business Value</p>
+            </div>
+
+            <div class="medallion-diagram">
+                <div class="medallion-layer bronze">
+                    <div><strong>BRONZE</strong></div>
+                    <div style="font-size: 0.9em; margin-top: 8px;">Data Dump<br>Raw Ingestion</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="medallion-layer silver">
+                    <div><strong>SILVER</strong></div>
+                    <div style="font-size: 0.9em; margin-top: 8px;">Clean Factory<br>Transformations</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="medallion-layer gold">
+                    <div><strong>GOLD</strong></div>
+                    <div style="font-size: 0.9em; margin-top: 8px;">Business Layer<br>Analytics Ready</div>
+                </div>
+            </div>
+
+            <h3>Bronze Layer - Data Dump</h3>
+            <p><strong>Purpose:</strong> Ingest everything, break nothing</p>
+            <div class="code-block" data-lang="python">
+# Just land it - deal with schema later
+bronze_events = (spark.readStream
+  .format("cloudFiles") 
+  .option("cloudFiles.format", "json")
+  .load("/raw/events/")
+  .writeStream.format("delta")
+  .option("checkpointLocation", "/checkpoints/bronze/")
+  .start("/lakehouse/bronze/events/")
+)
+            </div>
+
+            <h3>Silver Layer - Data Cleaning Factory</h3>
+            <p><strong>Purpose:</strong> Clean, standardize, dedupe</p>
+            <div class="code-block" data-lang="python">
+# Clean and conform
+silver_events = (bronze_events
+  .filter("event_type IS NOT NULL")
+  .withColumn("timestamp", to_timestamp("event_time"))
+  .dropDuplicates(["user_id", "event_id"])
+  .withColumn("user_id", regexp_replace("user_id", "[^0-9]", ""))
+)
+            </div>
+
+            <h3>Gold Layer - Business Logic & Modeling</h3>
+            <p><strong>Purpose:</strong> Business metrics, aggregations, star/snowflake schemas</p>
+            <div class="code-block" data-lang="python">
+# Business-ready aggregations
+gold_daily_metrics = (silver_events
+  .groupBy(
+    date_trunc("day", "timestamp").alias("date"),
+    "product_category"
+  )
+  .agg(
+    count("*").alias("total_events"),
+    countDistinct("user_id").alias("unique_users"),
+    sum("revenue").alias("daily_revenue")
+  )
+)
+            </div>
+
+            <div class="key-points">
+                <h4>🎯 Stakeholder Mapping</h4>
+                <ul>
+                    <li><strong>Bronze:</strong> Data Engineers (ingestion monitoring)</li>
+                    <li><strong>Silver:</strong> Data Scientists (clean datasets for ML)</li>
+                    <li><strong>Gold:</strong> Data Analysts (dashboards, reports)</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="dlt" class="section">
+            <h2>🔄 Delta Live Tables (DLT) / Declarative Pipelines</h2>
+            
+            <div class="key-points">
+                <p><strong>Declarative ETL:</strong> Define WHAT you want, not HOW to build it</p>
+                <p>May have been renamed to "Declarative Pipelines"</p>
+            </div>
+
+            <h3>DLT Approach</h3>
+            <div class="code-block" data-lang="python">
+import dlt
+
+@dlt.table
+def bronze_orders():
+    return spark.readStream.format("cloudFiles").load("/raw/orders/")
+
+@dlt.table  
+def silver_orders():
+    return dlt.read("bronze_orders").filter("order_value > 0")
+
+@dlt.table
+def gold_daily_revenue():
+    return (dlt.read("silver_orders")
+        .groupBy(date_trunc("day", "order_date"))
+        .sum("order_value"))
+            </div>
+
+            <h3>DLT Benefits</h3>
+            <div class="architecture-grid">
+                <div class="arch-component">
+                    <h4>Auto-Dependency</h4>
+                    <p>Figures out execution order automatically</p>
+                </div>
+                <div class="arch-component">
+                    <h4>Data Quality</h4>
+                    <p>Built-in expectations and validation</p>
+                </div>
+                <div class="arch-component">
+                    <h4>Schema Evolution</h4>
+                    <p>Handles changes gracefully</p>
+                </div>
+                <div class="arch-component">
+                    <h4>Visual Lineage</h4>
+                    <p>Dependency graphs and monitoring</p>
+                </div>
+            </div>
+
+            <h3>Traditional vs DLT</h3>
+            <div class="diagram">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                    <div style="text-align: center; flex: 1;">
+                        <div style="background: #e74c3c; color: white; padding: 15px; border-radius: 10px;">
+                            <strong>Old Way - Manual Orchestration</strong><br>
+                            <code style="background: rgba(0,0,0,0.2); padding: 5px; border-radius: 3px; display: block; margin: 10px 0;">
+df1 = extract_orders()<br>
+df2 = transform_orders(df1)<br> 
+df3 = join_with_customers(df2)<br>
+load_to_warehouse(df3)
+                            </code>
+                        </div>
+                    </div>
+                    <div style="text-align: center; flex: 1;">
+                        <div style="background: #27ae60; color: white; padding: 15px; border-radius: 10px;">
+                            <strong>DLT Way - Declare Relationships</strong><br>
+                            <code style="background: rgba(0,0,0,0.2); padding: 5px; border-radius: 3px; display: block; margin: 10px 0;">
+@dlt.table<br>
+def final_result():<br>
+&nbsp;&nbsp;return dlt.read("orders")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;.join(dlt.read("customers"), "id")
+                            </code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="patterns" class="section">
+            <h2>🛠️ Common Patterns & Best Practices</h2>
+
+            <h3>Schema Evolution</h3>
+            <div class="code-block" data-lang="python">
+# Delta Lake automatic schema evolution
+df_new.write.mode("append").option("mergeSchema", "true").delta("/delta/table")
+
+# Handle schema changes gracefully
+df = spark.read.format("delta").load("/delta/table")
+if "new_column" not in df.columns:
+    df = df.withColumn("new_column", lit(None))
+            </div>
+
+            <h3>Delta Lake Maintenance</h3>
+            <div class="code-block" data-lang="python">
+from delta.tables import DeltaTable
+
+# Optimize (compaction)
+DeltaTable.forPath(spark, "/delta/table").optimize().executeCompaction()
+
+# Vacuum (cleanup old files)
+DeltaTable.forPath(spark, "/delta/table").vacuum(168)  # 7 days retention
+
+# Z-Order optimization
+DeltaTable.forPath(spark, "/delta/table").optimize().executeZOrderBy("customer_id")
+            </div>
+
+            <h3>Data Quality Patterns</h3>
+            <div class="code-block" data-lang="python">
+from pyspark.sql.functions import *
+
+# Find duplicates
+duplicates = df.groupBy("customer_id").count().filter("count > 1")
+
+# Null analysis
+null_analysis = df.select([
+  count(when(col(c).isNull(), c)).alias(c + "_nulls") 
+  for c in df.columns
+])
+
+# Data quality expectations in DLT
+@dlt.expect("valid_email", "email RLIKE '^[^@]+@[^@]+\\.[^@]+$'")
+@dlt.expect_or_drop("positive_amount", "amount > 0")
+            </div>
+
+            <h3>Quick Reference Cheat Sheet</h3>
+            <div class="architecture-grid">
+                <div class="arch-component">
+                    <h4>When to Use What Compute</h4>
+                    <ul style="text-align: left; font-size: 0.9em;">
+                        <li><strong>All-Purpose:</strong> Development, exploration</li>
+                        <li><strong>Job Clusters:</strong> Production pipelines</li>
+                        <li><strong>Serverless:</strong> Variable workloads</li>
+                        <li><strong>SQL Warehouse:</strong> BI dashboards</li>
+                        <li><strong>Pools:</strong> High-frequency jobs</li>
+                    </ul>
+                </div>
+                <div class="arch-component">
+                    <h4>Storage Strategy</h4>
+                    <ul style="text-align: left; font-size: 0.9em;">
+                        <li><strong>Bronze:</strong> Schema-on-read</li>
+                        <li><strong>Silver:</strong> Enforced schema</li>
+                        <li><strong>Gold:</strong> Business metrics</li>
+                    </ul>
+                </div>
+                <div class="arch-component">
+                    <h4>File Formats</h4>
+                    <ul style="text-align: left; font-size: 0.9em;">
+                        <li><strong>Parquet:</strong> Columnar storage</li>
+                        <li><strong>Delta:</strong> Parquet + ACID</li>
+                        <li><strong>Iceberg/Hudi:</strong> Alternatives</li>
+                    </ul>
+                </div>
+                <div class="arch-component">
+                    <h4>Key Concepts</h4>
+                    <ul style="text-align: left; font-size: 0.9em;">
+                        <li>Lakehouse = Data Lake + SQL</li>
+                        <li>Open formats enable SQL</li>
+                        <li>Spark uses memory</li>
+                        <li>Medallion = Progressive refinement</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="section" style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h2>🎯 Remember</h2>
+            <p style="font-size: 1.2em; margin: 20px 0;">
+                You're building a system where your stakeholders<br>
+                <strong>(Data Scientists + Data Analysts)</strong><br>
+                can easily access clean, reliable data without worrying about the underlying complexity.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

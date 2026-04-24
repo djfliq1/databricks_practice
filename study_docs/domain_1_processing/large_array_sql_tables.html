@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Large Array SQL Tables</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<h1>🗄️ Large Array with SQL Table in LakeFlow Jobs</h1>
+<p><strong>Databricks Data Engineer Associate 2026 Certification</strong></p>
+<h2>The Cortana Overview</h2>
+<p>When dealing with <strong>SQL tasks and large arrays</strong>, the solution is <strong>table-to-table data flow</strong> rather than JSON passing. SQL tasks can't return complex JSON, so large arrays flow through <strong>intermediate tables, views, and direct table references</strong>. This is the most efficient pattern for SQL-heavy pipelines.</p>
+<hr />
+<h2>🎯 Pattern 1: SQL Task → Large Result Table → Downstream SQL</h2>
+<h3>SQL Task: Create Large Analysis Table</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- notebooks/01_large_analysis_sql.sql</span>
+<span class="c1">-- SQL task that creates large result table instead of returning JSON</span>
+
+<span class="c1">-- Create comprehensive product analysis table with large feature arrays</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">temp</span><span class="p">.</span><span class="n">large_product_analysis</span><span class="w"> </span><span class="k">AS</span>
+<span class="k">WITH</span><span class="w"> </span><span class="n">base_products</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">product_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">product_name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">category</span><span class="p">,</span>
+<span class="w">    </span><span class="n">price</span><span class="p">,</span>
+<span class="w">    </span><span class="n">processDate</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">-- Generate large feature arrays using SQL functions</span>
+<span class="w">    </span><span class="nb">ARRAY</span><span class="p">(</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">(),</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">9</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">price_predictions</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Large metadata map</span>
+<span class="w">    </span><span class="k">MAP</span><span class="p">(</span>
+<span class="w">      </span><span class="s1">&#39;supplier_rating&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;quality_score&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;inventory_turnover&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;seasonal_factor&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;market_share&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;competitor_price_1&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">8</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;competitor_price_2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">9</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;competitor_price_3&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;demand_forecast_q1&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;demand_forecast_q2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1200</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;demand_forecast_q3&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span>
+<span class="w">      </span><span class="s1">&#39;demand_forecast_q4&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1500</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">market_intelligence</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Complex feature engineering</span>
+<span class="w">    </span><span class="n">STRUCT</span><span class="p">(</span>
+<span class="w">      </span><span class="k">CASE</span><span class="w"> </span><span class="k">WHEN</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">250</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;premium&#39;</span><span class="w"> </span><span class="k">ELSE</span><span class="w"> </span><span class="s1">&#39;standard&#39;</span><span class="w"> </span><span class="k">END</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">tier</span><span class="p">,</span>
+<span class="w">      </span><span class="n">ROUND</span><span class="p">(</span><span class="n">price</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">RAND</span><span class="p">()),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">cost_estimate</span><span class="p">,</span>
+<span class="w">      </span><span class="n">DATE_ADD</span><span class="p">(</span><span class="k">CURRENT_DATE</span><span class="p">(),</span><span class="w"> </span><span class="k">CAST</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">365</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="nb">INT</span><span class="p">))</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">next_review_date</span><span class="p">,</span>
+<span class="w">      </span><span class="nb">ARRAY</span><span class="p">(</span>
+<span class="w">        </span><span class="n">STRUCT</span><span class="p">(</span><span class="s1">&#39;feature_a&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">score</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;high&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">importance</span><span class="p">),</span>
+<span class="w">        </span><span class="n">STRUCT</span><span class="p">(</span><span class="s1">&#39;feature_b&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">score</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;medium&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">importance</span><span class="p">),</span>
+<span class="w">        </span><span class="n">STRUCT</span><span class="p">(</span><span class="s1">&#39;feature_c&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">score</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;low&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">importance</span><span class="p">),</span>
+<span class="w">        </span><span class="n">STRUCT</span><span class="p">(</span><span class="s1">&#39;feature_d&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">score</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;high&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">importance</span><span class="p">),</span>
+<span class="w">        </span><span class="n">STRUCT</span><span class="p">(</span><span class="s1">&#39;feature_e&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">RAND</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">score</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;medium&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">importance</span><span class="p">)</span>
+<span class="w">      </span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">detailed_features</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">enrichment_data</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Processing metadata</span>
+<span class="w">    </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">()</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">analysis_timestamp</span><span class="p">,</span>
+<span class="w">    </span><span class="n">UUID</span><span class="p">()</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">batch_id</span>
+
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">bronze</span><span class="p">.</span><span class="n">products_bronze</span>
+<span class="p">),</span>
+
+<span class="c1">-- Cross join to simulate larger dataset (your 100 products → 500+ records)</span>
+<span class="n">expanded_analysis</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">CONCAT</span><span class="p">(</span><span class="n">product_id</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;_&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">scenario</span><span class="p">.</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">analysis_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">product_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">product_name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">category</span><span class="p">,</span>
+<span class="w">    </span><span class="n">price</span><span class="p">,</span>
+<span class="w">    </span><span class="n">scenario</span><span class="p">.</span><span class="n">scenario_name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">scenario</span><span class="p">.</span><span class="n">price_multiplier</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Scenario-adjusted predictions</span>
+<span class="w">    </span><span class="k">TRANSFORM</span><span class="p">(</span><span class="n">price_predictions</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">scenario</span><span class="p">.</span><span class="n">price_multiplier</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">))</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">adjusted_predictions</span><span class="p">,</span>
+<span class="w">    </span><span class="n">market_intelligence</span><span class="p">,</span>
+<span class="w">    </span><span class="n">enrichment_data</span><span class="p">,</span>
+<span class="w">    </span><span class="n">analysis_timestamp</span><span class="p">,</span>
+<span class="w">    </span><span class="n">batch_id</span>
+
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">base_products</span>
+<span class="w">  </span><span class="k">CROSS</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;baseline&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">scenario_name</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">price_multiplier</span>
+<span class="w">    </span><span class="k">UNION</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;optimistic&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">scenario_name</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">2</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">price_multiplier</span><span class="w">  </span>
+<span class="w">    </span><span class="k">UNION</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;pessimistic&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">scenario_name</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">8</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">price_multiplier</span>
+<span class="w">    </span><span class="k">UNION</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;peak_season&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">scenario_name</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">5</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">price_multiplier</span>
+<span class="w">    </span><span class="k">UNION</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;off_season&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">scenario_name</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">6</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">price_multiplier</span>
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">scenario</span>
+<span class="p">)</span>
+
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">analysis_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">product_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">product_name</span><span class="p">,</span>
+<span class="w">  </span><span class="n">category</span><span class="p">,</span>
+<span class="w">  </span><span class="n">price</span><span class="p">,</span>
+<span class="w">  </span><span class="n">scenario_name</span><span class="p">,</span>
+<span class="w">  </span><span class="n">price_multiplier</span><span class="p">,</span>
+<span class="w">  </span><span class="n">adjusted_predictions</span><span class="p">,</span>
+<span class="w">  </span><span class="n">market_intelligence</span><span class="p">,</span>
+<span class="w">  </span><span class="n">enrichment_data</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Additional computed columns for large array processing</span>
+<span class="w">  </span><span class="k">SIZE</span><span class="p">(</span><span class="n">adjusted_predictions</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">prediction_count</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Extract key metrics from complex structures</span>
+<span class="w">  </span><span class="n">enrichment_data</span><span class="p">.</span><span class="n">tier</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">product_tier</span><span class="p">,</span>
+<span class="w">  </span><span class="n">enrichment_data</span><span class="p">.</span><span class="n">cost_estimate</span><span class="p">,</span>
+<span class="w">  </span><span class="n">enrichment_data</span><span class="p">.</span><span class="n">next_review_date</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Array aggregations</span>
+<span class="w">  </span><span class="k">AGGREGATE</span><span class="p">(</span><span class="n">adjusted_predictions</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">acc</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="k">SIZE</span><span class="p">(</span><span class="n">adjusted_predictions</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_prediction</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ARRAY_MAX</span><span class="p">(</span><span class="n">adjusted_predictions</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">max_prediction</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ARRAY_MIN</span><span class="p">(</span><span class="n">adjusted_predictions</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">min_prediction</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Map value extractions</span>
+<span class="w">  </span><span class="n">market_intelligence</span><span class="p">[</span><span class="s1">&#39;supplier_rating&#39;</span><span class="p">]</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">supplier_rating</span><span class="p">,</span>
+<span class="w">  </span><span class="n">market_intelligence</span><span class="p">[</span><span class="s1">&#39;quality_score&#39;</span><span class="p">]</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">quality_score</span><span class="p">,</span>
+<span class="w">  </span><span class="n">market_intelligence</span><span class="p">[</span><span class="s1">&#39;inventory_turnover&#39;</span><span class="p">]</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">inventory_turnover</span><span class="p">,</span>
+
+<span class="w">  </span><span class="n">analysis_timestamp</span><span class="p">,</span>
+<span class="w">  </span><span class="n">batch_id</span>
+
+<span class="k">FROM</span><span class="w"> </span><span class="n">expanded_analysis</span><span class="p">;</span>
+
+<span class="c1">-- Create summary metadata table for downstream tasks</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">temp</span><span class="p">.</span><span class="n">analysis_metadata</span><span class="w"> </span><span class="k">AS</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">total_analysis_records</span><span class="p">,</span>
+<span class="w">  </span><span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">product_id</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">unique_products</span><span class="p">,</span>
+<span class="w">  </span><span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">scenario_name</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">scenarios_analyzed</span><span class="p">,</span>
+<span class="w">  </span><span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">category</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">categories_covered</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">price</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_base_price</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">avg_prediction</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_prediction_price</span><span class="p">,</span>
+<span class="w">  </span><span class="k">MIN</span><span class="p">(</span><span class="n">analysis_timestamp</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">analysis_start</span><span class="p">,</span>
+<span class="w">  </span><span class="k">MAX</span><span class="p">(</span><span class="n">analysis_timestamp</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">analysis_end</span><span class="p">,</span>
+<span class="w">  </span><span class="k">FIRST</span><span class="p">(</span><span class="n">batch_id</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">batch_id</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">temp</span><span class="p">.</span><span class="n">large_product_analysis</span><span class="p">;</span>
+
+<span class="c1">-- Output summary for monitoring (this would be captured in SQL warehouse logs)</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">CONCAT</span><span class="p">(</span><span class="s1">&#39;✅ Large analysis complete: &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">total_analysis_records</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; records across &#39;</span><span class="p">,</span><span class="w"> </span>
+<span class="w">         </span><span class="n">unique_products</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; products and &#39;</span><span class="p">,</span><span class="w"> </span><span class="n">scenarios_analyzed</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; scenarios&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">status</span><span class="p">,</span>
+<span class="w">  </span><span class="n">batch_id</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">temp</span><span class="p">.</span><span class="n">analysis_metadata</span><span class="p">;</span>
+</code></pre></div>
+
+<hr />
+<h2>🔄 Pattern 2: Notebook Reading SQL Table + Processing</h2>
+<h3>Notebook Task: Process Large SQL Table</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/02_process_large_sql_table.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Process Large SQL Table Results</span>
+<span class="c1"># MAGIC **Reading and processing large arrays from SQL-generated tables**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 SOLUTION: Read large data directly from SQL-generated table</span>
+<span class="n">df_large_analysis</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.temp.large_product_analysis&quot;</span><span class="p">)</span>
+<span class="n">df_metadata</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.temp.analysis_metadata&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get metadata for verification</span>
+<span class="n">metadata_row</span> <span class="o">=</span> <span class="n">df_metadata</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">total_records</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">metadata_row</span><span class="p">[</span><span class="s2">&quot;total_analysis_records&quot;</span><span class="p">])</span>
+<span class="n">batch_id</span> <span class="o">=</span> <span class="n">metadata_row</span><span class="p">[</span><span class="s2">&quot;batch_id&quot;</span><span class="p">]</span>
+<span class="n">unique_products</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">metadata_row</span><span class="p">[</span><span class="s2">&quot;unique_products&quot;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Processing large analysis: </span><span class="si">{</span><span class="n">total_records</span><span class="si">}</span><span class="s2"> records from SQL task&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔍 Batch ID: </span><span class="si">{</span><span class="n">batch_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📦 Unique products: </span><span class="si">{</span><span class="n">unique_products</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Verify large array structure</span>
+<span class="n">sample_record</span> <span class="o">=</span> <span class="n">df_large_analysis</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔍 Sample Record Structure:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Analysis ID: </span><span class="si">{</span><span class="n">sample_record</span><span class="p">[</span><span class="s1">&#39;analysis_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Product: </span><span class="si">{</span><span class="n">sample_record</span><span class="p">[</span><span class="s1">&#39;product_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">sample_record</span><span class="p">[</span><span class="s1">&#39;category&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Scenario: </span><span class="si">{</span><span class="n">sample_record</span><span class="p">[</span><span class="s1">&#39;scenario_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Predictions Array Length: </span><span class="si">{</span><span class="n">sample_record</span><span class="p">[</span><span class="s1">&#39;prediction_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Market Intelligence Keys: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">sample_record</span><span class="p">[</span><span class="s1">&#39;market_intelligence&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Enrichment Tier: </span><span class="si">{</span><span class="n">sample_record</span><span class="p">[</span><span class="s1">&#39;product_tier&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🔥 EXAM PATTERN: Process large arrays without JSON serialization limits</span>
+
+<span class="c1"># Category-specific processing of large arrays</span>
+<span class="n">categories</span> <span class="o">=</span> <span class="n">df_large_analysis</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="n">category_results</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">category_row</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
+    <span class="n">category</span> <span class="o">=</span> <span class="n">category_row</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Filter large dataset for this category</span>
+    <span class="n">df_category</span> <span class="o">=</span> <span class="n">df_large_analysis</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">category</span><span class="p">)</span>
+    <span class="n">category_count</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">category_count</span><span class="si">}</span><span class="s2"> analysis records...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Complex array processing that would break JSON limits</span>
+    <span class="c1"># 1. Prediction array analysis</span>
+    <span class="n">prediction_stats</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="n">explode</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;adjusted_predictions&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;prediction&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">avg</span><span class="p">(</span><span class="s2">&quot;prediction&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_prediction&quot;</span><span class="p">),</span>
+        <span class="nb">min</span><span class="p">(</span><span class="s2">&quot;prediction&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;min_prediction&quot;</span><span class="p">),</span>
+        <span class="nb">max</span><span class="p">(</span><span class="s2">&quot;prediction&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;max_prediction&quot;</span><span class="p">),</span>
+        <span class="n">stddev</span><span class="p">(</span><span class="s2">&quot;prediction&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;stddev_prediction&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># 2. Market intelligence aggregation</span>
+    <span class="n">market_stats</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;market_intelligence.supplier_rating&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;supplier_rating&quot;</span><span class="p">),</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;market_intelligence.quality_score&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;quality_score&quot;</span><span class="p">),</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;market_intelligence.inventory_turnover&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;inventory_turnover&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">avg</span><span class="p">(</span><span class="s2">&quot;supplier_rating&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_supplier_rating&quot;</span><span class="p">),</span>
+        <span class="n">avg</span><span class="p">(</span><span class="s2">&quot;quality_score&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_quality_score&quot;</span><span class="p">),</span>
+        <span class="n">avg</span><span class="p">(</span><span class="s2">&quot;inventory_turnover&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_inventory_turnover&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># 3. Feature analysis from complex structs</span>
+    <span class="n">feature_analysis</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="n">explode</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;enrichment_data.detailed_features&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;feature&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;feature.name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;feature_name&quot;</span><span class="p">),</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;feature.score&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;feature_score&quot;</span><span class="p">),</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;feature.importance&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;importance&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">groupBy</span><span class="p">(</span><span class="s2">&quot;feature_name&quot;</span><span class="p">,</span> <span class="s2">&quot;importance&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">avg</span><span class="p">(</span><span class="s2">&quot;feature_score&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_score&quot;</span><span class="p">),</span>
+        <span class="n">count</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;record_count&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="c1"># Create enhanced Silver table with processed arrays</span>
+    <span class="n">df_category_enhanced</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="c1"># Add prediction statistics as columns</span>
+        <span class="n">lit</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">prediction_stats</span><span class="p">[</span><span class="s2">&quot;avg_prediction&quot;</span><span class="p">]))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_avg_prediction&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">prediction_stats</span><span class="p">[</span><span class="s2">&quot;stddev_prediction&quot;</span><span class="p">]))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_prediction_volatility&quot;</span><span class="p">),</span>
+
+        <span class="c1"># Add market intelligence averages</span>
+        <span class="n">lit</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">market_stats</span><span class="p">[</span><span class="s2">&quot;avg_supplier_rating&quot;</span><span class="p">]))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_avg_supplier_rating&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">market_stats</span><span class="p">[</span><span class="s2">&quot;avg_quality_score&quot;</span><span class="p">]))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_avg_quality_score&quot;</span><span class="p">),</span>
+
+        <span class="c1"># Feature importance flags</span>
+        <span class="n">when</span><span class="p">(</span>
+            <span class="n">exists</span><span class="p">(</span>
+                <span class="n">col</span><span class="p">(</span><span class="s2">&quot;enrichment_data.detailed_features&quot;</span><span class="p">),</span>
+                <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">importance</span> <span class="o">==</span> <span class="s2">&quot;high&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">score</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">)</span>
+            <span class="p">),</span> <span class="kc">True</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;has_high_importance_features&quot;</span><span class="p">),</span>
+
+        <span class="c1"># Processing metadata</span>
+        <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;silver_processing_timestamp&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Write category-specific enhanced table</span>
+    <span class="n">silver_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.silver.large_analysis_</span><span class="si">{</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">df_category_enhanced</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">silver_table</span><span class="p">)</span>
+
+    <span class="c1"># Store results for aggregation</span>
+    <span class="n">category_results</span><span class="p">[</span><span class="n">category</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;analysis_records&quot;</span><span class="p">:</span> <span class="n">category_count</span><span class="p">,</span>
+        <span class="s2">&quot;silver_table&quot;</span><span class="p">:</span> <span class="n">silver_table</span><span class="p">,</span>
+        <span class="s2">&quot;prediction_stats&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;avg&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">prediction_stats</span><span class="p">[</span><span class="s2">&quot;avg_prediction&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">prediction_stats</span><span class="p">[</span><span class="s2">&quot;min_prediction&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">prediction_stats</span><span class="p">[</span><span class="s2">&quot;max_prediction&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;volatility&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">prediction_stats</span><span class="p">[</span><span class="s2">&quot;stddev_prediction&quot;</span><span class="p">])</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;market_stats&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;supplier_rating&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">market_stats</span><span class="p">[</span><span class="s2">&quot;avg_supplier_rating&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;quality_score&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">market_stats</span><span class="p">[</span><span class="s2">&quot;avg_quality_score&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;inventory_turnover&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">market_stats</span><span class="p">[</span><span class="s2">&quot;avg_inventory_turnover&quot;</span><span class="p">])</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;feature_analysis&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;feature_name&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;feature_name&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;importance&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;importance&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;avg_score&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;avg_score&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;record_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;record_count&quot;</span><span class="p">])</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">feature_analysis</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ </span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">category_count</span><span class="si">}</span><span class="s2"> records → </span><span class="si">{</span><span class="n">silver_table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Clean up large temporary tables</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;DROP TABLE IF EXISTS databricks_clar.temp.large_product_analysis&quot;</span><span class="p">)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;DROP TABLE IF EXISTS databricks_clar.temp.analysis_metadata&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🗑️  Cleaned up temporary SQL tables&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return processing summary (manageable JSON size)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="n">processing_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;processing_complete&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;batch_id&quot;</span><span class="p">:</span> <span class="n">batch_id</span><span class="p">,</span>
+    <span class="s2">&quot;total_analysis_records_processed&quot;</span><span class="p">:</span> <span class="n">total_records</span><span class="p">,</span>
+    <span class="s2">&quot;unique_products_analyzed&quot;</span><span class="p">:</span> <span class="n">unique_products</span><span class="p">,</span>
+    <span class="s2">&quot;categories_processed&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">category_results</span><span class="p">),</span>
+    <span class="s2">&quot;silver_tables_created&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;silver_table&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">category_results</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span>
+    <span class="s2">&quot;category_summary&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">category</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;analysis_records&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;table&quot;</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;silver_table&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;avg_prediction&quot;</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;prediction_stats&quot;</span><span class="p">][</span><span class="s2">&quot;avg&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;prediction_volatility&quot;</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s2">&quot;prediction_stats&quot;</span><span class="p">][</span><span class="s2">&quot;volatility&quot;</span><span class="p">]</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">results</span> <span class="ow">in</span> <span class="n">category_results</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;temp_tables_cleaned&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;source_pattern&quot;</span><span class="p">:</span> <span class="s2">&quot;sql_table_to_notebook&quot;</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">processing_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 Pattern 3: SQL-to-SQL Large Array Processing</h2>
+<h3>Downstream SQL Task: Process Large Arrays with SQL</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- notebooks/03_sql_large_array_processing.sql  </span>
+<span class="c1">-- Pure SQL processing of large arrays from upstream SQL task</span>
+
+<span class="c1">-- Process the large analysis table with SQL array functions</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">gold</span><span class="p">.</span><span class="n">prediction_analytics</span><span class="w"> </span><span class="k">AS</span>
+<span class="k">WITH</span><span class="w"> </span><span class="n">prediction_expanded</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">analysis_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">product_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">product_name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">category</span><span class="p">,</span>
+<span class="w">    </span><span class="n">scenario_name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">price</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Explode prediction arrays for SQL processing</span>
+<span class="w">    </span><span class="n">EXPLODE_OUTER</span><span class="p">(</span><span class="n">adjusted_predictions</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">individual_prediction</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Extract array statistics using SQL functions</span>
+<span class="w">    </span><span class="n">avg_prediction</span><span class="p">,</span>
+<span class="w">    </span><span class="n">max_prediction</span><span class="p">,</span>
+<span class="w">    </span><span class="n">min_prediction</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Market intelligence processing</span>
+<span class="w">    </span><span class="n">supplier_rating</span><span class="p">,</span>
+<span class="w">    </span><span class="n">quality_score</span><span class="p">,</span>
+<span class="w">    </span><span class="n">inventory_turnover</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Enrichment data processing</span>
+<span class="w">    </span><span class="n">product_tier</span><span class="p">,</span>
+<span class="w">    </span><span class="n">cost_estimate</span><span class="p">,</span>
+
+<span class="w">    </span><span class="n">analysis_timestamp</span><span class="p">,</span>
+<span class="w">    </span><span class="n">batch_id</span>
+
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">temp</span><span class="p">.</span><span class="n">large_product_analysis</span>
+<span class="p">),</span>
+
+<span class="n">prediction_rankings</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="o">*</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">-- Rank predictions within each product across scenarios</span>
+<span class="w">    </span><span class="n">ROW_NUMBER</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span>
+<span class="w">      </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">product_id</span><span class="w"> </span>
+<span class="w">      </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">individual_prediction</span><span class="w"> </span><span class="k">DESC</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">prediction_rank</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Calculate percentiles for large arrays</span>
+<span class="w">    </span><span class="n">PERCENT_RANK</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span>
+<span class="w">      </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">category</span><span class="w"> </span>
+<span class="w">      </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">individual_prediction</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">category_prediction_percentile</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Moving averages for time series analysis</span>
+<span class="w">    </span><span class="k">AVG</span><span class="p">(</span><span class="n">individual_prediction</span><span class="p">)</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span>
+<span class="w">      </span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">product_id</span><span class="w"> </span>
+<span class="w">      </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">analysis_timestamp</span><span class="w"> </span>
+<span class="w">      </span><span class="k">ROWS</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="n">PRECEDING</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="n">FOLLOWING</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">smoothed_prediction</span>
+
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">prediction_expanded</span>
+<span class="p">),</span>
+
+<span class="c1">-- Aggregate large array results  </span>
+<span class="n">category_prediction_summary</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">category</span><span class="p">,</span>
+<span class="w">    </span><span class="n">scenario_name</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Prediction array aggregations</span>
+<span class="w">    </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">total_predictions</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">individual_prediction</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_prediction</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="n">STDDEV</span><span class="p">(</span><span class="n">individual_prediction</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">prediction_volatility</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">MIN</span><span class="p">(</span><span class="n">individual_prediction</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">min_prediction</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">MAX</span><span class="p">(</span><span class="n">individual_prediction</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">max_prediction</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Percentile analysis of large arrays</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="n">PERCENTILE_CONT</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">25</span><span class="p">)</span><span class="w"> </span><span class="n">WITHIN</span><span class="w"> </span><span class="k">GROUP</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">individual_prediction</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">p25_prediction</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="n">PERCENTILE_CONT</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">50</span><span class="p">)</span><span class="w"> </span><span class="n">WITHIN</span><span class="w"> </span><span class="k">GROUP</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">individual_prediction</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">median_prediction</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="n">PERCENTILE_CONT</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">75</span><span class="p">)</span><span class="w"> </span><span class="n">WITHIN</span><span class="w"> </span><span class="k">GROUP</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">individual_prediction</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">p75_prediction</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="n">PERCENTILE_CONT</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">95</span><span class="p">)</span><span class="w"> </span><span class="n">WITHIN</span><span class="w"> </span><span class="k">GROUP</span><span class="w"> </span><span class="p">(</span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">individual_prediction</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">p95_prediction</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Market intelligence aggregations</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">supplier_rating</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_supplier_rating</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">quality_score</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_quality_score</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">inventory_turnover</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_inventory_turnover</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Product mix analysis</span>
+<span class="w">    </span><span class="k">COUNT</span><span class="p">(</span><span class="k">CASE</span><span class="w"> </span><span class="k">WHEN</span><span class="w"> </span><span class="n">product_tier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;premium&#39;</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">END</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">premium_predictions</span><span class="p">,</span>
+<span class="w">    </span><span class="k">COUNT</span><span class="p">(</span><span class="k">CASE</span><span class="w"> </span><span class="k">WHEN</span><span class="w"> </span><span class="n">product_tier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;standard&#39;</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">END</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">standard_predictions</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Processing metadata</span>
+<span class="w">    </span><span class="k">FIRST</span><span class="p">(</span><span class="n">batch_id</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">batch_id</span><span class="p">,</span>
+<span class="w">    </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">()</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">gold_processing_timestamp</span>
+
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">prediction_rankings</span>
+<span class="w">  </span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">category</span><span class="p">,</span><span class="w"> </span><span class="n">scenario_name</span>
+<span class="p">)</span>
+
+<span class="c1">-- Final aggregated results from large arrays</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">category</span><span class="p">,</span>
+<span class="w">  </span><span class="n">scenario_name</span><span class="p">,</span>
+<span class="w">  </span><span class="n">total_predictions</span><span class="p">,</span>
+<span class="w">  </span><span class="n">avg_prediction</span><span class="p">,</span>
+<span class="w">  </span><span class="n">prediction_volatility</span><span class="p">,</span>
+<span class="w">  </span><span class="n">median_prediction</span><span class="p">,</span>
+<span class="w">  </span><span class="n">p95_prediction</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Risk assessment based on array analysis</span>
+<span class="w">  </span><span class="k">CASE</span><span class="w"> </span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">prediction_volatility</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">avg_prediction</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;HIGH_RISK&#39;</span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">prediction_volatility</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">avg_prediction</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">25</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;MEDIUM_RISK&#39;</span>
+<span class="w">    </span><span class="k">ELSE</span><span class="w"> </span><span class="s1">&#39;LOW_RISK&#39;</span>
+<span class="w">  </span><span class="k">END</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">volatility_risk_category</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Market position based on aggregated arrays</span>
+<span class="w">  </span><span class="k">CASE</span><span class="w"> </span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">avg_supplier_rating</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">4</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">avg_quality_score</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">8</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;MARKET_LEADER&#39;</span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">avg_supplier_rating</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">avg_quality_score</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">6</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;COMPETITIVE&#39;</span>
+<span class="w">    </span><span class="k">ELSE</span><span class="w"> </span><span class="s1">&#39;DEVELOPING&#39;</span>
+<span class="w">  </span><span class="k">END</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">market_position</span><span class="p">,</span>
+
+<span class="w">  </span><span class="n">premium_predictions</span><span class="p">,</span>
+<span class="w">  </span><span class="n">standard_predictions</span><span class="p">,</span>
+<span class="w">  </span><span class="n">batch_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">gold_processing_timestamp</span>
+
+<span class="k">FROM</span><span class="w"> </span><span class="n">category_prediction_summary</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">category</span><span class="p">,</span><span class="w"> </span><span class="n">scenario_name</span><span class="p">;</span>
+
+<span class="c1">-- Create large array feature importance table</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">gold</span><span class="p">.</span><span class="n">feature_importance</span><span class="w"> </span><span class="k">AS</span>
+<span class="k">WITH</span><span class="w"> </span><span class="n">feature_expanded</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">product_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">category</span><span class="p">,</span>
+<span class="w">    </span><span class="n">scenario_name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">EXPLODE</span><span class="p">(</span><span class="n">enrichment_data</span><span class="p">.</span><span class="n">detailed_features</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">feature_detail</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">temp</span><span class="p">.</span><span class="n">large_product_analysis</span>
+<span class="p">),</span>
+
+<span class="n">feature_aggregated</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">feature_detail</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">feature_name</span><span class="p">,</span>
+<span class="w">    </span><span class="n">feature_detail</span><span class="p">.</span><span class="n">importance</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">importance_level</span><span class="p">,</span>
+<span class="w">    </span><span class="n">category</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Feature array statistics</span>
+<span class="w">    </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">feature_occurrences</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">feature_detail</span><span class="p">.</span><span class="n">score</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_feature_score</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="n">STDDEV</span><span class="p">(</span><span class="n">feature_detail</span><span class="p">.</span><span class="n">score</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">feature_score_volatility</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">MIN</span><span class="p">(</span><span class="n">feature_detail</span><span class="p">.</span><span class="n">score</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">min_feature_score</span><span class="p">,</span>
+<span class="w">    </span><span class="n">ROUND</span><span class="p">(</span><span class="k">MAX</span><span class="p">(</span><span class="n">feature_detail</span><span class="p">.</span><span class="n">score</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">max_feature_score</span><span class="p">,</span>
+
+<span class="w">    </span><span class="c1">-- Feature ranking within category</span>
+<span class="w">    </span><span class="n">RANK</span><span class="p">()</span><span class="w"> </span><span class="n">OVER</span><span class="w"> </span><span class="p">(</span><span class="n">PARTITION</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">category</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="k">AVG</span><span class="p">(</span><span class="n">feature_detail</span><span class="p">.</span><span class="n">score</span><span class="p">)</span><span class="w"> </span><span class="k">DESC</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">category_feature_rank</span><span class="p">,</span>
+
+<span class="w">    </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">()</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">processed_timestamp</span>
+
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">feature_expanded</span>
+<span class="w">  </span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">feature_detail</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">feature_detail</span><span class="p">.</span><span class="n">importance</span><span class="p">,</span><span class="w"> </span><span class="n">category</span>
+<span class="p">)</span>
+
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">feature_name</span><span class="p">,</span>
+<span class="w">  </span><span class="n">importance_level</span><span class="p">,</span>
+<span class="w">  </span><span class="n">category</span><span class="p">,</span>
+<span class="w">  </span><span class="n">feature_occurrences</span><span class="p">,</span>
+<span class="w">  </span><span class="n">avg_feature_score</span><span class="p">,</span>
+<span class="w">  </span><span class="n">feature_score_volatility</span><span class="p">,</span>
+<span class="w">  </span><span class="n">category_feature_rank</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Feature significance classification</span>
+<span class="w">  </span><span class="k">CASE</span><span class="w"> </span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">avg_feature_score</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">80</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">importance_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;high&#39;</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;CRITICAL&#39;</span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">avg_feature_score</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">importance_level</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;high&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;medium&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;IMPORTANT&#39;</span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">avg_feature_score</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">40</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="s1">&#39;MODERATE&#39;</span>
+<span class="w">    </span><span class="k">ELSE</span><span class="w"> </span><span class="s1">&#39;LOW_IMPACT&#39;</span>
+<span class="w">  </span><span class="k">END</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">feature_significance</span><span class="p">,</span>
+
+<span class="w">  </span><span class="n">processed_timestamp</span>
+
+<span class="k">FROM</span><span class="w"> </span><span class="n">feature_aggregated</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">category</span><span class="p">,</span><span class="w"> </span><span class="n">category_feature_rank</span><span class="p">;</span>
+
+<span class="c1">-- Output processing summary</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="s1">&#39;Large array SQL processing complete&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">status</span><span class="p">,</span>
+<span class="w">  </span><span class="p">(</span><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">gold</span><span class="p">.</span><span class="n">prediction_analytics</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">prediction_records</span><span class="p">,</span>
+<span class="w">  </span><span class="p">(</span><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">gold</span><span class="p">.</span><span class="n">feature_importance</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">feature_records</span><span class="p">,</span>
+<span class="w">  </span><span class="p">(</span><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span><span class="w"> </span><span class="n">batch_id</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">gold</span><span class="p">.</span><span class="n">prediction_analytics</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">batches_processed</span><span class="p">;</span>
+</code></pre></div>
+
+<hr />
+<h2>🛠️ DAB Configuration for SQL Large Arrays</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># databricks.yml - SQL table-based large array processing</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">sql_large_array_pipeline</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sql_large_array_processing</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># Step 1: SQL task creates large analysis table (not JSON)</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sql_large_analysis</span>
+<span class="w">          </span><span class="nt">sql_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">file</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/01_large_analysis_sql.sql</span>
+<span class="w">            </span><span class="nt">warehouse_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;your_sql_warehouse_id&quot;</span>
+
+<span class="w">        </span><span class="c1"># Step 2: Notebook processes large SQL table</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_sql_table</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sql_large_analysis</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/02_process_large_sql_table.py</span>
+<span class="w">            </span><span class="c1"># No base_parameters needed - reads directly from table</span>
+
+<span class="w">        </span><span class="c1"># Step 3: SQL task processes large arrays with SQL functions</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sql_array_analytics</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sql_large_analysis</span><span class="w">  </span><span class="c1"># Uses same source table</span>
+<span class="w">          </span><span class="nt">sql_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">file</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/03_sql_large_array_processing.sql</span><span class="w">  </span>
+<span class="w">            </span><span class="nt">warehouse_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;your_sql_warehouse_id&quot;</span>
+
+<span class="w">        </span><span class="c1"># Step 4: Aggregate results from both processing paths</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregate_sql_results</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_sql_table</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sql_array_analytics</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/04_aggregate_sql_results.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">notebook_results</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.process_sql_table.values}}&quot;</span>
+<span class="w">              </span><span class="c1"># SQL task results read from Gold tables directly</span>
+</code></pre></div>
+
+<hr />
+<h2>📊 Your Products Dataset SQL Example</h2>
+<p>Starting with your 100 products, the SQL large array approach would create:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Your data expansion:</span>
+<span class="c1">-- 100 products × 5 scenarios = 500 analysis records</span>
+<span class="c1">-- Each record contains:</span>
+<span class="c1">--   • 10-element price prediction array = 5,000 predictions total</span>
+<span class="c1">--   • 12-element market intelligence map = 6,000 market data points  </span>
+<span class="c1">--   • 5-element feature array = 2,500 features total</span>
+
+<span class="c1">-- Example result structure:</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">analysis_id</span><span class="p">,</span><span class="w">           </span><span class="c1">-- &#39;P001_baseline&#39;, &#39;P001_optimistic&#39;, etc.</span>
+<span class="w">  </span><span class="n">product_name</span><span class="p">,</span><span class="w">          </span><span class="c1">-- &#39;Society Rest&#39;, &#39;Front Left&#39;, etc.</span>
+<span class="w">  </span><span class="n">category</span><span class="p">,</span><span class="w">              </span><span class="c1">-- &#39;Toys&#39;, &#39;Books&#39;, etc.  </span>
+<span class="w">  </span><span class="n">scenario_name</span><span class="p">,</span><span class="w">         </span><span class="c1">-- &#39;baseline&#39;, &#39;optimistic&#39;, &#39;pessimistic&#39;, etc.</span>
+<span class="w">  </span><span class="n">adjusted_predictions</span><span class="p">,</span><span class="w">  </span><span class="c1">-- [190.40, 152.32, 228.48, ...] (10 elements)</span>
+<span class="w">  </span><span class="n">market_intelligence</span><span class="p">,</span><span class="w">   </span><span class="c1">-- {&#39;supplier_rating&#39;: 4.2, &#39;quality_score&#39;: 8.5, ...}</span>
+<span class="w">  </span><span class="n">enrichment_data</span><span class="w">        </span><span class="c1">-- {tier: &#39;standard&#39;, features: [...]}</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">temp</span><span class="p">.</span><span class="n">large_product_analysis</span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+
+<span class="c1">-- This creates ~13,500 data points that would break JSON limits</span>
+<span class="c1">-- But flows efficiently through Delta tables</span>
+</code></pre></div>
+
+<hr />
+<h2>🚨 Exam Key Points</h2>
+<h3>SQL Large Array Patterns:</h3>
+<ol>
+<li><strong>SQL → Table</strong> → SQL tasks create result tables, not JSON returns</li>
+<li><strong>Table → Notebook</strong> → Read large arrays directly from tables  </li>
+<li><strong>Table → SQL</strong> → Process arrays with SQL functions (EXPLODE, AGGREGATE, etc.)</li>
+<li><strong>Array Functions</strong> → Use <code>EXPLODE()</code>, <code>TRANSFORM()</code>, <code>AGGREGATE()</code> for large array processing</li>
+</ol>
+<h3>SQL Array Processing Functions:</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Array explosion for row-per-element processing</span>
+<span class="n">EXPLODE</span><span class="p">(</span><span class="n">array_column</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">element</span>
+
+<span class="c1">-- Array aggregation without explosion  </span>
+<span class="n">ARRAY_MAX</span><span class="p">(</span><span class="n">array_column</span><span class="p">)</span>
+<span class="n">ARRAY_MIN</span><span class="p">(</span><span class="n">array_column</span><span class="p">)</span><span class="w">  </span>
+<span class="k">SIZE</span><span class="p">(</span><span class="n">array_column</span><span class="p">)</span>
+
+<span class="c1">-- Complex array operations</span>
+<span class="k">TRANSFORM</span><span class="p">(</span><span class="n">array_column</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">FILTER</span><span class="p">(</span><span class="n">array_column</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span>
+<span class="k">AGGREGATE</span><span class="p">(</span><span class="n">array_column</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">acc</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">acc</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>Performance Benefits:</h3>
+<ul>
+<li><strong>No JSON limits</strong> → Arrays stay in Delta format</li>
+<li><strong>SQL optimization</strong> → Catalyst optimizer handles large arrays</li>
+<li><strong>Columnar efficiency</strong> → Parquet array compression</li>
+<li><strong>Parallel processing</strong> → Distributed array operations</li>
+</ul>
+<h3>Common Exam Scenarios:</h3>
+<ul>
+<li>"SQL task with large result arrays" → Create result table, not JSON</li>
+<li>"Process prediction arrays from SQL" → Use EXPLODE + GROUP BY</li>
+<li>"Large feature vectors between SQL tasks" → Table-to-table flow</li>
+<li>"Array aggregation across scenarios" → SQL array functions</li>
+</ul>
+<p><strong>The Pattern:</strong> <strong>SQL Creates Tables → Notebooks/SQL Read Tables → No JSON Size Limits</strong></p>
+<p>This enables <strong>unlimited array processing</strong> in SQL-heavy pipelines while maintaining performance and simplicity! 🫡</p>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lakeflow Connect — Cheat Sheet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0c10;--card:#161b22;--border:#21262d;--cyan:#00e5ff;--green:#39d353;--yellow:#f0c040;--red:#f85149;--purple:#bc8cff;--orange:#ff8c42;--muted:#6e7681;--text:#c9d1d9;--heading:#f0f6fc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6;padding:32px 24px;max-width:1200px;margin:0 auto;}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px;display:flex;align-items:flex-end;gap:20px;}
+.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
+h1{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--heading);}
+h1 span{color:var(--green);}
+.badge{margin-left:auto;background:rgba(57,211,83,.08);border:1px solid rgba(57,211,83,.25);color:var(--green);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;border-radius:4px;white-space:nowrap;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+.full{margin-bottom:16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 20px;}
+.ct{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.c1{border-top:2px solid var(--green);}.c1 .dot{background:var(--green);}
+.c2{border-top:2px solid var(--cyan);}.c2 .dot{background:var(--cyan);}
+.c3{border-top:2px solid var(--yellow);}.c3 .dot{background:var(--yellow);}
+.c4{border-top:2px solid var(--purple);}.c4 .dot{background:var(--purple);}
+.c5{border-top:2px solid var(--orange);}.c5 .dot{background:var(--orange);}
+.c6{border-top:2px solid var(--red);}.c6 .dot{background:var(--red);}
+pre{background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;overflow-x:auto;margin:10px 0;line-height:1.8;}
+.kw{color:var(--purple);}.str{color:var(--green);}.cmt{color:var(--muted);font-style:italic;}.key{color:var(--cyan);}.val{color:var(--orange);}
+ul{list-style:none;}
+ul li{padding:5px 0;padding-left:16px;position:relative;font-size:13px;border-bottom:1px solid #1a1f27;}
+ul li:last-child{border-bottom:none;}
+ul li::before{content:'›';position:absolute;left:0;color:var(--muted);}
+ul li strong{color:var(--heading);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#0d1117;color:var(--heading);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:9px 12px;border-bottom:1px solid #1a1f27;vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+td:first-child{color:var(--heading);font-weight:500;}
+.trap{background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.25);border-left:3px solid var(--red);border-radius:4px;padding:12px 14px;margin:8px 0;font-size:13px;}
+.tl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--red);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+.tip{background:rgba(57,211,83,.07);border:1px solid rgba(57,211,83,.2);border-left:3px solid var(--green);border-radius:4px;padding:12px 14px;margin:8px 0;font-size:13px;}
+.tipl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+.div{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin:28px 0 14px;display:flex;align-items:center;gap:12px;}
+.div::before,.div::after{content:'';flex:1;height:1px;background:var(--border);}
+.div::before{flex:0 0 16px;}
+.check{color:var(--green);}.cross{color:var(--red);}
+.ftr{border-top:1px solid var(--border);margin-top:32px;padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+</style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<div class="hdr">
+  <div>
+    <div class="tag">Section 7 · [NEW 2026]</div>
+    <h1>Lakeflow <span>Connect</span></h1>
+    <div style="font-size:13px;color:var(--muted);margin-top:6px;">Managed ingestion from SaaS & databases · databricks_clar</div>
+  </div>
+  <div class="badge">EXAM DOMAIN: Development & Ingestion 30%</div>
+</div>
+
+<div class="card c1 full">
+  <div class="ct"><span class="dot"></span>Cortana TL;DR</div>
+  <ul>
+    <li><strong>Lakeflow Connect = managed ingestion.</strong> Point-and-click connectors from SaaS apps and databases into your Lakehouse</li>
+    <li><strong>Three pillars:</strong> Local Files, Standard Connectors (Auto Loader), Managed Connectors (Fivetran-powered)</li>
+    <li><strong>Lakeflow Connect ≠ Federation.</strong> Connect = data COPY into Lakehouse. Federation = zero-copy window into external data</li>
+    <li><strong>Fivetran partnership</strong> = Managed Connectors. 300+ sources, fully managed, no infrastructure</li>
+    <li>100 free DBUs/day per workspace (2026 update)</li>
+  </ul>
+</div>
+
+<div class="div">Three Pillars</div>
+<div class="grid3">
+  <div class="card c2">
+    <div class="ct"><span class="dot"></span>Pillar 1: Local Files</div>
+    <ul>
+      <li>Upload files directly via UI or API</li>
+      <li>CSV, JSON, Parquet, Avro, Excel</li>
+      <li>Landing in Volumes or DBFS</li>
+      <li>Best for: one-time loads, small datasets</li>
+      <li>No ongoing pipeline — manual operation</li>
+    </ul>
+  </div>
+  <div class="card c3">
+    <div class="ct"><span class="dot"></span>Pillar 2: Standard Connectors</div>
+    <ul>
+      <li><strong>Auto Loader (cloudFiles)</strong> — the core pattern</li>
+      <li>Incremental file ingestion from cloud storage</li>
+      <li>Structured Streaming under the hood</li>
+      <li>Schema inference + evolution</li>
+      <li>Best for: custom file-based pipelines</li>
+    </ul>
+  </div>
+  <div class="card c4">
+    <div class="ct"><span class="dot"></span>Pillar 3: Managed Connectors</div>
+    <ul>
+      <li>Fivetran-powered, 300+ SaaS sources</li>
+      <li>Salesforce, HubSpot, Stripe, GitHub, etc.</li>
+      <li>Zero infrastructure — fully managed</li>
+      <li>Auto schema evolution + backfill</li>
+      <li>Best for: SaaS data, no ETL code needed</li>
+    </ul>
+  </div>
+</div>
+
+<div class="div">Connect vs Federation — The Critical Distinction</div>
+<div class="card c3 full">
+  <div class="ct"><span class="dot"></span>Know This Cold</div>
+  <table>
+    <tr><th>Aspect</th><th>Lakeflow Connect</th><th>Lakehouse Federation</th></tr>
+    <tr><td>Data movement</td><td>Data COPIED into your Lakehouse</td><td>Zero copy — data stays in source</td></tr>
+    <tr><td>Purpose</td><td>Ongoing ingestion pipeline</td><td>Ad-hoc querying external systems</td></tr>
+    <tr><td>Write operations</td><td class="check">✓ Full Delta CRUD after ingest</td><td class="cross">✗ Read-only window</td></tr>
+    <tr><td>Source types</td><td>SaaS apps, files, databases</td><td>Relational databases (PostgreSQL, MySQL, etc.)</td></tr>
+    <tr><td>Exam keyword</td><td>"ingest" / "copy" / "pipeline" / "land in lakehouse"</td><td>"zero-copy" / "federate" / "query in-place"</td></tr>
+    <tr><td>Infrastructure</td><td>Managed Connectors = zero infra</td><td>Requires Connection + Foreign Catalog setup</td></tr>
+  </table>
+</div>
+
+<div class="div">Managed Connector Workflow</div>
+<div class="card c1 full">
+  <div class="ct"><span class="dot"></span>Setup via UI — No Code Required</div>
+  <ul>
+    <li><strong>Step 1:</strong> Go to Data Ingestion → Lakeflow Connect in workspace UI</li>
+    <li><strong>Step 2:</strong> Select connector (e.g., Salesforce, GitHub, Stripe)</li>
+    <li><strong>Step 3:</strong> Configure source credentials and connection settings</li>
+    <li><strong>Step 4:</strong> Select destination catalog and schema (e.g., <code>databricks_clar.bronze</code>)</li>
+    <li><strong>Step 5:</strong> Choose sync mode: Full Refresh, Incremental Append, or Incremental Deduped History</li>
+    <li><strong>Step 6:</strong> Set sync schedule and click Deploy — Databricks handles everything else</li>
+  </ul>
+  <div style="margin-top:12px;padding:12px;background:#0d1117;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);">
+    Managed Connectors auto-handle: schema drift detection · backfill · retry on failure · CDC · incremental state tracking
+  </div>
+</div>
+
+<div class="div">Sync Modes</div>
+<div class="grid3">
+  <div class="card c2">
+    <div class="ct"><span class="dot"></span>Full Refresh</div>
+    <ul>
+      <li>Truncate + reload entire table every sync</li>
+      <li>Simplest, always consistent</li>
+      <li>High cost at scale — moves all data every time</li>
+      <li>Use for: small, infrequently changing tables</li>
+    </ul>
+  </div>
+  <div class="card c3">
+    <div class="ct"><span class="dot"></span>Incremental Append</div>
+    <ul>
+      <li>Only new rows synced each run</li>
+      <li>Source must have an ordering/timestamp column</li>
+      <li>No deletes or updates handled</li>
+      <li>Use for: append-only sources (logs, events)</li>
+    </ul>
+  </div>
+  <div class="card c4">
+    <div class="ct"><span class="dot"></span>Incremental Deduped</div>
+    <ul>
+      <li>Incremental + handles updates via upsert</li>
+      <li>Uses primary key for deduplication</li>
+      <li>Best of both worlds for transactional sources</li>
+      <li>Use for: CRM, ERP, most SaaS apps</li>
+    </ul>
+  </div>
+</div>
+
+<div class="div">Exam Traps</div>
+<div class="full">
+  <div class="trap"><div class="tl">⚠ Trap 01</div><strong>Lakeflow Connect ≠ Federation.</strong> Connect brings data IN (copies it). Federation queries data IN-PLACE (zero copy). These are fundamentally different tools for different needs.</div>
+  <div class="trap"><div class="tl">⚠ Trap 02</div><strong>Managed Connectors = Fivetran under the hood.</strong> Databricks partners with Fivetran for managed connector infrastructure. The exam may reference either name.</div>
+  <div class="trap"><div class="tl">⚠ Trap 03</div><strong>Auto Loader = Standard Connector, not Managed.</strong> Auto Loader (cloudFiles) is the Standard Connector pattern for file-based ingestion. Managed Connectors are the SaaS/database GUI-based ones.</div>
+  <div class="tip"><div class="tipl">✓ Key Point</div><strong>Decision framework:</strong> SaaS source (Salesforce, Stripe) → Managed Connector. File-based (CSV, JSON landing in cloud storage) → Auto Loader (Standard Connector). Query without copying → Federation.</div>
+  <div class="tip"><div class="tipl">✓ Key Point</div><strong>100 free DBUs/day</strong> is the 2026 free tier for Lakeflow Connect. Roughly 100 million records/day at no charge. Exam may test awareness of this limit.</div>
+</div>
+
+<div class="ftr">
+  <span>databricks_clar · Section 7 — Lakeflow Connect</span>
+  <span>April 2026 · Certified Data Engineer Associate Prep</span>
+</div>
+</body>
+</html>

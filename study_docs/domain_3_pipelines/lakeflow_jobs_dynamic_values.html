@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LakeFlow Jobs — Dynamic Values</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<h1>🔄 LakeFlow Jobs Dynamic Values Reference</h1>
+<p><strong>Databricks Data Engineer Associate 2026 Certification</strong></p>
+<h2>The Cortana Overview</h2>
+<p>Dynamic values = <strong>data that flows between tasks at runtime</strong>. Think of it as your DAG's nervous system — each task can pass results, metrics, and decisions to downstream tasks. Critical for conditional logic, monitoring, and adaptive pipelines.</p>
+<hr />
+<h2>🧠 Core Concepts</h2>
+<h3>Task Value Types</h3>
+<table>
+<thead>
+<tr>
+<th>Value Type</th>
+<th>When Created</th>
+<th>Access Pattern</th>
+<th>Example Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Task Values</strong></td>
+<td>Task execution completes</td>
+<td><code>{{tasks.task_key.values.metric_name}}</code></td>
+<td>Row counts, quality metrics</td>
+</tr>
+<tr>
+<td><strong>Job Parameters</strong></td>
+<td>Job start</td>
+<td><code>{{job.parameters.param_name}}</code></td>
+<td>Environment configs, dates</td>
+</tr>
+<tr>
+<td><strong>Task Parameters</strong></td>
+<td>Task start</td>
+<td>Local to task</td>
+<td>Task-specific overrides</td>
+</tr>
+<tr>
+<td><strong>Run Information</strong></td>
+<td>Job start</td>
+<td><code>{{job.run_id}}</code>, <code>{{job.start_time}}</code></td>
+<td>Audit trails, logging</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>📊 Dynamic Values in Action - Your Bronze Pipeline</h2>
+<h3>Task 1: Bronze Ingestion (Value Producer)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/01_bronze_ingestion_with_values.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Your enhanced Bronze logic with dynamic outputs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Process your products data</span>
+<span class="n">df_products</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;inferSchema&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/Volumes/databricks_clar/bronze/bronze_volume/products/&quot;</span><span class="p">)</span>
+
+<span class="c1"># Calculate metrics</span>
+<span class="n">product_count</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">null_products</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">())</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">avg_price</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">avg</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">categories</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+<span class="c1"># Price distribution analysis</span>
+<span class="n">price_stats</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+    <span class="nb">min</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;min_price&quot;</span><span class="p">),</span>
+    <span class="nb">max</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;max_price&quot;</span><span class="p">),</span>
+    <span class="n">avg</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_price&quot;</span><span class="p">),</span>
+    <span class="n">count</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_products&quot;</span><span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Process customers data  </span>
+<span class="n">df_customers</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;inferSchema&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+  <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/Volumes/databricks_clar/bronze/bronze_volume/customers/&quot;</span><span class="p">)</span>
+
+<span class="n">customer_count</span> <span class="o">=</span> <span class="n">df_customers</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">null_customers</span> <span class="o">=</span> <span class="n">df_customers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;customer_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">())</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">unique_domains</span> <span class="o">=</span> <span class="n">df_customers</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">regexp_extract</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">),</span> <span class="s2">&quot;@(.+)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;domain&quot;</span><span class="p">))</span> \
+  <span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Write to Delta tables (your original logic)</span>
+<span class="n">df_products</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span>
+<span class="n">df_customers</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.customers_bronze&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 KEY: Return dynamic values for downstream tasks</span>
+<span class="n">task_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Data quality metrics</span>
+    <span class="s2">&quot;product_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">product_count</span><span class="p">),</span>
+    <span class="s2">&quot;customer_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">customer_count</span><span class="p">),</span>
+    <span class="s2">&quot;total_null_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">null_products</span> <span class="o">+</span> <span class="n">null_customers</span><span class="p">),</span>
+    <span class="s2">&quot;null_ratio&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">((</span><span class="n">null_products</span> <span class="o">+</span> <span class="n">null_customers</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">product_count</span> <span class="o">+</span> <span class="n">customer_count</span><span class="p">)),</span>
+
+    <span class="c1"># Business metrics</span>
+    <span class="s2">&quot;avg_product_price&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">avg_price</span><span class="p">),</span>
+    <span class="s2">&quot;min_price&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">price_stats</span><span class="p">[</span><span class="s2">&quot;min_price&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;max_price&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">price_stats</span><span class="p">[</span><span class="s2">&quot;max_price&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;category_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">categories</span><span class="p">),</span>
+    <span class="s2">&quot;unique_domains&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">unique_domains</span><span class="p">),</span>
+
+    <span class="c1"># Processing metadata</span>
+    <span class="s2">&quot;bronze_status&quot;</span><span class="p">:</span> <span class="s2">&quot;SUCCESS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;processing_timestamp&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT current_timestamp()&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span>
+
+    <span class="c1"># Conditional flags for downstream routing</span>
+    <span class="s2">&quot;quality_passed&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">null_products</span> <span class="o">+</span> <span class="n">null_customers</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;high_value_products&quot;</span><span class="p">:</span> <span class="n">avg_price</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="s2">&quot;sufficient_data&quot;</span><span class="p">:</span> <span class="n">product_count</span> <span class="o">&gt;=</span> <span class="mi">90</span> <span class="ow">and</span> <span class="n">customer_count</span> <span class="o">&gt;=</span> <span class="mi">1000</span>
+<span class="p">}</span>
+
+<span class="c1"># Exit with JSON - this becomes available to all downstream tasks</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">task_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>⚡ Task 2: Condition Task (Value Consumer + Logic Router)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># In your Job DAB configuration</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_ingestion</span>
+<span class="w">    </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/01_bronze_ingestion_with_values.py</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data_quality_gate</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_ingestion</span>
+<span class="w">    </span><span class="nt">condition_task</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># 🔥 EXAM FOCUS: Condition syntax with dynamic values</span>
+<span class="w">      </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;EQUAL_TO&quot;</span>
+<span class="w">      </span><span class="nt">left</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.bronze_ingestion.values.quality_passed}}&quot;</span><span class="w">  </span><span class="c1"># Boolean from upstream</span>
+<span class="w">      </span><span class="nt">right</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">high_value_analysis</span><span class="w">  </span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_ingestion</span>
+<span class="w">    </span><span class="nt">condition_task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;GREATER_THAN&quot;</span>
+<span class="w">      </span><span class="nt">left</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.bronze_ingestion.values.avg_product_price}}&quot;</span><span class="w">  </span><span class="c1"># Float from upstream</span>
+<span class="w">      </span><span class="nt">right</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;250&quot;</span>
+</code></pre></div>
+
+<h3>Alternative: Python Condition Task</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/02_quality_condition.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># 🎯 Access upstream task values</span>
+<span class="n">bronze_values</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;01_bronze_ingestion_with_values&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+<span class="n">product_count</span> <span class="o">=</span> <span class="n">bronze_values</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">]</span>
+<span class="n">null_ratio</span> <span class="o">=</span> <span class="n">bronze_values</span><span class="p">[</span><span class="s2">&quot;null_ratio&quot;</span><span class="p">]</span>
+<span class="n">sufficient_data</span> <span class="o">=</span> <span class="n">bronze_values</span><span class="p">[</span><span class="s2">&quot;sufficient_data&quot;</span><span class="p">]</span>
+
+<span class="c1"># Complex business logic</span>
+<span class="n">quality_score</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="n">null_ratio</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>  <span class="c1"># 100 = perfect, 0 = all nulls</span>
+<span class="n">meets_sla</span> <span class="o">=</span> <span class="n">product_count</span> <span class="o">&gt;=</span> <span class="mi">90</span> <span class="ow">and</span> <span class="n">quality_score</span> <span class="o">&gt;=</span> <span class="mi">95</span>
+
+<span class="c1"># Multi-condition logic</span>
+<span class="k">if</span> <span class="n">meets_sla</span> <span class="ow">and</span> <span class="n">sufficient_data</span><span class="p">:</span>
+    <span class="n">routing_decision</span> <span class="o">=</span> <span class="s2">&quot;PROCEED_TO_SILVER&quot;</span>
+<span class="k">elif</span> <span class="n">product_count</span> <span class="o">&gt;=</span> <span class="mi">50</span><span class="p">:</span>
+    <span class="n">routing_decision</span> <span class="o">=</span> <span class="s2">&quot;PROCEED_WITH_WARNING&quot;</span>  
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">routing_decision</span> <span class="o">=</span> <span class="s2">&quot;HALT_PIPELINE&quot;</span>
+
+<span class="c1"># Return values for downstream conditional routing</span>
+<span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;quality_score&quot;</span><span class="p">:</span> <span class="n">quality_score</span><span class="p">,</span>
+    <span class="s2">&quot;meets_sla&quot;</span><span class="p">:</span> <span class="n">meets_sla</span><span class="p">,</span>
+    <span class="s2">&quot;routing_decision&quot;</span><span class="p">:</span> <span class="n">routing_decision</span><span class="p">,</span>
+    <span class="s2">&quot;upstream_metrics&quot;</span><span class="p">:</span> <span class="n">bronze_values</span>  <span class="c1"># Pass through all upstream values</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 Task 3: Silver Processing (Adaptive Logic)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/03_silver_adaptive.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># 🔥 EXAM PATTERN: Access multiple upstream task values</span>
+<span class="n">bronze_metrics</span> <span class="o">=</span> <span class="s2">&quot;{{tasks.bronze_ingestion.values}}&quot;</span>  <span class="c1"># Job parameter injection</span>
+<span class="n">quality_decision</span> <span class="o">=</span> <span class="s2">&quot;{{tasks.data_quality_gate.values.routing_decision}}&quot;</span>
+
+<span class="c1"># Parse the JSON values</span>
+<span class="n">bronze_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">bronze_metrics</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bronze_metrics</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">bronze_metrics</span>
+
+<span class="n">product_count</span> <span class="o">=</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">]</span>
+<span class="n">avg_price</span> <span class="o">=</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;avg_product_price&quot;</span><span class="p">]</span>
+<span class="n">high_value_flag</span> <span class="o">=</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;high_value_products&quot;</span><span class="p">]</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Adaptive processing based on upstream values</span>
+<span class="k">if</span> <span class="n">quality_decision</span> <span class="o">==</span> <span class="s2">&quot;PROCEED_TO_SILVER&quot;</span><span class="p">:</span>
+    <span class="c1"># Full Silver processing</span>
+    <span class="n">df_products</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Dynamic enrichment based on upstream analysis</span>
+    <span class="k">if</span> <span class="n">high_value_flag</span><span class="p">:</span>
+        <span class="c1"># Add premium product analysis for high-value datasets</span>
+        <span class="n">df_silver</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+            <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+            <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s2">&quot;Premium&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span><span class="p">,</span> <span class="s2">&quot;Standard&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;Economy&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;price_segment&quot;</span><span class="p">),</span>
+
+            <span class="c1"># Add margin analysis for high-value products</span>
+            <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.3</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;estimated_margin&quot;</span><span class="p">),</span>
+            <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;high_value_processing&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Standard processing for regular datasets</span>
+        <span class="n">df_silver</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+            <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+            <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">,</span> <span class="s2">&quot;High&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;Medium&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;Low&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;price_tier&quot;</span><span class="p">),</span>
+            <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;standard_processing&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+<span class="k">elif</span> <span class="n">quality_decision</span> <span class="o">==</span> <span class="s2">&quot;PROCEED_WITH_WARNING&quot;</span><span class="p">:</span>
+    <span class="c1"># Minimal processing with data quality flags</span>
+    <span class="n">df_products</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span>
+    <span class="n">df_silver</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;quality_warning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;data_quality_flag&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;minimal_processing&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Emergency mode - create empty table with schema only</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">schema</span>
+    <span class="n">df_silver</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">([],</span> <span class="n">schema</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;emergency_mode&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">))</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Write with dynamic table name based on processing mode</span>
+<span class="n">processing_mode</span> <span class="o">=</span> <span class="n">df_silver</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">table_suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">processing_mode</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">processing_mode</span> <span class="o">!=</span> <span class="s2">&quot;standard_processing&quot;</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+
+<span class="n">silver_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.silver.products_silver</span><span class="si">{</span><span class="n">table_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="n">df_silver</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">silver_table</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return Silver metrics for Gold layer</span>
+<span class="n">silver_metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;silver_table&quot;</span><span class="p">:</span> <span class="n">silver_table</span><span class="p">,</span>
+    <span class="s2">&quot;silver_count&quot;</span><span class="p">:</span> <span class="n">df_silver</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+    <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="n">processing_mode</span><span class="p">,</span>
+    <span class="s2">&quot;upstream_avg_price&quot;</span><span class="p">:</span> <span class="n">avg_price</span><span class="p">,</span>
+    <span class="s2">&quot;quality_decision&quot;</span><span class="p">:</span> <span class="n">quality_decision</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">silver_metrics</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>📈 Task 4: Gold Analytics (Dynamic Aggregation)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- notebooks/04_gold_dynamic.sql</span>
+<span class="c1">-- SQL task with dynamic value injection</span>
+
+<span class="c1">-- 🎯 EXAM PATTERN: SQL tasks can access dynamic values via parameters</span>
+
+<span class="c1">-- Create dynamic aggregation based on upstream processing mode</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">databricks_clar</span><span class="p">.</span><span class="n">gold</span><span class="p">.</span><span class="n">product_analytics_$</span><span class="err">{</span><span class="n">silver_processing_mode</span><span class="err">}</span><span class="w"> </span><span class="k">AS</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">  </span><span class="n">category</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Dynamic grouping based on upstream analysis</span>
+<span class="w">  </span><span class="k">CASE</span><span class="w"> </span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="s1">&#39;{{tasks.silver_processing.values.processing_mode}}&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;high_value_processing&#39;</span><span class="w"> </span>
+<span class="w">    </span><span class="k">THEN</span><span class="w"> </span><span class="n">price_segment</span>
+<span class="w">    </span><span class="k">ELSE</span><span class="w"> </span><span class="n">price_tier</span>
+<span class="w">  </span><span class="k">END</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">price_category</span><span class="p">,</span>
+
+<span class="w">  </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">product_count</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">price</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_price</span><span class="p">,</span>
+<span class="w">  </span><span class="n">ROUND</span><span class="p">(</span><span class="k">MIN</span><span class="p">(</span><span class="n">price</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">min_price</span><span class="p">,</span><span class="w"> </span>
+<span class="w">  </span><span class="n">ROUND</span><span class="p">(</span><span class="k">MAX</span><span class="p">(</span><span class="n">price</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">max_price</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Conditional metrics based on processing mode</span>
+<span class="w">  </span><span class="k">CASE</span><span class="w"> </span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="s1">&#39;{{tasks.silver_processing.values.processing_mode}}&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;high_value_processing&#39;</span>
+<span class="w">    </span><span class="k">THEN</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="k">AVG</span><span class="p">(</span><span class="n">estimated_margin</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">    </span><span class="k">ELSE</span><span class="w"> </span><span class="k">NULL</span>
+<span class="w">  </span><span class="k">END</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">avg_margin</span><span class="p">,</span>
+
+<span class="w">  </span><span class="c1">-- Metadata from entire pipeline</span>
+<span class="w">  </span><span class="s1">&#39;{{tasks.bronze_ingestion.values.processing_timestamp}}&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">source_timestamp</span><span class="p">,</span>
+<span class="w">  </span><span class="s1">&#39;{{job.run_id}}&#39;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">job_run_id</span><span class="p">,</span>
+<span class="w">  </span><span class="k">current_timestamp</span><span class="p">()</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">gold_created_at</span>
+
+<span class="k">FROM</span><span class="w"> </span><span class="err">${</span><span class="n">silver_table</span><span class="err">}</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">processing_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;{{tasks.silver_processing.values.processing_mode}}&#39;</span>
+<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span>
+<span class="w">  </span><span class="n">category</span><span class="p">,</span>
+<span class="w">  </span><span class="k">CASE</span><span class="w"> </span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="s1">&#39;{{tasks.silver_processing.values.processing_mode}}&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;high_value_processing&#39;</span><span class="w"> </span>
+<span class="w">    </span><span class="k">THEN</span><span class="w"> </span><span class="n">price_segment</span>
+<span class="w">    </span><span class="k">ELSE</span><span class="w"> </span><span class="n">price_tier</span>
+<span class="w">  </span><span class="k">END</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">category</span><span class="p">,</span><span class="w"> </span><span class="n">price_category</span><span class="p">;</span>
+</code></pre></div>
+
+<hr />
+<h2>🚨 Task 5: Alert Handler (Comprehensive Values Access)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/05_alert_comprehensive.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="c1"># 🔥 EXAM FOCUS: Access ALL upstream task values for comprehensive alerting</span>
+
+<span class="c1"># Method 1: Job parameters (injected by Job orchestration)</span>
+<span class="n">bronze_metrics_raw</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bronze_metrics&quot;</span><span class="p">)</span>
+<span class="n">quality_metrics_raw</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;quality_metrics&quot;</span><span class="p">)</span>
+<span class="n">silver_metrics_raw</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;silver_metrics&quot;</span><span class="p">)</span>
+
+<span class="c1"># Parse JSON values</span>
+<span class="n">bronze_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">bronze_metrics_raw</span><span class="p">)</span>
+<span class="n">quality_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">quality_metrics_raw</span><span class="p">)</span> 
+<span class="n">silver_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">silver_metrics_raw</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Method 2: Direct task value access (in DAB configuration)</span>
+<span class="c1"># These would be injected as: </span>
+<span class="c1"># &quot;{{tasks.bronze_ingestion.values.product_count}}&quot;</span>
+<span class="c1"># &quot;{{tasks.quality_gate.values.quality_score}}&quot;</span>
+<span class="c1"># &quot;{{tasks.silver_processing.values.processing_mode}}&quot;</span>
+
+<span class="n">job_run_id</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;job_run_id&quot;</span><span class="p">)</span>  <span class="c1"># {{job.run_id}}</span>
+<span class="n">pipeline_start_time</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pipeline_start&quot;</span><span class="p">)</span>  <span class="c1"># {{job.start_time}}</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Comprehensive alert with all pipeline context</span>
+<span class="n">alert_details</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;alert_timestamp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+    <span class="s2">&quot;job_run_id&quot;</span><span class="p">:</span> <span class="n">job_run_id</span><span class="p">,</span>
+    <span class="s2">&quot;pipeline_duration_minutes&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">pipeline_start_time</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;+00:00&#39;</span><span class="p">)))</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
+
+    <span class="c1"># Bronze layer metrics</span>
+    <span class="s2">&quot;bronze_status&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;product_count&quot;</span><span class="p">:</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;customer_count&quot;</span><span class="p">:</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;customer_count&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;null_ratio&quot;</span><span class="p">:</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;null_ratio&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;avg_price&quot;</span><span class="p">:</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;avg_product_price&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;categories&quot;</span><span class="p">:</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;category_count&quot;</span><span class="p">]</span>
+    <span class="p">},</span>
+
+    <span class="c1"># Quality assessment</span>
+    <span class="s2">&quot;quality_status&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;score&quot;</span><span class="p">:</span> <span class="n">quality_data</span><span class="p">[</span><span class="s2">&quot;quality_score&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;meets_sla&quot;</span><span class="p">:</span> <span class="n">quality_data</span><span class="p">[</span><span class="s2">&quot;meets_sla&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;routing&quot;</span><span class="p">:</span> <span class="n">quality_data</span><span class="p">[</span><span class="s2">&quot;routing_decision&quot;</span><span class="p">]</span>
+    <span class="p">},</span>
+
+    <span class="c1"># Processing outcome</span>
+    <span class="s2">&quot;silver_status&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="n">silver_data</span><span class="p">[</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;table_created&quot;</span><span class="p">:</span> <span class="n">silver_data</span><span class="p">[</span><span class="s2">&quot;silver_table&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;record_count&quot;</span><span class="p">:</span> <span class="n">silver_data</span><span class="p">[</span><span class="s2">&quot;silver_count&quot;</span><span class="p">]</span>
+    <span class="p">},</span>
+
+    <span class="c1"># Derived insights</span>
+    <span class="s2">&quot;pipeline_health&quot;</span><span class="p">:</span> <span class="s2">&quot;DEGRADED&quot;</span> <span class="k">if</span> <span class="n">quality_data</span><span class="p">[</span><span class="s2">&quot;quality_score&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">90</span> <span class="k">else</span> <span class="s2">&quot;HEALTHY&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data_volume_trend&quot;</span><span class="p">:</span> <span class="s2">&quot;HIGH&quot;</span> <span class="k">if</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">150</span> <span class="k">else</span> <span class="s2">&quot;NORMAL&quot;</span>
+<span class="p">}</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Dynamic alerting based on pipeline state</span>
+<span class="k">if</span> <span class="n">alert_details</span><span class="p">[</span><span class="s2">&quot;pipeline_health&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;DEGRADED&quot;</span><span class="p">:</span>
+    <span class="n">alert_severity</span> <span class="o">=</span> <span class="s2">&quot;HIGH&quot;</span>
+    <span class="n">alert_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">🚨 PIPELINE DEGRADED - Immediate Attention Required</span>
+<span class="s2">Quality Score: </span><span class="si">{</span><span class="n">quality_data</span><span class="p">[</span><span class="s1">&#39;quality_score&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">% (Target: 95%)</span>
+<span class="s2">Processing Mode: </span><span class="si">{</span><span class="n">silver_data</span><span class="p">[</span><span class="s1">&#39;processing_mode&#39;</span><span class="p">]</span><span class="si">}</span>
+<span class="s2">Root Cause: </span><span class="si">{</span><span class="n">quality_data</span><span class="p">[</span><span class="s1">&#39;routing_decision&#39;</span><span class="p">]</span><span class="si">}</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="k">elif</span> <span class="n">silver_data</span><span class="p">[</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;standard_processing&quot;</span><span class="p">:</span>
+    <span class="n">alert_severity</span> <span class="o">=</span> <span class="s2">&quot;MEDIUM&quot;</span> 
+    <span class="n">alert_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">⚠️ NON-STANDARD PROCESSING - Monitor Required</span>
+<span class="s2">Mode: </span><span class="si">{</span><span class="n">silver_data</span><span class="p">[</span><span class="s1">&#39;processing_mode&#39;</span><span class="p">]</span><span class="si">}</span>
+<span class="s2">Data Quality: </span><span class="si">{</span><span class="n">quality_data</span><span class="p">[</span><span class="s1">&#39;quality_score&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%</span>
+<span class="s2">Records Processed: </span><span class="si">{</span><span class="n">silver_data</span><span class="p">[</span><span class="s1">&#39;silver_count&#39;</span><span class="p">]</span><span class="si">}</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">alert_severity</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span>
+    <span class="n">alert_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">✅ Pipeline Completed Successfully</span>
+<span class="s2">Quality: </span><span class="si">{</span><span class="n">quality_data</span><span class="p">[</span><span class="s1">&#39;quality_score&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%</span>
+<span class="s2">Processing: Standard Mode</span>
+<span class="s2">Records: </span><span class="si">{</span><span class="n">bronze_data</span><span class="p">[</span><span class="s1">&#39;product_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> → </span><span class="si">{</span><span class="n">silver_data</span><span class="p">[</span><span class="s1">&#39;silver_count&#39;</span><span class="p">]</span><span class="si">}</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Log comprehensive metrics to monitoring table</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">INSERT INTO databricks_clar.monitoring.pipeline_metrics VALUES (</span>
+<span class="s2">  &#39;</span><span class="si">{</span><span class="n">job_run_id</span><span class="si">}</span><span class="s2">&#39;,</span>
+<span class="s2">  &#39;</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;,</span>
+<span class="s2">  &#39;medallion_pipeline&#39;,</span>
+<span class="s2">  &#39;</span><span class="si">{</span><span class="n">alert_severity</span><span class="si">}</span><span class="s2">&#39;,</span>
+<span class="s2">  &#39;</span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">alert_details</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;,</span>
+<span class="s2">  </span><span class="si">{</span><span class="n">bronze_data</span><span class="p">[</span><span class="s1">&#39;product_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">  </span><span class="si">{</span><span class="n">quality_data</span><span class="p">[</span><span class="s1">&#39;quality_score&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">,</span>
+<span class="s2">  &#39;</span><span class="si">{</span><span class="n">silver_data</span><span class="p">[</span><span class="s1">&#39;processing_mode&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;</span>
+<span class="s2">)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Return comprehensive result</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
+    <span class="s2">&quot;alert_sent&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;severity&quot;</span><span class="p">:</span> <span class="n">alert_severity</span><span class="p">,</span>
+    <span class="s2">&quot;pipeline_health&quot;</span><span class="p">:</span> <span class="n">alert_details</span><span class="p">[</span><span class="s2">&quot;pipeline_health&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;total_records_processed&quot;</span><span class="p">:</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">bronze_data</span><span class="p">[</span><span class="s2">&quot;customer_count&quot;</span><span class="p">]</span>
+<span class="p">}))</span>
+</code></pre></div>
+
+<hr />
+<h2>🛠️ DAB Configuration with Dynamic Values Flow</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># databricks.yml - Complete dynamic values orchestration</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">medallion_dynamic_job</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">medallion_dynamic_pipeline</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># Producer: Bronze ingestion with metrics output</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_ingestion</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/01_bronze_ingestion_with_values.py</span>
+
+<span class="w">        </span><span class="c1"># Consumer + Router: Quality gate with conditional logic  </span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quality_gate</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_ingestion</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/02_quality_condition.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">bronze_metrics</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.bronze_ingestion.values}}&quot;</span><span class="w">  </span><span class="c1"># 🔥 Dynamic injection</span>
+
+<span class="w">        </span><span class="c1"># Consumer: Silver processing (runs only if quality passes)</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">silver_processing</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quality_gate</span>
+<span class="w">          </span><span class="nt">run_if</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.quality_gate.values.meets_sla}}&quot;</span><span class="w">  </span><span class="c1"># 🔥 Conditional execution</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/03_silver_adaptive.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">bronze_metrics</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.bronze_ingestion.values}}&quot;</span>
+<span class="w">              </span><span class="nt">quality_decision</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.quality_gate.values.routing_decision}}&quot;</span>
+
+<span class="w">        </span><span class="c1"># Consumer: SQL Gold layer with dynamic table names</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gold_analytics</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">silver_processing</span>
+<span class="w">          </span><span class="nt">sql_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">file</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/04_gold_dynamic.sql</span>
+<span class="w">            </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">silver_table</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.silver_processing.values.silver_table}}&quot;</span>
+<span class="w">              </span><span class="nt">silver_processing_mode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.silver_processing.values.processing_mode}}&quot;</span>
+<span class="w">            </span><span class="nt">warehouse_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;your_warehouse_id&quot;</span>
+
+<span class="w">        </span><span class="c1"># Consumer: Comprehensive alerting (always runs)</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pipeline_monitor</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_ingestion</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quality_gate</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">silver_processing</span>
+<span class="w">          </span><span class="nt">run_if</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ALL_DONE&quot;</span><span class="w">  </span><span class="c1"># 🔥 Runs regardless of upstream success/failure</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/05_alert_comprehensive.py</span><span class="w">  </span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">bronze_metrics</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.bronze_ingestion.values}}&quot;</span>
+<span class="w">              </span><span class="nt">quality_metrics</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.quality_gate.values}}&quot;</span>
+<span class="w">              </span><span class="nt">silver_metrics</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.silver_processing.values}}&quot;</span>
+<span class="w">              </span><span class="nt">job_run_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{job.run_id}}&quot;</span>
+<span class="w">              </span><span class="nt">pipeline_start</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{job.start_time}}&quot;</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 Exam Patterns &amp; Gotchas</h2>
+<h3>Value Access Syntax (Memorize These)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Task output values</span>
+<span class="s">&quot;{{tasks.task_name.values.metric_name}}&quot;</span>
+
+<span class="c1"># Job-level values  </span>
+<span class="s">&quot;{{job.run_id}}&quot;</span>
+<span class="s">&quot;{{job.start_time}}&quot;</span><span class="w"> </span>
+<span class="s">&quot;{{job.parameters.param_name}}&quot;</span>
+
+<span class="c1"># Conditional execution</span>
+<span class="nt">run_if</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.upstream_task.values.boolean_flag}}&quot;</span>
+
+<span class="c1"># Comparison operators in condition tasks</span>
+<span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;EQUAL_TO&quot;</span><span class="w"> </span><span class="p p-Indicator">|</span><span class="err"> &quot;NOT_EQUAL&quot; | &quot;GREATER_THAN&quot; | &quot;LESS_THAN&quot; | &quot;GREATER_THAN_OR_EQUAL&quot; | &quot;LESS_THAN_OR_EQUAL&quot;</span>
+</code></pre></div>
+
+<h3>Common Exam Traps</h3>
+<ul>
+<li>❌ <code>{{task.bronze_ingestion.values.count}}</code> → Missing 's' in 'tasks'</li>
+<li>❌ <code>"{{tasks.my_task.outputs.metric}}"</code> → Should be 'values', not 'outputs'  </li>
+<li>❌ Using dynamic values in upstream tasks → Values only exist AFTER task completion</li>
+<li>❌ Condition task <code>outcome: "success"</code> → Should be <code>outcome: "true"</code> or <code>outcome: "false"</code></li>
+<li>❌ JSON parsing in SQL tasks → SQL gets string values, use parameters for injection</li>
+</ul>
+<h3>Success Patterns</h3>
+<ul>
+<li>✅ Always return JSON from notebook tasks for structured value passing</li>
+<li>✅ Use <code>run_if: "ALL_DONE"</code> for monitoring tasks that should always execute</li>
+<li>✅ Inject values as <code>base_parameters</code> for downstream tasks to access via <code>dbutils.widgets.get()</code></li>
+<li>✅ Use condition tasks for simple boolean routing, notebook tasks for complex logic</li>
+<li>✅ Pass entire upstream value objects with <code>"{{tasks.upstream.values}}"</code> for comprehensive access</li>
+</ul>
+<hr />
+<h2>🚀 Real-World Example: Your Products Pipeline</h2>
+<p>Your products CSV (100 rows, 5 categories) flowing through this dynamic system:</p>
+<ol>
+<li><strong>Bronze</strong> outputs: <code>product_count: 100, avg_price: 245.67, categories: 5</code></li>
+<li><strong>Quality</strong> decides: <code>quality_score: 98, routing: "PROCEED_TO_SILVER"</code>  </li>
+<li><strong>Silver</strong> adapts: <code>processing_mode: "standard_processing"</code> (avg_price &lt; 250)</li>
+<li><strong>Gold</strong> creates: <code>product_analytics_standard</code> table with <code>price_tier</code> grouping</li>
+<li><strong>Monitor</strong> logs: <code>✅ Pipeline Completed Successfully, Quality: 98.0%</code></li>
+</ol>
+<p>The dynamic values create a <strong>self-adapting pipeline</strong> that makes decisions based on the actual data characteristics of each run. This is the modern data engineering pattern that Databricks is testing in 2026.</p>
+<hr />
+<h2>📚 Study Sequence</h2>
+<ol>
+<li><strong>Master the syntax</strong> → <code>{{tasks.name.values.field}}</code> patterns</li>
+<li><strong>Practice condition tasks</strong> → Boolean routing with dynamic values  </li>
+<li><strong>Build adaptive logic</strong> → Notebooks that change behavior based on upstream results</li>
+<li><strong>Chain complex flows</strong> → Multi-step pipelines with decision points</li>
+<li><strong>Monitor comprehensively</strong> → Alert handlers that access full pipeline context</li>
+</ol>
+<p>Dynamic values transform LakeFlow Jobs from simple schedulers into <strong>intelligent orchestrators</strong> — this is what separates basic ETL from modern data engineering. 🫡</p>
+</body>
+</html>

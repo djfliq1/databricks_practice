@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Databricks Lakehouse Federation - Data Engineer Associate Certification Guide</title>
+    <style>
+        :root {
+            --primary-color: #60a5fa;
+            --secondary-color: #3b82f6;
+            --accent-color: #fbbf24;
+            --success-color: #34d399;
+            --bg-color: #0f172a;
+            --text-color: #e2e8f0;
+            --border-color: #334155;
+            --code-bg: #1e293b;
+            --card-bg: #1e293b;
+            --overview-bg: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            --bronze-bg: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--bg-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 2rem 0 1rem 0;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin: 1.5rem 0 0.8rem 0;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .overview-box {
+            background: var(--overview-bg);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .overview-box h3 {
+            color: white;
+            margin-top: 0;
+        }
+
+        .diagram-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .code-header {
+            background: var(--primary-color);
+            color: #0f172a;
+            padding: 0.5rem 1rem;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .code-block.with-header {
+            border-radius: 0 0 8px 8px;
+            margin-top: 0;
+        }
+
+        .three-objects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .object-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .object-card:nth-child(1) { border-left-color: #60a5fa; }
+        .object-card:nth-child(2) { border-left-color: #34d399; }
+        .object-card:nth-child(3) { border-left-color: #fbbf24; }
+
+        .object-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            color: var(--primary-color);
+        }
+
+        .cheat-sheet {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .cheat-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .cheat-table th,
+        .cheat-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cheat-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .cheat-table tr:hover {
+            background: #334155;
+        }
+
+        .highlight {
+            background: #451a03;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            margin: 1.5rem 0;
+            color: #fbbf24;
+        }
+
+        .workflow-steps {
+            display: grid;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .step {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .bronze-context {
+            background: var(--bronze-bg);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        .bronze-context h3 {
+            color: white;
+            margin-top: 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .three-objects {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+    <div class="container">
+        <h1>Databricks Lakehouse Federation</h1>
+        <p class="subtitle">Data Engineer Associate Certification Guide</p>
+
+        <div class="overview-box">
+            <h3>What is Lakehouse Federation?</h3>
+            <p><strong>Query external databases (MySQL, Postgres, Snowflake, Redshift, BigQuery, SQL Server, etc.) from Databricks without ingesting the data.</strong> Unity Catalog treats the foreign source as if it were native tables.</p>
+            <p><strong>Why it matters (exam angle):</strong> It's the "no-ETL" pattern — governance, lineage, and access control via Unity Catalog across sources you don't own.</p>
+        </div>
+
+        <h2>Architecture Overview</h2>
+        
+        <div class="diagram-container">
+            <svg width="100%" viewBox="0 0 680 440" role="img" xmlns="http://www.w3.org/2000/svg">
+                <title>Lakehouse Federation architecture</title>
+                <desc>Unity Catalog sits above three objects — Connection, Foreign Catalog, Query Engine — which connect out to external databases without ingesting data.</desc>
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </marker>
+                </defs>
+
+                <!-- Unity Catalog envelope -->
+                <rect x="40" y="30" width="600" height="210" rx="16" stroke="#a78bfa" stroke-width="1" fill="#1e293b"/>
+                <text x="340" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="600" fill="#a78bfa">Unity Catalog (Databricks)</text>
+
+                <!-- Step 1: Connection -->
+                <rect x="70" y="90" width="170" height="120" rx="10" stroke="#60a5fa" stroke-width="1" fill="#0f172a"/>
+                <text x="155" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#60a5fa">1. Connection</text>
+                <text x="155" y="142" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">Credentials + host</text>
+                <text x="155" y="162" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">Secure auth path</text>
+                <text x="155" y="182" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">Governed object</text>
+
+                <!-- Step 2: Foreign Catalog -->
+                <rect x="255" y="90" width="170" height="120" rx="10" stroke="#34d399" stroke-width="1" fill="#0f172a"/>
+                <text x="340" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#34d399">2. Foreign catalog</text>
+                <text x="340" y="142" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">Mirrors remote DB</text>
+                <text x="340" y="162" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">Schemas + tables</text>
+                <text x="340" y="182" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">Read-only mostly</text>
+
+                <!-- Step 3: Query Engine -->
+                <rect x="440" y="90" width="170" height="120" rx="10" stroke="#fbbf24" stroke-width="1" fill="#0f172a"/>
+                <text x="525" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#fbbf24">3. Query engine</text>
+                <text x="525" y="142" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">Pushdown + federate</text>
+                <text x="525" y="162" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">No data copy</text>
+                <text x="525" y="182" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#cbd5e1">Lineage + ACLs</text>
+
+                <!-- Arrows within UC -->
+                <line x1="240" y1="150" x2="253" y2="150" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+                <line x1="425" y1="150" x2="438" y2="150" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+                <!-- External sources row -->
+                <rect x="70" y="300" width="170" height="100" rx="10" stroke="#94a3b8" stroke-width="1" fill="#1e293b"/>
+                <text x="155" y="328" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#cbd5e1">MySQL / Postgres</text>
+                <text x="155" y="352" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8">OLTP source</text>
+                <text x="155" y="372" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8">Stays in place</text>
+
+                <rect x="255" y="300" width="170" height="100" rx="10" stroke="#94a3b8" stroke-width="1" fill="#1e293b"/>
+                <text x="340" y="328" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#cbd5e1">Snowflake / Redshift</text>
+                <text x="340" y="352" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8">Cloud warehouse</text>
+                <text x="340" y="372" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8">Queried in place</text>
+
+                <rect x="440" y="300" width="170" height="100" rx="10" stroke="#94a3b8" stroke-width="1" fill="#1e293b"/>
+                <text x="525" y="328" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#cbd5e1">BigQuery / SQL Server</text>
+                <text x="525" y="352" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8">External system</text>
+                <text x="525" y="372" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8">No ingestion</text>
+
+                <!-- Connecting lines down -->
+                <line x1="155" y1="210" x2="155" y2="300" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+                <line x1="340" y1="210" x2="340" y2="300" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+                <line x1="525" y1="210" x2="525" y2="300" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+            </svg>
+        </div>
+
+        <h2>The Three Core Objects</h2>
+
+        <div class="three-objects">
+            <div class="object-card">
+                <h4>1. Connection</h4>
+                <p><strong>What:</strong> Stores credentials and connection details</p>
+                <p><strong>Purpose:</strong> Secure authentication path to external database</p>
+                <p><strong>Governed:</strong> Access controlled through Unity Catalog permissions</p>
+            </div>
+
+            <div class="object-card">
+                <h4>2. Foreign Catalog</h4>
+                <p><strong>What:</strong> Mirrors the remote database schema in Unity Catalog</p>
+                <p><strong>Purpose:</strong> Makes external tables appear as native Databricks tables</p>
+                <p><strong>Access:</strong> Read-only for most operations</p>
+            </div>
+
+            <div class="object-card">
+                <h4>3. Query Engine</h4>
+                <p><strong>What:</strong> Handles query execution and optimization</p>
+                <p><strong>Features:</strong> Query pushdown, federation, no data movement</p>
+                <p><strong>Benefits:</strong> Maintains lineage and applies ACLs</p>
+            </div>
+        </div>
+
+        <h2>Setup Workflow (Cert-Relevant SQL)</h2>
+
+        <div class="workflow-steps">
+            <div class="step">
+                <span class="step-number">1</span>
+                <h3>Create the Connection</h3>
+                <p>Stores credentials, governed by Unity Catalog</p>
+                
+                <div class="code-header">SQL - Create Connection</div>
+                <div class="code-block with-header">CREATE CONNECTION mysql_prod
+TYPE mysql
+OPTIONS (
+  host 'mysql.prod.internal',
+  port '3306',
+  user secret('db_scope','mysql_user'),
+  password secret('db_scope','mysql_pw')
+);</div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <h3>Create the Foreign Catalog</h3>
+                <p>Mirrors the remote DB into Unity Catalog</p>
+                
+                <div class="code-header">SQL - Create Foreign Catalog</div>
+                <div class="code-block with-header">CREATE FOREIGN CATALOG mysql_sales
+USING CONNECTION mysql_prod
+OPTIONS (database 'sales_db');</div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <h3>Query Like Native Tables</h3>
+                <p>Use standard SQL syntax, no special federation commands needed</p>
+                
+                <div class="code-header">SQL - Federated Query</div>
+                <div class="code-block with-header">-- Straight federated query, no ingestion
+SELECT customer_id, SUM(amount) AS total_spend
+FROM mysql_sales.public.orders
+WHERE order_date >= '2026-01-01'
+GROUP BY customer_id;</div>
+            </div>
+        </div>
+
+        <div class="bronze-context">
+            <h3>Integration with Your Bronze Layer</h3>
+            <p>Your project has a bronze layer CSV with products data. Here's how Federation would let you join it with external inventory data without moving anything:</p>
+        </div>
+
+        <div class="code-header">PySpark - Joining Bronze Layer with Federated Data</div>
+        <div class="code-block with-header"># Your bronze layer (from project CSV)
+bronze_df = spark.read.option("header", "true").csv("/path/to/2_bronze_PySpark.csv")
+
+# Join with federated MySQL inventory (no data movement!)
+federated_query = """
+SELECT b.product_id, b.product_name, b.category, b.price, m.stock_count, m.warehouse_location
+FROM bronze.products_csv b
+JOIN mysql_sales.public.inventory m
+  ON b.product_id = m.product_id
+WHERE b.category IN ('Electronics', 'Toys')
+"""
+
+result_df = spark.sql(federated_query)
+result_df.display()</div>
+
+        <div class="code-header">SQL - Grant Access Through Unity Catalog</div>
+        <div class="code-block with-header">GRANT USE CATALOG ON CATALOG mysql_sales TO `data_analysts`;
+GRANT SELECT ON mysql_sales.public.orders TO `data_analysts`;
+GRANT SELECT ON mysql_sales.public.inventory TO `data_analysts`;</div>
+
+        <h2>Certification Exam Cheat Sheet</h2>
+
+        <div class="cheat-sheet">
+            <table class="cheat-table">
+                <thead>
+                    <tr>
+                        <th>Concept</th>
+                        <th>Remember This</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Purpose</strong></td>
+                        <td>Query external data <em>without ETL</em></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Governance</strong></td>
+                        <td>Unity Catalog (access control, lineage, audit)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Key objects</strong></td>
+                        <td>Connection → Foreign Catalog → Tables</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Supported sources</strong></td>
+                        <td>MySQL, Postgres, Snowflake, Redshift, BigQuery, SQL Server, Databricks-to-Databricks</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Performance</strong></td>
+                        <td>Uses <strong>query pushdown</strong> — filters/aggregates execute on source when possible</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Writes</strong></td>
+                        <td>Mostly read-only (some sources support limited DML)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>vs Ingestion</strong></td>
+                        <td>Federation = zero-copy; Ingestion = data lands in Delta</td>
+                    </tr>
+                    <tr>
+                        <td><strong>vs Delta Sharing</strong></td>
+                        <td>Federation = pull from other systems; Delta Sharing = share Delta tables out</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="highlight">
+            <h3>🪟 The Mental Model</h3>
+            <p><strong>Federation is a <em>window</em> into another database. Ingestion is a <em>copy</em> into yours.</strong></p>
+            <p>The exam loves to test this distinction. Remember: Federation maintains data in its original location while providing unified access through Unity Catalog.</p>
+        </div>
+
+        <h2>Advanced Example: Complex Federated Query</h2>
+
+        <div class="code-header">SQL - Multi-Source Federation with Aggregation</div>
+        <div class="code-block with-header">-- Complex query joining bronze layer, federated MySQL, and Snowflake
+WITH product_metrics AS (
+  SELECT 
+    b.product_id,
+    b.product_name,
+    b.category,
+    m.stock_count,
+    s.sales_last_30d,
+    CASE 
+      WHEN m.stock_count < 10 AND s.sales_last_30d > 100 THEN 'HIGH_PRIORITY_RESTOCK'
+      WHEN m.stock_count < 50 THEN 'LOW_STOCK'
+      ELSE 'NORMAL'
+    END as inventory_status
+  FROM bronze.products_csv b
+  JOIN mysql_prod.inventory.current_stock m 
+    ON b.product_id = m.product_id
+  JOIN snowflake_analytics.sales.product_summary s 
+    ON b.product_id = s.product_id
+  WHERE b.processDate >= current_date() - INTERVAL 1 DAY
+)
+SELECT 
+  category,
+  inventory_status,
+  COUNT(*) as product_count,
+  SUM(sales_last_30d) as total_sales,
+  AVG(stock_count) as avg_stock
+FROM product_metrics
+GROUP BY category, inventory_status
+ORDER BY total_sales DESC;</div>
+
+        <h2>Key Performance Considerations</h2>
+
+        <div class="three-objects">
+            <div class="object-card">
+                <h4>Query Pushdown</h4>
+                <p>Filters, aggregations, and joins are pushed to the source database when possible</p>
+                <p><strong>Benefit:</strong> Reduces network traffic and improves performance</p>
+            </div>
+
+            <div class="object-card">
+                <h4>Network Latency</h4>
+                <p>Queries depend on network connection to external sources</p>
+                <p><strong>Best Practice:</strong> Use for analytical queries, not high-frequency transactional workloads</p>
+            </div>
+
+            <div class="object-card">
+                <h4>Source Performance</h4>
+                <p>Federation queries impact the source database performance</p>
+                <p><strong>Consideration:</strong> Coordinate with source system owners on query patterns</p>
+            </div>
+        </div>
+
+        <div class="highlight">
+            <h3>💡 Exam Tip</h3>
+            <p>Remember the difference between <strong>Federation</strong> (query external data in place) and <strong>Delta Sharing</strong> (share your Delta tables with external parties). Both are Unity Catalog features but solve opposite data sharing scenarios!</p>
+        </div>
+
+    </div>
+
+    <footer style="text-align: center; margin-top: 3rem; padding: 2rem; color: #94a3b8; border-top: 1px solid var(--border-color);">
+        <p>Databricks Lakehouse Federation Guide | Data Engineer Associate Certification</p>
+        <p>Updated: April 2026</p>
+    </footer>
+</body>
+</html>

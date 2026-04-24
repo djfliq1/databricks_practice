@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity Catalog — Markdown Reference</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<h1>Unity Catalog Cheat Sheet</h1>
+<p><em>Databricks' unified governance layer for data and AI</em></p>
+<h2>Core Concepts</h2>
+<h3>What is Unity Catalog?</h3>
+<p>Unity Catalog is a <strong>centralized data governance solution</strong> that provides unified metadata, security, and discovery across all Databricks workspaces in a region.</p>
+<p><strong>Key Benefits:</strong><br />
+- Single metastore per region serves multiple workspaces<br />
+- Three-level namespace: <code>catalog.schema.table</code><br />
+- ANSI SQL GRANT/REVOKE permissions<br />
+- Automatic lineage tracking<br />
+- Cross-workspace data access without duplication</p>
+<h3>Architecture Overview</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">Unity</span><span class="w"> </span><span class="n">Catalog</span><span class="w"> </span><span class="n">Metastore</span><span class="w"> </span><span class="p">(</span><span class="n">Regional</span><span class="p">)</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">Catalog</span><span class="w"> </span><span class="p">(</span><span class="n">sales_catalog</span><span class="p">)</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">Schema</span><span class="w"> </span><span class="p">(</span><span class="n">transactions_schema</span><span class="p">)</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">Tables</span><span class="w"> </span><span class="p">(</span><span class="n">orders</span><span class="p">,</span><span class="w"> </span><span class="n">payments</span><span class="p">,</span><span class="w"> </span><span class="n">customers</span><span class="p">)</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">Views</span><span class="w"> </span><span class="p">(</span><span class="n">daily_summary</span><span class="p">)</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">Functions</span><span class="w"> </span><span class="p">(</span><span class="n">custom_udf</span><span class="p">)</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">Volumes</span><span class="w"> </span><span class="p">(</span><span class="n">model_artifacts</span><span class="p">)</span>
+<span class="err">│</span><span class="w">       </span><span class="err">└──</span><span class="w"> </span><span class="n">Models</span><span class="w"> </span><span class="p">(</span><span class="n">churn_predictor</span><span class="p">)</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">External</span><span class="w"> </span><span class="n">Catalog</span><span class="w"> </span><span class="p">(</span><span class="n">legacy_catalog</span><span class="p">)</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">Schema</span><span class="w"> </span><span class="p">(</span><span class="n">archive_schema</span><span class="p">)</span>
+<span class="err">│</span><span class="w">       </span><span class="err">└──</span><span class="w"> </span><span class="n">External</span><span class="w"> </span><span class="n">Tables</span><span class="w"> </span><span class="p">(</span><span class="n">s3_data</span><span class="p">,</span><span class="w"> </span><span class="n">adls_exports</span><span class="p">)</span>
+<span class="err">└──</span><span class="w"> </span><span class="n">Connected</span><span class="w"> </span><span class="n">Workspaces</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">dev_workspace</span>
+<span class="w">    </span><span class="err">├──</span><span class="w"> </span><span class="n">staging_workspace</span>
+<span class="w">    </span><span class="err">└──</span><span class="w"> </span><span class="n">prod_workspace</span>
+</code></pre></div>
+
+<h2>Namespace Structure</h2>
+<h3>Three-Level Hierarchy</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Full qualified name</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">catalog_name</span><span class="p">.</span><span class="k">schema_name</span><span class="p">.</span><span class="k">table_name</span><span class="p">;</span>
+
+<span class="c1">-- Examples</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="n">orders</span><span class="p">;</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">ml</span><span class="p">.</span><span class="n">experiments</span><span class="p">.</span><span class="n">feature_table</span><span class="p">;</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">external</span><span class="p">.</span><span class="n">legacy</span><span class="p">.</span><span class="n">customer_archive</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>Catalog → Schema → Objects</h3>
+<ul>
+<li><strong>Catalog</strong>: Top-level container (department/domain)</li>
+<li><strong>Schema</strong>: Logical grouping within catalog (functional area)</li>
+<li><strong>Objects</strong>: Tables, views, functions, volumes, ML models</li>
+</ul>
+<h2>Environment Patterns</h2>
+<h3>Catalog-per-Environment</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Development</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">dev_sales</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">dev_sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">dev_sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="p">(...);</span>
+
+<span class="c1">-- Staging</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">staging_sales</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">staging_sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">staging_sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="n">dev_sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="n">orders</span><span class="p">;</span>
+
+<span class="c1">-- Production</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">prod_sales</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">prod_sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">prod_sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="n">staging_sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="n">orders</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>Workspace-per-Environment</h3>
+<ul>
+<li><code>dev-workspace</code> → Access all three catalogs</li>
+<li><code>staging-workspace</code> → Access staging + prod (read-only)</li>
+<li><code>prod-workspace</code> → Access prod only</li>
+</ul>
+<h2>Managed vs External Tables</h2>
+<h3>Managed Tables</h3>
+<p><strong>Unity Catalog owns both metadata AND data</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Create managed table</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">customer_id</span><span class="w"> </span><span class="nb">BIGINT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">email</span><span class="w"> </span><span class="n">STRING</span><span class="p">,</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="k">TIMESTAMP</span>
+<span class="p">)</span><span class="w"> </span><span class="c1">-- Data stored in UC-managed location</span>
+</code></pre></div>
+
+<p><strong>Characteristics:</strong><br />
+- UC controls storage location and organization<br />
+- <code>DROP TABLE</code> = deletes metadata + data files<br />
+- 7-day undrop window available<br />
+- Automatic optimization and compaction</p>
+<h3>External Tables</h3>
+<p><strong>Unity Catalog manages metadata, you own the data</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Create external table</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">external_profiles</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">customer_id</span><span class="w"> </span><span class="nb">BIGINT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">email</span><span class="w"> </span><span class="n">STRING</span><span class="p">,</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="k">TIMESTAMP</span>
+<span class="p">)</span>
+<span class="k">LOCATION</span><span class="w"> </span><span class="s1">&#39;s3://my-bucket/customer-data/&#39;</span>
+</code></pre></div>
+
+<p><strong>Characteristics:</strong><br />
+- Data stays in your specified S3/ADLS location<br />
+- <code>DROP TABLE</code> = only removes metadata<br />
+- You handle file management and cleanup<br />
+- Useful for existing data lakes</p>
+<h2>Volumes (Non-Tabular Data Governance)</h2>
+<h3>Managed Volumes</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- UC creates and manages the storage location</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="n">VOLUME</span><span class="w"> </span><span class="n">ml</span><span class="p">.</span><span class="n">experiments</span><span class="p">.</span><span class="n">model_artifacts</span><span class="p">;</span>
+
+<span class="c1">-- Files automatically organized under:</span>
+<span class="c1">-- /metastore-root/ml/experiments/model_artifacts/</span>
+</code></pre></div>
+
+<h3>External Volumes</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Point to existing storage location</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="n">VOLUME</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">analytics</span><span class="p">.</span><span class="n">legacy_reports</span><span class="w"> </span>
+<span class="k">LOCATION</span><span class="w"> </span><span class="s1">&#39;s3://my-data-bucket/reports/quarterly/&#39;</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>Volume Operations with dbutils</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># List volume contents</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s1">&#39;/Volumes/ml/experiments/model_artifacts/&#39;</span><span class="p">)</span>
+
+<span class="c1"># Copy files to volume</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="s1">&#39;local_file.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;/Volumes/ml/experiments/model_artifacts/model_v1.pkl&#39;</span><span class="p">)</span>
+
+<span class="c1"># Access volume files in code</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;/Volumes/ml/experiments/model_artifacts/config.json&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>Permissions and Security</h2>
+<h3>SQL GRANT/REVOKE</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Catalog-level permissions</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="n">USE</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">sales</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="k">data</span><span class="o">-</span><span class="n">analysts</span><span class="o">`</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">sales</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="k">data</span><span class="o">-</span><span class="n">engineers</span><span class="o">`</span><span class="p">;</span>
+
+<span class="c1">-- Schema-level permissions  </span>
+<span class="k">GRANT</span><span class="w"> </span><span class="n">USE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">transactions</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="n">finance</span><span class="o">-</span><span class="n">team</span><span class="o">`</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">transactions</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="n">senior</span><span class="o">-</span><span class="n">engineers</span><span class="o">`</span><span class="p">;</span>
+
+<span class="c1">-- Table-level permissions</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="n">marketing</span><span class="o">-</span><span class="n">team</span><span class="o">`</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="k">order</span><span class="o">-</span><span class="n">service</span><span class="o">`</span><span class="p">;</span>
+
+<span class="c1">-- Volume permissions</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">READ</span><span class="w"> </span><span class="n">FILES</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">VOLUME</span><span class="w"> </span><span class="n">ml</span><span class="p">.</span><span class="n">experiments</span><span class="p">.</span><span class="n">model_artifacts</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="k">data</span><span class="o">-</span><span class="n">scientists</span><span class="o">`</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">WRITE</span><span class="w"> </span><span class="n">FILES</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">VOLUME</span><span class="w"> </span><span class="n">ml</span><span class="p">.</span><span class="n">experiments</span><span class="p">.</span><span class="n">model_artifacts</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="n">senior</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">engineers</span><span class="o">`</span><span class="p">;</span>
+
+<span class="c1">-- Row-level security</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">FUNCTION</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">row_filter</span><span class="p">(</span><span class="n">region</span><span class="w"> </span><span class="n">STRING</span><span class="p">)</span>
+<span class="k">RETURN</span><span class="w"> </span><span class="k">IF</span><span class="p">(</span><span class="n">IS_ACCOUNT_GROUP_MEMBER</span><span class="p">(</span><span class="s1">&#39;region-managers&#39;</span><span class="p">),</span><span class="w"> </span><span class="k">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">region</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;US&#39;</span><span class="p">);</span>
+
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="w"> </span>
+<span class="k">SET</span><span class="w"> </span><span class="k">ROW</span><span class="w"> </span><span class="n">FILTER</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">row_filter</span><span class="p">(</span><span class="n">region</span><span class="p">);</span>
+</code></pre></div>
+
+<h3>External Location Management</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Create storage credential</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">STORAGE</span><span class="w"> </span><span class="n">CREDENTIAL</span><span class="w"> </span><span class="n">s3_cred</span><span class="w"> </span>
+<span class="k">USING</span><span class="w"> </span><span class="n">SERVICE</span><span class="w"> </span><span class="n">PRINCIPAL</span><span class="w"> </span>
+<span class="k">OPTIONS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="s1">&#39;roleArn&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;arn:aws:iam::123456789:role/unity-catalog-role&#39;</span>
+<span class="p">);</span>
+
+<span class="c1">-- Create external location</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">EXTERNAL</span><span class="w"> </span><span class="k">LOCATION</span><span class="w"> </span><span class="n">s3_data_lake</span>
+<span class="n">URL</span><span class="w"> </span><span class="s1">&#39;s3://company-data-lake/raw/&#39;</span>
+<span class="k">WITH</span><span class="w"> </span><span class="p">(</span><span class="k">STORAGE</span><span class="w"> </span><span class="n">CREDENTIAL</span><span class="w"> </span><span class="n">s3_cred</span><span class="p">);</span>
+
+<span class="c1">-- Grant access to external location</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">READ</span><span class="w"> </span><span class="n">FILES</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">EXTERNAL</span><span class="w"> </span><span class="k">LOCATION</span><span class="w"> </span><span class="n">s3_data_lake</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">`</span><span class="k">data</span><span class="o">-</span><span class="n">engineers</span><span class="o">`</span><span class="p">;</span>
+</code></pre></div>
+
+<h2>Discovery and Documentation</h2>
+<h3>Tagging</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Add tags to catalog</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">sales</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">TAGS</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;environment&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;prod&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;owner&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;data-team&#39;</span><span class="p">);</span>
+
+<span class="c1">-- Add tags to table</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">TAGS</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;pii&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;true&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;retention&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;7-years&#39;</span><span class="p">);</span>
+
+<span class="c1">-- Search by tags</span>
+<span class="k">SHOW</span><span class="w"> </span><span class="n">TABLES</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">TAGS</span><span class="p">.</span><span class="n">pii</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;true&#39;</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>Comments and Documentation</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Add table comments</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="w"> </span>
+<span class="k">SET</span><span class="w"> </span><span class="n">TBLPROPERTIES</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;comment&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Customer profile data with PII&#39;</span><span class="p">);</span>
+
+<span class="c1">-- Add column comments</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="w"> </span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">COLUMN</span><span class="w"> </span><span class="n">email</span><span class="w"> </span><span class="k">COMMENT</span><span class="w"> </span><span class="s1">&#39;Customer primary email address&#39;</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>Information Schema Queries</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Find tables by name pattern</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">information_schema</span><span class="p">.</span><span class="n">tables</span><span class="w"> </span>
+<span class="k">WHERE</span><span class="w"> </span><span class="k">table_name</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%customer%&#39;</span><span class="p">;</span>
+
+<span class="c1">-- Find columns containing PII</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">information_schema</span><span class="p">.</span><span class="n">columns</span><span class="w"> </span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">column_comment</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%email%&#39;</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">column_name</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;%email%&#39;</span><span class="p">;</span>
+
+<span class="c1">-- View table lineage</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">information_schema</span><span class="p">.</span><span class="n">table_lineage</span><span class="w"> </span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">target_table_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;customer_summary&#39;</span><span class="p">;</span>
+</code></pre></div>
+
+<h2>Migration from Hive Metastore</h2>
+<h3>Sync Command</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Sync existing Hive tables to Unity Catalog</span>
+<span class="n">SYNC</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">legacy_profiles</span><span class="w"> </span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">hive_metastore</span><span class="p">.</span><span class="k">default</span><span class="p">.</span><span class="n">customers</span><span class="p">;</span>
+
+<span class="c1">-- Create Unity Catalog table from Hive table</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">migrated_profiles</span><span class="w"> </span>
+<span class="k">AS</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">hive_metastore</span><span class="p">.</span><span class="k">default</span><span class="p">.</span><span class="n">customers</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>UCX (Unity Catalog Migration Toolkit)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Install UCX</span>
+<span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">databricks</span><span class="o">-</span><span class="n">labs</span><span class="o">-</span><span class="n">ucx</span>
+
+<span class="c1"># Assessment of current workspace</span>
+<span class="n">ucx</span> <span class="n">assessment</span>
+
+<span class="c1"># Generate migration plan</span>
+<span class="n">ucx</span> <span class="n">migrate</span><span class="o">-</span><span class="n">tables</span> <span class="o">--</span><span class="kn">from</span><span class="w"> </span><span class="nn">hive_metastore.schema_name</span>
+</code></pre></div>
+
+<h2>dbutils Reference</h2>
+<h3>File System Operations</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># List files (works with UC volumes)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s1">&#39;/Volumes/catalog/schema/volume/&#39;</span><span class="p">)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s1">&#39;s3://bucket/path/&#39;</span><span class="p">)</span>
+
+<span class="c1"># Copy and move files</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;destination&#39;</span><span class="p">)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="s1">&#39;old_path&#39;</span><span class="p">,</span> <span class="s1">&#39;new_path&#39;</span><span class="p">)</span>
+
+<span class="c1"># Delete files</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># File information</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="s1">&#39;file_path&#39;</span><span class="p">,</span> <span class="n">max_bytes</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>Secrets Management</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Access secrets from secret scopes</span>
+<span class="n">api_key</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;external-apis&quot;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;service-token&quot;</span><span class="p">)</span>
+<span class="n">db_password</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;database-creds&quot;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;prod-password&quot;</span><span class="p">)</span>
+
+<span class="c1"># List available secret scopes</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">listScopes</span><span class="p">()</span>
+</code></pre></div>
+
+<h3>Notebook Workflows</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Create parameterized widgets</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;environment&quot;</span><span class="p">,</span> <span class="s2">&quot;dev&quot;</span><span class="p">,</span> <span class="s2">&quot;Target Environment&quot;</span><span class="p">)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">dropdown</span><span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">,</span> <span class="s2">&quot;us-east-1&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;us-east-1&quot;</span><span class="p">,</span> <span class="s2">&quot;us-west-2&quot;</span><span class="p">,</span> <span class="s2">&quot;eu-west-1&quot;</span><span class="p">])</span>
+
+<span class="c1"># Get widget values</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;environment&quot;</span><span class="p">)</span>
+<span class="n">region</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">)</span>
+
+<span class="c1"># Run another notebook</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="s2">&quot;./data-processing&quot;</span><span class="p">,</span> 
+    <span class="n">timeout_seconds</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> 
+    <span class="n">arguments</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15&quot;</span><span class="p">,</span> <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="n">env</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Exit with return value</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Processing completed successfully&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3>Getting Help</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># General help</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">help</span><span class="p">()</span>
+
+<span class="c1"># Module-specific help</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">help</span><span class="p">()</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">secrets</span><span class="o">.</span><span class="n">help</span><span class="p">()</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">help</span><span class="p">()</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">help</span><span class="p">()</span>
+
+<span class="c1"># Command-specific help</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">help</span><span class="p">(</span><span class="s2">&quot;ls&quot;</span><span class="p">)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">help</span><span class="p">(</span><span class="s2">&quot;cp&quot;</span><span class="p">)</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">help</span><span class="p">(</span><span class="s2">&quot;dropdown&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>Best Practices</h2>
+<h3>Naming Conventions</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Catalogs: domain/department based</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">sales</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">marketing</span><span class="p">;</span><span class="w"> </span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">CATALOG</span><span class="w"> </span><span class="n">engineering</span><span class="p">;</span>
+
+<span class="c1">-- Schemas: functional areas within domain</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">;</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">reporting</span><span class="p">;</span>
+
+<span class="c1">-- Tables: descriptive, avoid generic names</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="n">order_line_items</span><span class="p">;</span><span class="w">  </span><span class="c1">-- Good</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="k">data</span><span class="p">;</span><span class="w">              </span><span class="c1">-- Bad</span>
+</code></pre></div>
+
+<h3>Environment Strategy</h3>
+<ol>
+<li><strong>Catalog-per-environment</strong> for complete isolation</li>
+<li><strong>Workspace-per-environment</strong> for compute isolation</li>
+<li>Use consistent naming: <code>{env}_{domain}</code> (e.g., <code>prod_sales</code>, <code>dev_sales</code>)</li>
+</ol>
+<h3>Security Strategy</h3>
+<ol>
+<li>Start with least privilege access</li>
+<li>Use groups instead of individual user grants</li>
+<li>Implement row-level security for sensitive data</li>
+<li>Regular audit of permissions using <code>SHOW GRANTS</code></li>
+</ol>
+<h3>Data Organization</h3>
+<ol>
+<li>Use managed tables for new, Unity Catalog-native workflows</li>
+<li>Use external tables for existing data lakes during migration</li>
+<li>Leverage volumes for ML artifacts and non-tabular data</li>
+<li>Implement consistent tagging strategy early</li>
+</ol>
+<h3>Performance</h3>
+<ol>
+<li>Use Delta Lake format for all new tables</li>
+<li>Implement proper partitioning strategy</li>
+<li>Regular <code>OPTIMIZE</code> and <code>VACUUM</code> operations</li>
+<li>Monitor query performance through Unity Catalog lineage</li>
+</ol>
+<h2>Common SQL Patterns</h2>
+<h3>Data Discovery</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Find all tables in a catalog</span>
+<span class="k">SHOW</span><span class="w"> </span><span class="n">TABLES</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="n">sales</span><span class="p">;</span>
+
+<span class="c1">-- Search for tables by pattern</span>
+<span class="k">SHOW</span><span class="w"> </span><span class="n">TABLES</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="n">sales</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;*customer*&#39;</span><span class="p">;</span>
+
+<span class="c1">-- View table schema</span>
+<span class="k">DESCRIBE</span><span class="w"> </span><span class="n">EXTENDED</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="p">;</span>
+
+<span class="c1">-- Check table properties and metadata</span>
+<span class="k">SHOW</span><span class="w"> </span><span class="n">TBLPROPERTIES</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>Cross-Catalog Queries</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Join tables from different catalogs</span>
+<span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">customer_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">.</span><span class="n">email</span><span class="p">,</span>
+<span class="w">    </span><span class="n">o</span><span class="p">.</span><span class="n">order_total</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">prod_sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="w"> </span><span class="n">p</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">dev_sales</span><span class="p">.</span><span class="n">transactions</span><span class="p">.</span><span class="n">orders</span><span class="w"> </span><span class="n">o</span><span class="w"> </span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">customer_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">customer_id</span><span class="p">;</span>
+</code></pre></div>
+
+<h3>Time Travel and Versioning</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Query table at specific timestamp</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="w"> </span>
+<span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="k">OF</span><span class="w"> </span><span class="s1">&#39;2024-01-01 00:00:00&#39;</span><span class="p">;</span>
+
+<span class="c1">-- Query table at specific version</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="w"> </span><span class="k">VERSION</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="k">OF</span><span class="w"> </span><span class="mi">123</span><span class="p">;</span>
+
+<span class="c1">-- View table history</span>
+<span class="k">DESCRIBE</span><span class="w"> </span><span class="n">HISTORY</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">customers</span><span class="p">.</span><span class="n">profiles</span><span class="p">;</span>
+</code></pre></div>
+
+<p>This cheat sheet covers the essential Unity Catalog concepts, commands, and patterns for effective data governance in Databricks environments.</p>
+</body>
+</html>

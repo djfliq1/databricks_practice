@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Delta Lake Optimization — Cheat Sheet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0c10;--card:#161b22;--border:#21262d;--cyan:#00e5ff;--green:#39d353;--yellow:#f0c040;--red:#f85149;--purple:#bc8cff;--orange:#ff8c42;--muted:#6e7681;--text:#c9d1d9;--heading:#f0f6fc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6;padding:32px 24px;max-width:1200px;margin:0 auto;}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px;display:flex;align-items:flex-end;gap:20px;}
+.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
+h1{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--heading);}
+h1 span{color:var(--cyan);}
+.badge{margin-left:auto;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;border-radius:4px;white-space:nowrap;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+.full{margin-bottom:16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 20px;}
+.ct{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.c1{border-top:2px solid var(--cyan);}.c1 .dot{background:var(--cyan);}
+.c2{border-top:2px solid var(--green);}.c2 .dot{background:var(--green);}
+.c3{border-top:2px solid var(--yellow);}.c3 .dot{background:var(--yellow);}
+.c4{border-top:2px solid var(--purple);}.c4 .dot{background:var(--purple);}
+.c5{border-top:2px solid var(--orange);}.c5 .dot{background:var(--orange);}
+.c6{border-top:2px solid var(--red);}.c6 .dot{background:var(--red);}
+pre{background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;overflow-x:auto;margin:10px 0;line-height:1.8;}
+.kw{color:var(--purple);}.str{color:var(--green);}.cmt{color:var(--muted);font-style:italic;}.key{color:var(--cyan);}.val{color:var(--orange);}.op{color:var(--yellow);}
+ul{list-style:none;}
+ul li{padding:5px 0;padding-left:16px;position:relative;font-size:13px;border-bottom:1px solid #1a1f27;}
+ul li:last-child{border-bottom:none;}
+ul li::before{content:'›';position:absolute;left:0;color:var(--muted);}
+ul li strong{color:var(--heading);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#0d1117;color:var(--heading);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:9px 12px;border-bottom:1px solid #1a1f27;vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+td:first-child{color:var(--heading);font-weight:500;}
+.trap{background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.25);border-left:3px solid var(--red);border-radius:4px;padding:12px 14px;margin:8px 0;font-size:13px;}
+.tl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--red);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+.tip{background:rgba(57,211,83,.07);border:1px solid rgba(57,211,83,.2);border-left:3px solid var(--green);border-radius:4px;padding:12px 14px;margin:8px 0;font-size:13px;}
+.tipl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+.div{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin:28px 0 14px;display:flex;align-items:center;gap:12px;}
+.div::before,.div::after{content:'';flex:1;height:1px;background:var(--border);}
+.div::before{flex:0 0 16px;}
+.check{color:var(--green);}.cross{color:var(--red);}
+.ftr{border-top:1px solid var(--border);margin-top:32px;padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+</style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<div class="hdr">
+  <div>
+    <div class="tag">Section 16</div>
+    <h1>Delta Lake <span>Optimization</span></h1>
+    <div style="font-size:13px;color:var(--muted);margin-top:6px;">databricks_clar · Lessons 113–122</div>
+  </div>
+  <div class="badge">EXAM DOMAIN: Data Processing 31%</div>
+</div>
+
+<div class="div">Core Commands</div>
+<div class="grid3">
+  <div class="card c2">
+    <div class="ct"><span class="dot"></span>OPTIMIZE</div>
+    <pre><span class="cmt">-- Compact small files</span>
+<span class="kw">OPTIMIZE</span> databricks_clar.silver.products_enriched;
+
+<span class="cmt">-- With Z-ORDER on query columns</span>
+<span class="kw">OPTIMIZE</span> databricks_clar.silver.products_enriched
+<span class="kw">ZORDER BY</span> (category, price);</pre>
+    <ul>
+      <li><strong>Bin-packing</strong> = default, merges small files into ~1GB targets</li>
+      <li><strong>Idempotent</strong> — safe to run repeatedly</li>
+      <li>Does NOT delete old files — need VACUUM for that</li>
+    </ul>
+  </div>
+  <div class="card c3">
+    <div class="ct"><span class="dot"></span>VACUUM</div>
+    <pre><span class="cmt">-- Remove files older than retention</span>
+<span class="kw">VACUUM</span> databricks_clar.silver.products_enriched;
+
+<span class="cmt">-- Custom retention (default = 7 days)</span>
+<span class="kw">VACUUM</span> databricks_clar.silver.products_enriched
+<span class="kw">RETAIN</span> <span class="val">168</span> <span class="kw">HOURS</span>;
+
+<span class="cmt">-- DRY RUN first!</span>
+<span class="kw">VACUUM</span> databricks_clar.silver.products_enriched <span class="kw">DRY RUN</span>;</pre>
+    <ul>
+      <li>Deletes files not referenced by current/recent versions</li>
+      <li><strong>7-day minimum</strong> to preserve time travel</li>
+      <li>Going below 7 days breaks streaming readers</li>
+    </ul>
+  </div>
+  <div class="card c4">
+    <div class="ct"><span class="dot"></span>ANALYZE TABLE</div>
+    <pre><span class="cmt">-- Collect stats for query optimizer</span>
+<span class="kw">ANALYZE TABLE</span>
+  databricks_clar.silver.products_enriched
+<span class="kw">COMPUTE STATISTICS</span>;
+
+<span class="cmt">-- Column-level stats</span>
+<span class="kw">ANALYZE TABLE</span>
+  databricks_clar.silver.products_enriched
+<span class="kw">COMPUTE STATISTICS FOR COLUMNS</span>
+  product_id, category, price;</pre>
+    <ul>
+      <li>Feeds Catalyst optimizer with data distribution info</li>
+      <li>Enables better join strategies (broadcast vs shuffle)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="div">Liquid Clustering vs Z-ORDER</div>
+<div class="card full">
+  <div class="ct"><span class="dot" style="background:var(--cyan)"></span>Comparison</div>
+  <table>
+    <tr><th>Aspect</th><th>Z-ORDER</th><th>Liquid Clustering</th></tr>
+    <tr><td>Syntax</td><td><code>OPTIMIZE ... ZORDER BY (col)</code></td><td><code>CLUSTER BY (col)</code> at table creation</td></tr>
+    <tr><td>Idempotent</td><td class="cross">✗ NOT idempotent</td><td class="check">✓ Idempotent</td></tr>
+    <tr><td>Flexibility</td><td>Rewrite entire table to change</td><td>Change clustering keys without rewrite</td></tr>
+    <tr><td>Partitioning</td><td>Works with partitioned tables</td><td>Replaces partitioning — don't combine</td></tr>
+    <tr><td>When to use</td><td>Legacy tables, existing partitioned tables</td><td>New tables — preferred 2026 pattern</td></tr>
+    <tr><td>Exam signal</td><td>"which is NOT idempotent"</td><td>"modern replacement for partitioning"</td></tr>
+  </table>
+  <pre style="margin-top:14px;"><span class="cmt">-- Liquid Clustering — define at creation</span>
+<span class="kw">CREATE TABLE</span> databricks_clar.silver.products_enriched (
+  product_id <span class="key">INT</span>, product_name <span class="key">STRING</span>,
+  category <span class="key">STRING</span>, price <span class="key">DOUBLE</span>
+) <span class="kw">CLUSTER BY</span> (category, price);
+
+<span class="cmt">-- Then just run OPTIMIZE — no ZORDER needed</span>
+<span class="kw">OPTIMIZE</span> databricks_clar.silver.products_enriched;</pre>
+</div>
+
+<div class="div">Time Travel & Versioning</div>
+<div class="grid2">
+  <div class="card c1">
+    <div class="ct"><span class="dot"></span>Time Travel Queries</div>
+    <pre><span class="cmt">-- Query by version number</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> databricks_clar.silver.products_enriched
+<span class="kw">VERSION AS OF</span> <span class="val">3</span>;
+
+<span class="cmt">-- Query by timestamp</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> databricks_clar.silver.products_enriched
+<span class="kw">TIMESTAMP AS OF</span> <span class="str">'2026-04-01 00:00:00'</span>;
+
+<span class="cmt">-- PySpark syntax</span>
+df = spark.read.format(<span class="str">"delta"</span>) \
+  .option(<span class="str">"versionAsOf"</span>, <span class="val">3</span>) \
+  .table(<span class="str">"databricks_clar.silver.products_enriched"</span>)</pre>
+  </div>
+  <div class="card c5">
+    <div class="ct"><span class="dot"></span>RESTORE & History</div>
+    <pre><span class="cmt">-- Restore table to prior version</span>
+<span class="kw">RESTORE TABLE</span>
+  databricks_clar.silver.products_enriched
+<span class="kw">TO VERSION AS OF</span> <span class="val">2</span>;
+
+<span class="cmt">-- View full history</span>
+<span class="kw">DESCRIBE HISTORY</span>
+  databricks_clar.silver.products_enriched;
+
+<span class="cmt">-- Check current version</span>
+<span class="kw">SELECT</span> max(version)
+<span class="kw">FROM</span> (<span class="kw">DESCRIBE HISTORY</span>
+  databricks_clar.silver.products_enriched);</pre>
+  </div>
+</div>
+
+<div class="div">Clone Operations</div>
+<div class="grid2">
+  <div class="card c2">
+    <div class="ct"><span class="dot"></span>DEEP CLONE — Full Copy</div>
+    <pre><span class="cmt">-- Deep clone = full data copy</span>
+<span class="kw">CREATE TABLE</span> databricks_clar.silver.products_backup
+<span class="kw">DEEP CLONE</span> databricks_clar.silver.products_enriched;
+
+<span class="cmt">-- Re-run = incremental (only new changes)</span>
+<span class="kw">CREATE OR REPLACE TABLE</span> databricks_clar.silver.products_backup
+<span class="kw">DEEP CLONE</span> databricks_clar.silver.products_enriched;</pre>
+    <ul>
+      <li>Fully independent — source VACUUM safe</li>
+      <li>Re-running is incremental (copies delta only)</li>
+      <li>Use for: backups, DR, production snapshots</li>
+    </ul>
+  </div>
+  <div class="card c6">
+    <div class="ct"><span class="dot"></span>SHALLOW CLONE — Pointer Only</div>
+    <pre><span class="cmt">-- Shallow clone = metadata + log only</span>
+<span class="kw">CREATE TABLE</span> databricks_clar.silver.products_test
+<span class="kw">SHALLOW CLONE</span> databricks_clar.silver.products_enriched;
+
+<span class="cmt">-- ⚠ DANGER: if source is VACUUMed,
+-- shallow clone files disappear</span></pre>
+    <ul>
+      <li>Zero data copy — just pointers to source files</li>
+      <li>Source VACUUM = shallow clone breaks</li>
+      <li>Use for: dev/test only, short-lived experiments</li>
+    </ul>
+  </div>
+</div>
+
+<div class="div">Predictive Optimization</div>
+<div class="card c1 full">
+  <div class="ct"><span class="dot"></span>Auto OPTIMIZE + VACUUM — Managed Tables Only</div>
+  <pre><span class="cmt">-- Enable on Unity Catalog managed table</span>
+<span class="kw">ALTER TABLE</span> databricks_clar.silver.products_enriched
+<span class="kw">SET TBLPROPERTIES</span> (<span class="str">'delta.enablePredictiveOptimization'</span> = <span class="str">'auto'</span>);
+
+<span class="cmt">-- Or enable at catalog/schema level</span>
+<span class="kw">ALTER CATALOG</span> databricks_clar
+<span class="kw">SET TBLPROPERTIES</span> (<span class="str">'delta.enablePredictiveOptimization'</span> = <span class="str">'auto'</span>);</pre>
+  <ul style="margin-top:10px;">
+    <li><strong>Managed Unity Catalog tables ONLY</strong> — external tables do not qualify</li>
+    <li>Databricks automatically runs OPTIMIZE and VACUUM based on usage patterns</li>
+    <li>No manual scheduling needed — hands-off maintenance</li>
+  </ul>
+</div>
+
+<div class="div">Exam Traps</div>
+<div class="full">
+  <div class="trap"><div class="tl">⚠ Trap 01</div><strong>OPTIMIZE ≠ delete old files.</strong> OPTIMIZE compacts files but does NOT remove the old ones. You still need VACUUM to reclaim storage.</div>
+  <div class="trap"><div class="tl">⚠ Trap 02</div><strong>Z-ORDER is NOT idempotent.</strong> Running ZORDER BY multiple times rewrites data each time with no additional benefit. Liquid Clustering IS idempotent.</div>
+  <div class="trap"><div class="tl">⚠ Trap 03</div><strong>VACUUM below 7 days breaks streaming.</strong> The 7-day default isn't arbitrary — going below it means active stream checkpoints may reference deleted files.</div>
+  <div class="trap"><div class="tl">⚠ Trap 04</div><strong>Shallow clone + VACUUM = disaster.</strong> If the source table is VACUUMed, shallow clone data files disappear. Deep clone is the safe backup pattern.</div>
+  <div class="trap"><div class="tl">⚠ Trap 05</div><strong>VERSION AS OF ≠ RESTORE.</strong> VERSION AS OF is a read-only time travel query. RESTORE TABLE actually rolls the table back. Know the difference.</div>
+  <div class="tip"><div class="tipl">✓ Key Point</div><strong>Predictive Optimization = Unity Catalog managed tables only.</strong> External tables, even in UC, do not get auto OPTIMIZE/VACUUM.</div>
+  <div class="tip"><div class="tipl">✓ Key Point</div><strong>Liquid Clustering replaces partitioning.</strong> Do NOT use PARTITION BY and CLUSTER BY on the same table — they are mutually exclusive patterns.</div>
+  <div class="tip"><div class="tipl">✓ Key Point</div><strong>OPTIMIZE on a streaming source table is safe.</strong> It does not interrupt active streams reading from that table.</div>
+</div>
+
+<div class="ftr">
+  <span>databricks_clar · Section 16 — Delta Lake Optimization</span>
+  <span>April 2026 · Certified Data Engineer Associate Prep</span>
+</div>
+</body>
+</html>

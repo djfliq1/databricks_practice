@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Databricks Platform — Input/Output Reference</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0c10;--card:#161b22;--border:#21262d;--cyan:#00e5ff;--green:#39d353;--yellow:#f0c040;--red:#f85149;--purple:#bc8cff;--orange:#ff8c42;--muted:#6e7681;--text:#c9d1d9;--heading:#f0f6fc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;line-height:1.6;padding:32px 24px;max-width:1400px;margin:0 auto;}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px;display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;}
+.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
+h1{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--heading);}
+h1 span{color:var(--cyan);}
+.badge{margin-left:auto;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;border-radius:4px;white-space:nowrap;}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;margin:28px 0 12px;padding:6px 12px;background:rgba(0,229,255,.06);border-left:3px solid var(--cyan);border-radius:0 4px 4px 0;}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px;}
+th{background:#0d1117;color:var(--heading);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:9px 12px;border-bottom:1px solid #1a1f27;vertical-align:top;line-height:1.5;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.feat{color:var(--heading);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.inp{color:var(--orange);}
+.proc{color:var(--muted);}
+.out{color:var(--green);}
+code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;color:var(--cyan);}
+.new{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(57,211,83,.15);color:var(--green);padding:1px 5px;border-radius:3px;margin-left:4px;border:1px solid rgba(57,211,83,.3);}
+.ftr{border-top:1px solid var(--border);margin-top:32px;padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+</style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<div class="hdr">
+  <div>
+    <div class="tag">Master Reference · All Sections</div>
+    <h1>Databricks Platform <span>Input/Output Reference</span></h1>
+    <div style="font-size:13px;color:var(--muted);margin-top:6px;">Feature → Input → Process → Output · 2026 Exam Edition</div>
+  </div>
+  <div class="badge">ALL EXAM DOMAINS</div>
+</div>
+
+<div class="section-label">Section 2 — Lakehouse Core Fundamentals</div>
+<table>
+  <tr><th>Feature</th><th>Input</th><th>Process / Logic</th><th>Output</th></tr>
+  <tr><td class="feat">Delta Lake</td><td class="inp">Parquet files + DML operations</td><td class="proc">Writes transaction log (_delta_log), manages ACID compliance</td><td class="out">Versioned Delta table with time travel + CDC support</td></tr>
+  <tr><td class="feat">Medallion Architecture</td><td class="inp">Raw source data (files, streams, DBs)</td><td class="proc">Bronze (raw) → Silver (clean) → Gold (aggregated) transformation layers</td><td class="out">Business-ready Gold tables for BI and ML</td></tr>
+  <tr><td class="feat">MERGE INTO</td><td class="inp">Source DataFrame + target Delta table + match condition</td><td class="proc">Row-level upsert: matched rows updated/deleted, unmatched rows inserted</td><td class="out">Deduplicated, current-state Delta table</td></tr>
+</table>
+
+<div class="section-label">Section 4 — Unity Catalog</div>
+<table>
+  <tr><th>Feature</th><th>Input</th><th>Process / Logic</th><th>Output</th></tr>
+  <tr><td class="feat">Unity Catalog Metastore</td><td class="inp">Table DDL, file locations, credentials</td><td class="proc">Registers objects in three-level namespace (catalog.schema.object)</td><td class="out">Governed, discoverable data assets with lineage and RBAC</td></tr>
+  <tr><td class="feat">GRANT / REVOKE</td><td class="inp">Principal (user/group/SP) + privilege + object</td><td class="proc">Updates UC access control lists at catalog/schema/table/function level</td><td class="out">Enforced read/write/execute permissions across all workspaces</td></tr>
+  <tr><td class="feat">Row Filter</td><td class="inp">SQL boolean function + column reference</td><td class="proc">Filters rows at query time based on current_user() or IS_MEMBER()</td><td class="out">User-scoped view of table rows — transparent to query authors</td></tr>
+  <tr><td class="feat">Column Mask</td><td class="inp">SQL scalar function applied to a column</td><td class="proc">Replaces column values at query time (NULL, hash, partial) based on role</td><td class="out">Masked column values returned — original data unchanged on disk</td></tr>
+  <tr><td class="feat">Unity Catalog UDFs</td><td class="inp">SQL or Python function definition</td><td class="proc">Registers function in UC namespace, enforces EXECUTE privilege</td><td class="out">Reusable, governed function callable across workspaces</td></tr>
+  <tr><td class="feat">Volumes</td><td class="inp">Non-tabular files (PDFs, images, raw logs)</td><td class="proc">Registers file paths under <code>/Volumes/catalog/schema/vol/</code> in UC</td><td class="out">Governed file access with UC permissions, lineage, and audit</td></tr>
+</table>
+
+<div class="section-label">Section 6 — Lakehouse Federation <span class="new">NEW 2026</span></div>
+<table>
+  <tr><th>Feature</th><th>Input</th><th>Process / Logic</th><th>Output</th></tr>
+  <tr><td class="feat">Connection</td><td class="inp">Host, port, credentials (via secret scope)</td><td class="proc">Stores encrypted connection config in UC metastore</td><td class="out">Reusable connection object for foreign catalog registration</td></tr>
+  <tr><td class="feat">Foreign Catalog</td><td class="inp">Connection object + external database name</td><td class="proc">Maps external DB into UC three-level namespace as read-only catalog</td><td class="out">Queryable external tables appearing as <code>foreign_catalog.schema.table</code></td></tr>
+  <tr><td class="feat">Federated Query</td><td class="inp">SQL SELECT against foreign catalog tables</td><td class="proc">Query pushdown to source system — no data movement</td><td class="out">Result set returned to Databricks — zero data copied to storage</td></tr>
+</table>
+
+<div class="section-label">Section 7 — Lakeflow Connect <span class="new">NEW 2026</span></div>
+<table>
+  <tr><th>Feature</th><th>Input</th><th>Process / Logic</th><th>Output</th></tr>
+  <tr><td class="feat">Managed Connectors (Fivetran)</td><td class="inp">SaaS credentials + destination catalog/schema</td><td class="proc">Fivetran-managed extraction, incremental sync, schema evolution</td><td class="out">Delta tables in target schema with full history and CDC</td></tr>
+  <tr><td class="feat">Standard Connector (Auto Loader)</td><td class="inp">Cloud storage path + file format config + checkpoint</td><td class="proc">Incremental file discovery, schema inference, Structured Streaming write</td><td class="out">Delta table updated incrementally — exactly-once guarantee</td></tr>
+  <tr><td class="feat">COPY INTO</td><td class="inp">Source path + target Delta table</td><td class="proc">Batch SQL command — loads new files, tracks loaded files internally</td><td class="out">Delta table with new rows appended — idempotent reruns</td></tr>
+</table>
+
+<div class="section-label">Section 8 — AutoLoader / Structured Streaming</div>
+<table>
+  <tr><th>Feature</th><th>Input</th><th>Process / Logic</th><th>Output</th></tr>
+  <tr><td class="feat">Auto Loader (cloudFiles)</td><td class="inp">Cloud storage directory + file format</td><td class="proc">Directory listing or file notification → checkpoint state tracking → Structured Streaming micro-batch</td><td class="out">Incrementally growing Delta table — one-time file processing guaranteed</td></tr>
+  <tr><td class="feat">Structured Streaming</td><td class="inp">Streaming source (Kafka, Delta, cloudFiles)</td><td class="proc">Micro-batch or continuous processing with stateful operations and watermarking</td><td class="out">Streaming sink (Delta table, Kafka, console) updated per trigger</td></tr>
+  <tr><td class="feat">Watermark</td><td class="inp">Timestamp column + lag duration</td><td class="proc">Defines late-arrival window — drops data older than watermark for stateful ops</td><td class="out">Bounded state size, controlled late-data handling</td></tr>
+  <tr><td class="feat">availableNow trigger</td><td class="inp">All currently queued files/records</td><td class="proc">Processes all available data then stops — one-shot batch behavior</td><td class="out">Fully caught-up Delta table — stream terminates cleanly</td></tr>
+</table>
+
+<div class="section-label">Section 11 — Lakeflow Declarative Pipelines (DLT)</div>
+<table>
+  <tr><th>Feature</th><th>Input</th><th>Process / Logic</th><th>Output</th></tr>
+  <tr><td class="feat">@dp.table</td><td class="inp">Streaming source (cloudFiles, Delta, Kafka)</td><td class="proc">Decorator-driven streaming table definition — auto-manages checkpoints</td><td class="out">Streaming table published to Unity Catalog schema</td></tr>
+  <tr><td class="feat">@dp.materialized_view</td><td class="inp">Batch query or table reference</td><td class="proc">Full refresh on each pipeline run — no streaming state</td><td class="out">Materialized view published to UC — queryable like a table</td></tr>
+  <tr><td class="feat">@dp.expect / _or_drop / _or_fail</td><td class="inp">SQL constraint string + decorated table function</td><td class="proc">Row-level validation at ingestion time — warn / drop / halt per mode</td><td class="out">Quality metrics logged; rows retained, dropped, or pipeline halted</td></tr>
+  <tr><td class="feat">create_auto_cdc_flow()</td><td class="inp">CDC source + keys + sequence_by col()</td><td class="proc">SCD1 upsert or SCD2 history tracking based on stored_as_scd_type</td><td class="out">Silver table with current state (SCD1) or full history (SCD2)</td></tr>
+  <tr><td class="feat">@dp.append_flow</td><td class="inp">Multiple source tables or batch + stream mix</td><td class="proc">Appends from multiple flows into a single target table</td><td class="out">Unified target table fed by multiple sources</td></tr>
+</table>
+
+<div class="section-label">Section 14–15 — Databricks SQL & Warehouses</div>
+<table>
+  <tr><th>Feature</th><th>Input</th><th>Process / Logic</th><th>Output</th></tr>
+  <tr><td class="feat">SQL Warehouse (Serverless)</td><td class="inp">SQL query</td><td class="proc">Instant compute, Remote Result Cache checked first, Photon execution</td><td class="out">Query result + cache entry (24-hour Remote Result Cache)</td></tr>
+  <tr><td class="feat">SQL Alert</td><td class="inp">SQL query + condition + schedule + destination</td><td class="proc">Runs query on alert schedule, evaluates condition against result</td><td class="out">Notification to email/Slack/PagerDuty when condition triggers</td></tr>
+  <tr><td class="feat">Query Profile</td><td class="inp">Executed query</td><td class="proc">Captures execution DAG — Scan, Sort, Join, Shuffle stages timed</td><td class="out">Visual flamegraph of query stages with timing and row counts</td></tr>
+  <tr><td class="feat">system.query.history</td><td class="inp">Time range + filters (user, status, warehouse)</td><td class="proc">Reads UC system table — historical query audit log</td><td class="out">Rows with query text, latency, user, error, warehouse ID</td></tr>
+</table>
+
+<div class="section-label">Section 16 — Delta Lake Optimization</div>
+<table>
+  <tr><th>Feature</th><th>Input</th><th>Process / Logic</th><th>Output</th></tr>
+  <tr><td class="feat">OPTIMIZE (bin-packing)</td><td class="inp">Delta table with many small files</td><td class="proc">Merges small files into ~1GB target file size — idempotent</td><td class="out">Fewer, larger Parquet files — faster scan performance</td></tr>
+  <tr><td class="feat">OPTIMIZE ZORDER BY</td><td class="inp">Delta table + column(s) to co-locate</td><td class="proc">Reorders data within files by column value — NOT idempotent</td><td class="out">Data physically sorted to minimize files scanned per predicate</td></tr>
+  <tr><td class="feat">Liquid Clustering</td><td class="inp">Table with CLUSTER BY definition</td><td class="proc">Adaptive, incremental clustering — replaces partitioning</td><td class="out">Clustered files without full rewrite — idempotent, flexible key changes</td></tr>
+  <tr><td class="feat">VACUUM</td><td class="inp">Delta table + retention period (default 7 days)</td><td class="proc">Deletes unreferenced Parquet files older than retention window</td><td class="out">Reclaimed cloud storage — older time travel versions no longer accessible</td></tr>
+  <tr><td class="feat">DEEP CLONE</td><td class="inp">Source Delta table</td><td class="proc">Full data + transaction log copy — re-run is incremental</td><td class="out">Independent Delta table clone — source VACUUM-safe</td></tr>
+  <tr><td class="feat">SHALLOW CLONE</td><td class="inp">Source Delta table</td><td class="proc">Copies only transaction log metadata — data files referenced via pointers</td><td class="out">Lightweight clone — BREAKS if source is VACUUMed</td></tr>
+  <tr><td class="feat">Time Travel</td><td class="inp">VERSION AS OF or TIMESTAMP AS OF</td><td class="proc">Reads specific Delta log version — no data movement</td><td class="out">Read-only snapshot of table at that point in time</td></tr>
+  <tr><td class="feat">RESTORE TABLE</td><td class="inp">Target version or timestamp</td><td class="proc">Rolls table back — adds new transaction log entry pointing to prior version</td><td class="out">Table in prior state — rollback is a new version, not destructive</td></tr>
+</table>
+
+<div class="section-label">Section 17 — Databricks Asset Bundles (CI/CD)</div>
+<table>
+  <tr><th>Feature</th><th>Input</th><th>Process / Logic</th><th>Output</th></tr>
+  <tr><td class="feat">databricks.yml</td><td class="inp">Resource definitions (jobs, pipelines, clusters)</td><td class="proc">YAML parsed by Databricks CLI — variable substitution per target</td><td class="out">Deployed Databricks workspace objects per environment target</td></tr>
+  <tr><td class="feat">bundle validate</td><td class="inp">Bundle YAML files</td><td class="proc">Checks syntax, references, config — NO workspace changes</td><td class="out">Validation report — pass or error list</td></tr>
+  <tr><td class="feat">bundle deploy</td><td class="inp">Validated bundle + target flag (<code>-t prod</code>)</td><td class="proc">Compares YAML state vs stored state file — creates/updates/removes resources</td><td class="out">Workspace objects created/updated + state file updated</td></tr>
+  <tr><td class="feat">bundle run</td><td class="inp">Job/pipeline name (must be already deployed)</td><td class="proc">Triggers the specified job in the deployed target workspace</td><td class="out">Job run initiated — returns run ID</td></tr>
+  <tr><td class="feat">bundle destroy</td><td class="inp">Target name</td><td class="proc">Removes all workspace objects defined in the bundle for that target</td><td class="out">Workspace cleaned — Delta tables and data NOT affected</td></tr>
+  <tr><td class="feat">dev mode (mode: development)</td><td class="inp">Bundle config with mode: development</td><td class="proc">Auto-prefixes all resource names with <code>[dev username]</code></td><td class="out">Isolated dev resources — no collision with staging/prod</td></tr>
+</table>
+
+<div class="ftr">
+  <span>databricks_clar · All Sections — Platform I/O Reference</span>
+  <span>April 2026 · Certified Data Engineer Associate Prep</span>
+</div>
+</body>
+</html>

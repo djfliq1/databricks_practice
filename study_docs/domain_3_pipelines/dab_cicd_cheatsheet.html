@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DAB CI/CD — Section 17 Cheat Sheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:       #0a0c10;
+    --surface:  #111418;
+    --card:     #161b22;
+    --border:   #21262d;
+    --cyan:     #00e5ff;
+    --green:    #39d353;
+    --yellow:   #f0c040;
+    --red:      #f85149;
+    --purple:   #bc8cff;
+    --orange:   #ff8c42;
+    --muted:    #6e7681;
+    --text:     #c9d1d9;
+    --heading:  #f0f6fc;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+  }
+  .header-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--heading);
+    line-height: 1.2;
+  }
+  h1 span { color: var(--cyan); }
+  .header-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .badge {
+    margin-left: auto;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.25);
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+  .full    { margin-bottom: 16px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .cyan-card   .card-title .dot { background: var(--cyan); }
+  .green-card  .card-title .dot { background: var(--green); }
+  .yellow-card .card-title .dot { background: var(--yellow); }
+  .purple-card .card-title .dot { background: var(--purple); }
+  .orange-card .card-title .dot { background: var(--orange); }
+  .red-card    .card-title .dot { background: var(--red); }
+
+  .cyan-card   { border-top: 2px solid var(--cyan); }
+  .green-card  { border-top: 2px solid var(--green); }
+  .yellow-card { border-top: 2px solid var(--yellow); }
+  .purple-card { border-top: 2px solid var(--purple); }
+  .orange-card { border-top: 2px solid var(--orange); }
+  .red-card    { border-top: 2px solid var(--red); }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    overflow-x: auto;
+    margin: 10px 0;
+    line-height: 1.8;
+  }
+  .kw  { color: var(--purple); }
+  .str { color: var(--green); }
+  .cmt { color: var(--muted); font-style: italic; }
+  .key { color: var(--cyan); }
+  .val { color: var(--orange); }
+  .op  { color: var(--yellow); }
+
+  /* ── LISTS ── */
+  ul { list-style: none; }
+  ul li {
+    padding: 5px 0;
+    padding-left: 16px;
+    position: relative;
+    font-size: 13px;
+    border-bottom: 1px solid #1a1f27;
+  }
+  ul li:last-child { border-bottom: none; }
+  ul li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+  }
+  ul li strong { color: var(--heading); }
+  ul li .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    color: var(--muted);
+  }
+
+  /* ── PIPELINE FLOW ── */
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 12px 0;
+    overflow-x: auto;
+  }
+  .pipe-step {
+    flex: 1;
+    min-width: 110px;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-right: none;
+    padding: 10px 12px;
+    text-align: center;
+    position: relative;
+    font-size: 12px;
+  }
+  .pipe-step:last-child { border-right: 1px solid var(--border); border-radius: 0 4px 4px 0; }
+  .pipe-step:first-child { border-radius: 4px 0 0 4px; }
+  .pipe-step::after {
+    content: '▶';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 10px;
+    z-index: 2;
+    background: var(--bg);
+    padding: 0 1px;
+  }
+  .pipe-step:last-child::after { display: none; }
+  .pipe-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+  .pipe-name  { font-weight: 600; color: var(--heading); font-size: 12px; }
+  .pipe-step.active .pipe-name { color: var(--cyan); }
+  .pipe-step.dev    { border-top: 2px solid var(--green); }
+  .pipe-step.stg    { border-top: 2px solid var(--yellow); }
+  .pipe-step.prd    { border-top: 2px solid var(--red); }
+
+  /* ── COMPARE TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: #0d1117;
+    color: var(--heading);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #1a1f27;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  td:first-child { color: var(--heading); font-weight: 500; }
+  .check { color: var(--green); }
+  .cross { color: var(--red); }
+
+  /* ── TRAP BOXES ── */
+  .trap {
+    background: rgba(248,81,73,0.07);
+    border: 1px solid rgba(248,81,73,0.25);
+    border-left: 3px solid var(--red);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin: 8px 0;
+    font-size: 13px;
+  }
+  .trap-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--red);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .tip {
+    background: rgba(57,211,83,0.07);
+    border: 1px solid rgba(57,211,83,0.2);
+    border-left: 3px solid var(--green);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin: 8px 0;
+    font-size: 13px;
+  }
+  .tip-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION DIVIDER ── */
+  .divider {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin: 28px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .divider::before { flex: 0 0 16px; }
+
+  /* ── COMMAND PILLS ── */
+  .cmd-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+  .cmd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: var(--cyan);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cmd .env {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #000;
+    font-weight: 700;
+  }
+  .env-dev { background: var(--green); }
+  .env-stg { background: var(--yellow); }
+  .env-prd { background: var(--red); }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    margin-top: 32px;
+    padding-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div>
+    <div class="header-tag">Section 17 · [NEW 2026]</div>
+    <h1>Databricks Asset Bundles <span>CI/CD</span></h1>
+    <div class="header-sub">databricks_clar · catalog · bronze → silver → gold</div>
+  </div>
+  <div class="badge">EXAM DOMAIN: Deployment & CI/CD</div>
+</div>
+
+<!-- ══ CORTANA TL;DR ══ -->
+<div class="card cyan-card full">
+  <div class="card-title"><span class="dot"></span>Cortana TL;DR</div>
+  <ul>
+    <li><strong>DAB = Infrastructure as Code for Databricks.</strong> One YAML bundle defines jobs, pipelines, clusters, permissions — version-controlled and deployed like software.</li>
+    <li><strong>CI/CD = the automation wrapper.</strong> Git push → GitHub Actions → <code>databricks bundle deploy</code> runs automatically per environment target.</li>
+    <li><strong>Environments are targets in the YAML.</strong> <code>dev</code>, <code>staging</code>, <code>prod</code> — each gets its own catalog, schema, cluster, or workspace config via variable substitution.</li>
+    <li><strong>databricks.yml is the root.</strong> Everything — jobs, DLT pipelines, notebooks, permissions — hangs off this one file. Sub-configs can be split into includes.</li>
+    <li><strong>Key CLI commands:</strong> <code>init → validate → deploy → run → destroy</code>. That's the full lifecycle.</li>
+  </ul>
+</div>
+
+<!-- ══ CI/CD LOOP ══ -->
+<div class="divider">CI/CD Loop</div>
+<div class="card full" style="padding: 24px 20px;">
+  <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); margin-bottom:16px;">Full cycle — code change → feedback → fix → repeat</div>
+  <svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:340px;display:block;">
+    <defs>
+      <!-- Arrowheads -->
+      <marker id="arr-cyan" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#00e5ff"/>
+      </marker>
+      <marker id="arr-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#39d353"/>
+      </marker>
+      <marker id="arr-yellow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#f0c040"/>
+      </marker>
+      <marker id="arr-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#f85149"/>
+      </marker>
+      <marker id="arr-muted" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#6e7681"/>
+      </marker>
+      <!-- Glow filter -->
+      <filter id="glow-cyan">
+        <feGaussianBlur stdDeviation="2.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+
+    <!-- ── NODES ── box helper: rx=6 for rounded corners -->
+    <!-- 1. DEV (top-left) -->
+    <rect x="30" y="30" width="130" height="64" rx="6" fill="#0d1117" stroke="#39d353" stroke-width="1.5"/>
+    <text x="95" y="52" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#39d353" letter-spacing="1.5">DEV</text>
+    <text x="95" y="69" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="600" fill="#f0f6fc">git push</text>
+    <text x="95" y="85" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">feature/* branch</text>
+
+    <!-- 2. CI VALIDATE (top-center-left) -->
+    <rect x="220" y="30" width="130" height="64" rx="6" fill="#0d1117" stroke="#00e5ff" stroke-width="1.5"/>
+    <text x="285" y="52" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#00e5ff" letter-spacing="1.5">CI TRIGGER</text>
+    <text x="285" y="69" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="600" fill="#f0f6fc">bundle validate</text>
+    <text x="285" y="85" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">GitHub Actions</text>
+
+    <!-- 3. PR / CODE REVIEW (top-center-right) -->
+    <rect x="410" y="30" width="130" height="64" rx="6" fill="#0d1117" stroke="#00e5ff" stroke-width="1.5"/>
+    <text x="475" y="52" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#00e5ff" letter-spacing="1.5">CODE REVIEW</text>
+    <text x="475" y="69" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="600" fill="#f0f6fc">Pull Request</text>
+    <text x="475" y="85" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">merge → main</text>
+
+    <!-- 4. STAGING DEPLOY (top-right) -->
+    <rect x="600" y="30" width="130" height="64" rx="6" fill="#0d1117" stroke="#f0c040" stroke-width="1.5"/>
+    <text x="665" y="52" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#f0c040" letter-spacing="1.5">STAGING</text>
+    <text x="665" y="69" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="600" fill="#f0f6fc">bundle deploy</text>
+    <text x="665" y="85" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">-t staging</text>
+
+    <!-- 5. TEST / BUNDLE RUN (right-mid) -->
+    <rect x="740" y="148" width="130" height="64" rx="6" fill="#0d1117" stroke="#f0c040" stroke-width="1.5"/>
+    <text x="805" y="170" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#f0c040" letter-spacing="1.5">QA GATE</text>
+    <text x="805" y="187" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="600" fill="#f0f6fc">bundle run</text>
+    <text x="805" y="203" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">integration tests</text>
+
+    <!-- 6. PROD DEPLOY (bottom-right) -->
+    <rect x="600" y="260" width="130" height="64" rx="6" fill="#0d1117" stroke="#f85149" stroke-width="2" filter="url(#glow-cyan)"/>
+    <text x="665" y="282" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#f85149" letter-spacing="1.5">PRODUCTION</text>
+    <text x="665" y="299" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="600" fill="#f0f6fc">bundle deploy</text>
+    <text x="665" y="315" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">-t prod</text>
+
+    <!-- 7. MONITOR / OBSERVE (bottom-center) -->
+    <rect x="410" y="260" width="130" height="64" rx="6" fill="#0d1117" stroke="#bc8cff" stroke-width="1.5"/>
+    <text x="475" y="282" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#bc8cff" letter-spacing="1.5">OBSERVE</text>
+    <text x="475" y="299" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="600" fill="#f0f6fc">Monitor / Alert</text>
+    <text x="475" y="315" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">jobs · DLT · SQL</text>
+
+    <!-- 8. FIX / ITERATE (bottom-left) — closes the loop -->
+    <rect x="220" y="260" width="130" height="64" rx="6" fill="#0d1117" stroke="#6e7681" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="285" y="282" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681" letter-spacing="1.5">FEEDBACK</text>
+    <text x="285" y="299" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="600" fill="#c9d1d9">Fix / Iterate</text>
+    <text x="285" y="315" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">new feature branch</text>
+
+    <!-- ── FAIL LOOP (validate fails → back to dev) ── -->
+    <rect x="30" y="260" width="130" height="64" rx="6" fill="#0d1117" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="95" y="282" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#f85149" letter-spacing="1.5">FAIL PATH</text>
+    <text x="95" y="299" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="600" fill="#f0f6fc">Fix &amp; Re-push</text>
+    <text x="95" y="315" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">validate → retry</text>
+
+    <!-- ── ARROWS (top row, left→right) ── -->
+    <!-- DEV → VALIDATE -->
+    <line x1="160" y1="62" x2="218" y2="62" stroke="#39d353" stroke-width="1.5" marker-end="url(#arr-green)"/>
+    <!-- VALIDATE → PR -->
+    <line x1="350" y1="62" x2="408" y2="62" stroke="#00e5ff" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+    <!-- PR → STAGING -->
+    <line x1="540" y1="62" x2="598" y2="62" stroke="#00e5ff" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+
+    <!-- STAGING → QA (right side, down) -->
+    <line x1="730" y1="62" x2="805" y2="62" stroke="#f0c040" stroke-width="1.5"/>
+    <line x1="805" y1="62" x2="805" y2="146" stroke="#f0c040" stroke-width="1.5" marker-end="url(#arr-yellow)"/>
+
+    <!-- QA → PROD (down on right) -->
+    <line x1="805" y1="212" x2="805" y2="292" stroke="#f0c040" stroke-width="1.5"/>
+    <line x1="805" y1="292" x2="732" y2="292" stroke="#f85149" stroke-width="1.5" marker-end="url(#arr-red)"/>
+
+    <!-- PROD → MONITOR (bottom row, right→left) -->
+    <line x1="600" y1="292" x2="542" y2="292" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arr-muted)"/>
+
+    <!-- MONITOR → FEEDBACK -->
+    <line x1="410" y1="292" x2="352" y2="292" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arr-muted)"/>
+
+    <!-- FEEDBACK → FAIL BOX -->
+    <line x1="220" y1="292" x2="162" y2="292" stroke="#6e7681" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-muted)"/>
+
+    <!-- FAIL → DEV (loop back up, left side) -->
+    <line x1="95" y1="260" x2="95" y2="96" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-red)"/>
+
+    <!-- VALIDATE FAIL short-circuit (validate fails → go straight to fail box) -->
+    <line x1="285" y1="94" x2="285" y2="258" stroke="#f85149" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arr-red)"/>
+    <text x="292" y="190" font-family="JetBrains Mono,monospace" font-size="9" fill="#f85149">FAIL</text>
+
+    <!-- ── CENTER LABEL ── -->
+    <text x="450" y="168" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#21262d" letter-spacing="3">CI/CD LOOP</text>
+    <text x="450" y="185" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#21262d">databricks asset bundles</text>
+
+    <!-- ── LEGEND ── -->
+    <line x1="30" y1="336" x2="55" y2="336" stroke="#39d353" stroke-width="1.5"/>
+    <text x="60" y="340" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">happy path</text>
+    <line x1="135" y1="336" x2="160" y2="336" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="165" y="340" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">fail / retry</text>
+    <line x1="235" y1="336" x2="260" y2="336" stroke="#bc8cff" stroke-width="1.5"/>
+    <text x="265" y="340" font-family="JetBrains Mono,monospace" font-size="9" fill="#6e7681">feedback loop</text>
+  </svg>
+</div>
+
+<!-- ══ YAML ANATOMY ══ -->
+<div class="divider">YAML Structure</div>
+<div class="grid-2">
+  <div class="card cyan-card">
+    <div class="card-title"><span class="dot"></span>databricks.yml — Root Structure</div>
+    <pre><span class="key">bundle</span><span class="op">:</span>
+  <span class="key">name</span><span class="op">:</span> <span class="str">clar_products_pipeline</span>
+
+<span class="key">include</span><span class="op">:</span>
+  <span class="op">-</span> <span class="str">resources/*.yml</span>
+
+<span class="key">variables</span><span class="op">:</span>
+  <span class="key">catalog_name</span><span class="op">:</span>
+    <span class="key">default</span><span class="op">:</span> <span class="str">databricks_clar</span>
+
+<span class="key">targets</span><span class="op">:</span>
+  <span class="key">dev</span><span class="op">:</span>
+    <span class="key">mode</span><span class="op">:</span> <span class="str">development</span>
+    <span class="key">default</span><span class="op">:</span> <span class="kw">true</span>
+    <span class="key">variables</span><span class="op">:</span>
+      <span class="key">catalog_name</span><span class="op">:</span> <span class="str">dev_clar</span>
+  <span class="key">prod</span><span class="op">:</span>
+    <span class="key">mode</span><span class="op">:</span> <span class="str">production</span>
+    <span class="key">variables</span><span class="op">:</span>
+      <span class="key">catalog_name</span><span class="op">:</span> <span class="str">databricks_clar</span></pre>
+  </div>
+
+  <div class="card green-card">
+    <div class="card-title"><span class="dot"></span>resources/jobs.yml — Job Definition</div>
+    <pre><span class="key">resources</span><span class="op">:</span>
+  <span class="key">jobs</span><span class="op">:</span>
+    <span class="key">bronze_ingest_job</span><span class="op">:</span>
+      <span class="key">name</span><span class="op">:</span> <span class="str">Bronze Ingest — Products</span>
+      <span class="key">tasks</span><span class="op">:</span>
+        <span class="op">-</span> <span class="key">task_key</span><span class="op">:</span> <span class="str">autoloader_task</span>
+          <span class="key">notebook_task</span><span class="op">:</span>
+            <span class="key">notebook_path</span><span class="op">:</span> <span class="str">./notebooks/bronze</span>
+      <span class="key">schedule</span><span class="op">:</span>
+        <span class="key">quartz_cron_expression</span><span class="op">:</span> <span class="str">"0 0 * * * ?"</span>
+        <span class="key">timezone_id</span><span class="op">:</span> <span class="str">America/New_York</span>
+      <span class="key">job_clusters</span><span class="op">:</span>
+        <span class="op">-</span> <span class="key">job_cluster_key</span><span class="op">:</span> <span class="str">main</span>
+          <span class="key">new_cluster</span><span class="op">:</span>
+            <span class="key">spark_version</span><span class="op">:</span> <span class="str">"15.4.x-scala2.12"</span>
+            <span class="key">num_workers</span><span class="op">:</span> <span class="val">2</span></pre>
+  </div>
+</div>
+
+<!-- ══ CLI COMMANDS ══ -->
+<div class="divider">CLI Lifecycle Commands</div>
+<div class="card yellow-card full">
+  <div class="card-title"><span class="dot"></span>databricks bundle — Full Command Set</div>
+  <div class="cmd-row">
+    <div class="cmd"><span class="env env-dev">DEV</span>databricks bundle init</div>
+    <div class="cmd"><span class="env env-dev">ALL</span>databricks bundle validate</div>
+    <div class="cmd"><span class="env env-dev">DEV</span>databricks bundle deploy -t dev</div>
+    <div class="cmd"><span class="env env-stg">STG</span>databricks bundle deploy -t staging</div>
+    <div class="cmd"><span class="env env-prd">PRD</span>databricks bundle deploy -t prod</div>
+    <div class="cmd"><span class="env env-dev">ALL</span>databricks bundle run &lt;job_name&gt;</div>
+    <div class="cmd"><span class="env env-dev">ALL</span>databricks bundle destroy -t dev</div>
+  </div>
+  <table style="margin-top:12px;">
+    <tr><th>Command</th><th>What It Does</th><th>Exam Note</th></tr>
+    <tr><td><code>init</code></td><td>Scaffolds project from template (Python, DLT, etc.)</td><td>Creates databricks.yml + folder structure</td></tr>
+    <tr><td><code>validate</code></td><td>Checks YAML syntax & config — no deploy</td><td>Safe to run in CI without needing credentials to deploy</td></tr>
+    <tr><td><code>deploy</code></td><td>Pushes bundle resources to the workspace</td><td><code>-t &lt;target&gt;</code> selects environment</td></tr>
+    <tr><td><code>run</code></td><td>Triggers a job or pipeline defined in the bundle</td><td>Runs in the context of the deployed target</td></tr>
+    <tr><td><code>destroy</code></td><td>Tears down all resources in a target</td><td>Does NOT delete data — only Databricks objects</td></tr>
+  </table>
+</div>
+
+<!-- ══ ENVIRONMENTS ══ -->
+<div class="divider">Environments & Targets</div>
+<div class="grid-3">
+  <div class="card green-card">
+    <div class="card-title"><span class="dot"></span>dev target</div>
+    <ul>
+      <li><strong>mode: development</strong> — auto-prefixes resource names with username</li>
+      <li>Avoids collision with prod resources</li>
+      <li><code>default: true</code> → runs without -t flag</li>
+      <li>Usually maps to dev catalog / dev schema</li>
+      <li>Clusters: smaller / cheaper configs ok</li>
+    </ul>
+  </div>
+  <div class="card yellow-card">
+    <div class="card-title"><span class="dot"></span>staging target</div>
+    <ul>
+      <li><strong>mode: production</strong> but pointing to staging workspace</li>
+      <li>Used for integration tests pre-prod</li>
+      <li>Mirrors prod config as closely as possible</li>
+      <li>Triggered by merge to main branch</li>
+      <li>Shared environment — PR gating needed</li>
+    </ul>
+  </div>
+  <div class="card red-card">
+    <div class="card-title"><span class="dot"></span>prod target</div>
+    <ul>
+      <li><strong>mode: production</strong> — no auto-prefixing</li>
+      <li>Requires manual approval or protected branch</li>
+      <li>Service principal auth (not personal token!)</li>
+      <li>Maps to <code>databricks_clar</code> catalog</li>
+      <li>Destroy commands blocked / gated</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ GIT + REPOS ══ -->
+<div class="divider">Git & Databricks Repos</div>
+<div class="grid-2">
+  <div class="card purple-card">
+    <div class="card-title"><span class="dot"></span>Databricks Repos (Git Folders)</div>
+    <ul>
+      <li><strong>Repos</strong> = Git integration natively inside Databricks workspace</li>
+      <li>Sync notebooks directly from GitHub/GitLab/ADO/Bitbucket</li>
+      <li>Branch, commit, PR from within workspace UI</li>
+      <li>DAB references notebook paths relative to repo root</li>
+      <li>Each dev can work on their own branch simultaneously</li>
+      <li><strong>Not required for DAB</strong> — but complements it for notebook-heavy workflows</li>
+    </ul>
+  </div>
+  <div class="card orange-card">
+    <div class="card-title"><span class="dot"></span>GitHub Actions — CI Pipeline</div>
+    <pre><span class="cmt"># .github/workflows/deploy.yml</span>
+<span class="key">on</span><span class="op">:</span>
+  <span class="key">push</span><span class="op">:</span>
+    <span class="key">branches</span><span class="op">:</span> <span class="op">[</span><span class="str">main</span><span class="op">]</span>
+
+<span class="key">jobs</span><span class="op">:</span>
+  <span class="key">deploy</span><span class="op">:</span>
+    <span class="key">runs-on</span><span class="op">:</span> <span class="str">ubuntu-latest</span>
+    <span class="key">steps</span><span class="op">:</span>
+      <span class="op">-</span> <span class="key">uses</span><span class="op">:</span> <span class="str">actions/checkout@v3</span>
+      <span class="op">-</span> <span class="key">uses</span><span class="op">:</span> <span class="str">databricks/setup-cli@main</span>
+      <span class="op">-</span> <span class="key">run</span><span class="op">:</span> <span class="str">databricks bundle validate</span>
+      <span class="op">-</span> <span class="key">run</span><span class="op">:</span> <span class="str">databricks bundle deploy -t prod</span>
+        <span class="key">env</span><span class="op">:</span>
+          <span class="key">DATABRICKS_HOST</span><span class="op">:</span> <span class="str">${{ secrets.DB_HOST }}</span>
+          <span class="key">DATABRICKS_TOKEN</span><span class="op">:</span> <span class="str">${{ secrets.DB_TOKEN }}</span></pre>
+  </div>
+</div>
+
+<!-- ══ DLT IN DAB ══ -->
+<div class="divider">DLT Pipelines Inside a Bundle</div>
+<div class="card cyan-card full">
+  <div class="card-title"><span class="dot"></span>resources/pipelines.yml — DLT via DAB</div>
+  <div class="grid-2">
+    <pre><span class="key">resources</span><span class="op">:</span>
+  <span class="key">pipelines</span><span class="op">:</span>
+    <span class="key">silver_products_dlt</span><span class="op">:</span>
+      <span class="key">name</span><span class="op">:</span> <span class="str">Silver Products Pipeline</span>
+      <span class="key">target</span><span class="op">:</span> <span class="str">${var.catalog_name}.silver</span>
+      <span class="key">catalog</span><span class="op">:</span> <span class="str">${var.catalog_name}</span>
+      <span class="key">development</span><span class="op">:</span> <span class="kw">false</span>
+      <span class="key">libraries</span><span class="op">:</span>
+        <span class="op">-</span> <span class="key">notebook</span><span class="op">:</span>
+            <span class="key">path</span><span class="op">:</span> <span class="str">./notebooks/silver_dlt</span>
+      <span class="key">configuration</span><span class="op">:</span>
+        <span class="key">pipelines.enableTrackHistory</span><span class="op">:</span> <span class="str">"true"</span></pre>
+    <div>
+      <ul>
+        <li><strong>libraries</strong> — point to notebooks or Python files containing @dlt.table decorators</li>
+        <li><strong>target</strong> — schema where DLT writes tables in Unity Catalog</li>
+        <li><strong>catalog</strong> — Unity Catalog catalog name (uses variable)</li>
+        <li><strong>development: false</strong> — set true in dev target to use DLT dev mode (no data published)</li>
+        <li><strong>configuration</strong> — pipeline-level Spark/DLT configs injected here</li>
+        <li>DLT pipelines can be <strong>triggered by a Job task</strong> defined in jobs.yml</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHANGE TRACKING ══ -->
+<div class="divider">How DAB Tracks Changes</div>
+<div class="grid-2">
+  <div class="card green-card">
+    <div class="card-title"><span class="dot"></span>State File — The Source of Truth</div>
+    <ul>
+      <li>DAB stores a <strong>state file</strong> in the workspace (DBFS or workspace FS)</li>
+      <li>Records all deployed resource IDs per target</li>
+      <li>On next <code>deploy</code> → compares current YAML vs state</li>
+      <li>Adds new resources, updates changed ones, removes deleted ones</li>
+      <li>State file = why destroy knows what to tear down</li>
+      <li>Each target has its own independent state</li>
+    </ul>
+  </div>
+  <div class="card purple-card">
+    <div class="card-title"><span class="dot"></span>dev mode Auto-Prefix Behavior</div>
+    <ul>
+      <li>In <code>mode: development</code>, Databricks prepends <code>[dev username]</code> to resource names</li>
+      <li><code>bronze_ingest_job</code> → <code>[dev clarence] bronze_ingest_job</code></li>
+      <li>Prevents your dev job colliding with coworker's or prod</li>
+      <li>Also prefixes DLT pipeline names</li>
+      <li>Does NOT affect catalog/schema — you control those with variables</li>
+      <li>Prod mode = exact names, no prefix</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ EXAM TRAPS ══ -->
+<div class="divider">Exam Traps</div>
+<div class="full">
+  <div class="trap">
+    <div class="trap-label">⚠ Trap 01 — destroy ≠ data delete</div>
+    <code>bundle destroy</code> removes Databricks workspace objects (jobs, pipelines, clusters) — it does NOT drop Delta tables or delete files in Unity Catalog. Your data survives.
+  </div>
+  <div class="trap">
+    <div class="trap-label">⚠ Trap 02 — validate does not deploy</div>
+    <code>bundle validate</code> only checks YAML syntax and config references. No resources are created or modified. Safe to run without workspace write permissions.
+  </div>
+  <div class="trap">
+    <div class="trap-label">⚠ Trap 03 — dev mode prefix is automatic, not configurable</div>
+    You cannot change the prefix format in dev mode. The <code>[dev username]</code> prefix is injected by Databricks automatically. If you set <code>mode: development</code>, it happens — full stop.
+  </div>
+  <div class="trap">
+    <div class="trap-label">⚠ Trap 04 — personal token vs service principal</div>
+    In prod CI/CD (GitHub Actions, ADO), you must use a <strong>service principal token</strong>, not a personal access token. Personal tokens are tied to individual users and break when that person leaves.
+  </div>
+  <div class="trap">
+    <div class="trap-label">⚠ Trap 05 — include paths are relative to databricks.yml</div>
+    If your databricks.yml is in the root and you write <code>include: resources/*.yml</code>, that path must resolve from the root directory. Wrong relative path = silent resource exclusion.
+  </div>
+  <div class="tip">
+    <div class="tip-label">✓ High-Value Point — Variable substitution syntax</div>
+    DAB variables use <code>${var.variable_name}</code> syntax — NOT Jinja, NOT double curly. If you see <code>{{ catalog }}</code> that's wrong for DAB. Correct: <code>${var.catalog_name}</code>.
+  </div>
+  <div class="tip">
+    <div class="tip-label">✓ High-Value Point — bundle run requires prior deploy</div>
+    You can't <code>bundle run</code> a resource that hasn't been deployed first. Run operates on already-deployed objects in the workspace. The sequence is always: deploy → run.
+  </div>
+</div>
+
+<!-- ══ QUICK COMPARE ══ -->
+<div class="divider">DAB vs Manual Workflow Deployment</div>
+<div class="card full">
+  <div class="card-title"><span class="dot"></span>When to Use What</div>
+  <table>
+    <tr><th>Aspect</th><th>DAB (Bundle)</th><th>Manual UI / API</th></tr>
+    <tr><td>Version control</td><td class="check">✓ YAML in Git — full history</td><td class="cross">✗ No native version control</td></tr>
+    <tr><td>Environment promotion</td><td class="check">✓ Targets with variable substitution</td><td class="cross">✗ Manual clone & edit per env</td></tr>
+    <tr><td>CI/CD integration</td><td class="check">✓ Native CLI + GitHub Actions support</td><td class="cross">✗ Requires custom API scripting</td></tr>
+    <tr><td>Rollback</td><td class="check">✓ Git revert + re-deploy</td><td class="cross">✗ Manual recreation</td></tr>
+    <tr><td>Learning curve</td><td class="cross">Higher — YAML + CLI knowledge needed</td><td class="check">Lower — UI is visual</td></tr>
+    <tr><td>Team collaboration</td><td class="check">✓ PRs, branches, code review</td><td class="cross">✗ Shared workspace, race conditions</td></tr>
+    <tr><td>Exam preference</td><td class="check">✓ DAB is the exam-recommended pattern</td><td></td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  <span>databricks_clar · Section 17 — Asset Bundles CI/CD</span>
+  <span>April 2026 · Certified Data Engineer Associate Prep</span>
+</div>
+
+</body>
+</html>

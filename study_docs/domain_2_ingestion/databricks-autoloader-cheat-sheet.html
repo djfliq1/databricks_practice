@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Databricks AutoLoader & COPY INTO - Complete Cheat Sheet</title>
+    <style>
+        :root {
+            --primary-blue: #0B4F6C;
+            --accent-orange: #FB8500;
+            --success-green: #588157;
+            --warning-amber: #F77F00;
+            --error-red: #C73E1D;
+            --neutral-gray: #495057;
+            --bg-light: #F8F9FA;
+            --bg-dark: #212529;
+            --text-primary: #212529;
+            --text-secondary: #6C757D;
+            --border-color: #DEE2E6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-orange) 100%);
+            color: white;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpolygon points='30 20 45 40 15 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+            animation: drift 20s linear infinite;
+        }
+        
+        @keyframes drift {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(60px) translateY(60px); }
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tab.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--accent-orange);
+            background: white;
+        }
+        
+        .nav-tab:hover:not(.active) {
+            background: rgba(117, 190, 218, 0.1);
+            color: var(--text-primary);
+        }
+        
+        .content {
+            padding: 2rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 2rem;
+            border-left: 4px solid var(--primary-blue);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .feature-card.autoloader {
+            border-left-color: var(--accent-orange);
+        }
+        
+        .feature-card.copy-into {
+            border-left-color: var(--success-green);
+        }
+        
+        .feature-card h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block::before {
+            content: attr(data-lang);
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.7rem;
+            color: var(--accent-orange);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .code-block .keyword { color: #569cd6; }
+        .code-block .string { color: #ce9178; }
+        .code-block .comment { color: #6a9955; }
+        .code-block .number { color: #b5cea8; }
+        
+        .decision-matrix {
+            background: linear-gradient(135deg, rgba(117, 190, 218, 0.1), rgba(255, 193, 7, 0.1));
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .decision-matrix table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .decision-matrix th {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+        }
+        
+        .decision-matrix td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+        
+        .decision-matrix tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .decision-matrix .autoloader-col {
+            background: rgba(251, 133, 0, 0.05);
+        }
+        
+        .decision-matrix .copy-into-col {
+            background: rgba(88, 129, 87, 0.05);
+        }
+        
+        .diagram-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .flow-step {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            min-width: 150px;
+            position: relative;
+            font-weight: 600;
+        }
+        
+        .flow-step.highlight {
+            background: var(--accent-orange);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin: 0 1rem;
+        }
+        
+        .exam-tips {
+            background: linear-gradient(135deg, rgba(199, 62, 29, 0.1), rgba(247, 127, 0, 0.1));
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-left: 4px solid var(--error-red);
+        }
+        
+        .exam-tips h3 {
+            color: var(--error-red);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .tip-item {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid var(--warning-amber);
+        }
+        
+        .schema-evolution {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .evolution-mode {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .evolution-mode:hover {
+            border-color: var(--accent-orange);
+            transform: translateY(-3px);
+        }
+        
+        .evolution-mode h4 {
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .evolution-mode .mode-name {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-family: monospace;
+        }
+        
+        .interactive-toggle {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+        }
+        
+        .toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: var(--border-color);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .toggle.active {
+            background: var(--accent-orange);
+        }
+        
+        .toggle::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle.active::before {
+            transform: translateX(30px);
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(117, 190, 218, 0.1), rgba(255, 255, 255, 0.8));
+            border: 2px solid var(--accent-orange);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .highlight-box h4 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+        
+        .responsive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 2rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .comparison-grid,
+            .responsive-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .flow-diagram {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Databricks Data Ingestion Cheat Sheet</h1>
+            <p>AutoLoader vs COPY INTO - Master Both for Exam Success</p>
+        </div>
+        
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('overview')">📋 Overview</button>
+            <button class="nav-tab" onclick="showTab('autoloader')">🔄 AutoLoader</button>
+            <button class="nav-tab" onclick="showTab('copy-into')">📥 COPY INTO</button>
+            <button class="nav-tab" onclick="showTab('schema')">📐 Schema Evolution</button>
+            <button class="nav-tab" onclick="showTab('exam')">🎯 Exam Tips</button>
+        </nav>
+        
+        <div class="content">
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <h2>🎯 Decision Matrix: When to Use What</h2>
+                
+                <div class="decision-matrix">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th class="autoloader-col">🔄 AutoLoader</th>
+                                <th class="copy-into-col">📥 COPY INTO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>File Volume</strong></td>
+                                <td class="autoloader-col">Millions of files over time</td>
+                                <td class="copy-into-col">Thousands of files</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Processing Pattern</strong></td>
+                                <td class="autoloader-col">Continuous streaming</td>
+                                <td class="copy-into-col">Batch/scheduled loads</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Use Case</strong></td>
+                                <td class="autoloader-col">Real-time ingestion</td>
+                                <td class="copy-into-col">Data migration</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Schema Evolution</strong></td>
+                                <td class="autoloader-col">Advanced (5 modes)</td>
+                                <td class="copy-into-col">Basic merge</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cost Efficiency</strong></td>
+                                <td class="autoloader-col">Optimal at scale</td>
+                                <td class="copy-into-col">Good for small batches</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Team Preference</strong></td>
+                                <td class="autoloader-col">Data Engineers (Python/Scala)</td>
+                                <td class="copy-into-col">SQL Analysts</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="highlight-box">
+                    <h4>🏆 The Migration King Pattern</h4>
+                    <p><strong>Phase 1:</strong> Use COPY INTO for historical data migration<br>
+                    <strong>Phase 2:</strong> Switch to AutoLoader for ongoing operations<br>
+                    <strong>Result:</strong> Best of both worlds - bulk migration + streaming ingestion</p>
+                </div>
+                
+                <div class="comparison-grid">
+                    <div class="feature-card autoloader">
+                        <h3>🔄 AutoLoader</h3>
+                        <ul>
+                            <li>Structured Streaming source</li>
+                            <li>Exactly-once guarantees</li>
+                            <li>RocksDB state management</li>
+                            <li>Schema inference & evolution</li>
+                            <li>Rescued data columns</li>
+                            <li>File notification mode</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card copy-into">
+                        <h3>📥 COPY INTO</h3>
+                        <ul>
+                            <li>SQL-native command</li>
+                            <li>Idempotent by design</li>
+                            <li>Validation mode</li>
+                            <li>File pattern matching</li>
+                            <li>Simple transformations</li>
+                            <li>Instant results</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AutoLoader Tab -->
+            <div id="autoloader" class="tab-content">
+                <h2>🔄 AutoLoader Deep Dive</h2>
+                
+                <div class="diagram-container">
+                    <h3>AutoLoader Architecture Flow</h3>
+                    <div class="flow-diagram">
+                        <div class="flow-step">Cloud Storage</div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-step highlight">AutoLoader</div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-step">Schema Location</div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-step">Delta Table</div>
+                    </div>
+                </div>
+                
+                <h3>🏗️ Basic AutoLoader Pattern</h3>
+                <div class="code-block" data-lang="python">
+<span class="comment"># AutoLoader streaming pattern</span>
+df = spark.<span class="keyword">readStream</span>.<span class="keyword">format</span>(<span class="string">"cloudFiles"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.format"</span>, <span class="string">"csv"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaLocation"</span>, <span class="string">"/schemas/"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaEvolutionMode"</span>, <span class="string">"addNewColumns"</span>)\
+    .<span class="keyword">load</span>(<span class="string">"/source/path/"</span>)
+
+<span class="comment"># Write stream with checkpoint</span>
+df.<span class="keyword">writeStream</span>\
+    .<span class="keyword">format</span>(<span class="string">"delta"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"checkpointLocation"</span>, <span class="string">"/checkpoint/"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"mergeSchema"</span>, <span class="string">"true"</span>)\
+    .<span class="keyword">trigger</span>(availableNow=<span class="keyword">True</span>)\
+    .<span class="keyword">start</span>(<span class="string">"/destination/"</span>)
+                </div>
+                
+                <h3>🔧 Production AutoLoader Setup</h3>
+                <div class="code-block" data-lang="python">
+<span class="keyword">from</span> pyspark.sql.functions <span class="keyword">import</span> current_timestamp, input_file_name
+
+<span class="comment"># Production-grade configuration</span>
+bronze_df = spark.<span class="keyword">readStream</span>\
+    .<span class="keyword">format</span>(<span class="string">"cloudFiles"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.format"</span>, <span class="string">"csv"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"header"</span>, <span class="string">"true"</span>)\
+    \
+    <span class="comment"># Schema management</span>\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaLocation"</span>, bronze_schema_path)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaEvolutionMode"</span>, <span class="string">"addNewColumnsWithTypeWidening"</span>)\
+    \
+    <span class="comment"># Type inference control</span>\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.inferColumnTypes"</span>, <span class="string">"true"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaHints"</span>, <span class="string">"product_id long, price decimal(10,2)"</span>)\
+    \
+    <span class="comment"># Data safety</span>\
+    .<span class="keyword">option</span>(<span class="string">"rescuedDataColumn"</span>, <span class="string">"_rescued_data"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.useNotifications"</span>, <span class="string">"true"</span>)\
+    \
+    <span class="comment"># Load with metadata</span>\
+    .<span class="keyword">load</span>(<span class="string">"/path/to/source/"</span>)\
+    .<span class="keyword">withColumn</span>(<span class="string">"_ingestion_timestamp"</span>, current_timestamp())\
+    .<span class="keyword">withColumn</span>(<span class="string">"_source_file"</span>, input_file_name())
+                </div>
+                
+                <h3>📊 Key AutoLoader Features</h3>
+                <div class="responsive-grid">
+                    <div class="evolution-mode">
+                        <h4>🗄️ State Management</h4>
+                        <p><strong>RocksDB:</strong> Tracks processed files<br>
+                        <strong>Schema Location:</strong> Version history<br>
+                        <strong>Checkpoint:</strong> Streaming offsets</p>
+                    </div>
+                    
+                    <div class="evolution-mode">
+                        <h4>🔔 Discovery Modes</h4>
+                        <p><strong>Directory Listing:</strong> Periodic scans<br>
+                        <strong>File Notification:</strong> Event-driven (scalable)</p>
+                    </div>
+                    
+                    <div class="evolution-mode">
+                        <h4>🛟 Error Handling</h4>
+                        <p><strong>Rescued Data:</strong> Schema mismatches<br>
+                        <strong>Bad Records:</strong> Corruption handling</p>
+                    </div>
+                </div>
+                
+                <div class="exam-tips">
+                    <h3>🎯 AutoLoader Exam Points</h3>
+                    <div class="tip-item">
+                        <strong>Schema Evolution:</strong> Stream stops with UnknownFieldException, but schema is updated BEFORE error is thrown
+                    </div>
+                    <div class="tip-item">
+                        <strong>Idempotency:</strong> Based on (queryId, epochId) combination in Delta transaction log
+                    </div>
+                    <div class="tip-item">
+                        <strong>File Discovery:</strong> Samples first 50GB or 1000 files for schema inference
+                    </div>
+                </div>
+            </div>
+            
+            <!-- COPY INTO Tab -->
+            <div id="copy-into" class="tab-content">
+                <h2>📥 COPY INTO - The Migration King</h2>
+                
+                <div class="diagram-container">
+                    <h3>COPY INTO Workflow</h3>
+                    <div class="flow-diagram">
+                        <div class="flow-step">Source Files</div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-step highlight">COPY INTO</div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-step">Delta Table</div>
+                    </div>
+                    <p>✅ <strong>Idempotent</strong> | ✅ <strong>SQL-Native</strong> | ✅ <strong>Validation</strong></p>
+                </div>
+                
+                <h3>📋 Basic COPY INTO Syntax</h3>
+                <div class="code-block" data-lang="sql">
+<span class="comment">-- Simple CSV load</span>
+<span class="keyword">COPY INTO</span> main.bronze.products
+<span class="keyword">FROM</span> <span class="string">'/path/to/csv/files/'</span>
+<span class="keyword">FILEFORMAT</span> = <span class="keyword">CSV</span>
+<span class="keyword">FORMAT_OPTIONS</span> (<span class="string">'header'</span> = <span class="string">'true'</span>, <span class="string">'inferSchema'</span> = <span class="string">'true'</span>);
+                </div>
+                
+                <h3>🔍 Validation Before Loading</h3>
+                <div class="code-block" data-lang="sql">
+<span class="comment">-- Test first, then load</span>
+<span class="keyword">COPY INTO</span> main.bronze.products
+<span class="keyword">FROM</span> <span class="string">'/path/to/files/'</span>
+<span class="keyword">FILEFORMAT</span> = <span class="keyword">CSV</span>
+<span class="keyword">VALIDATE</span> <span class="number">100</span> <span class="keyword">ROWS</span>;
+
+<span class="comment">-- If validation passes, run actual load</span>
+<span class="keyword">COPY INTO</span> main.bronze.products
+<span class="keyword">FROM</span> <span class="string">'/path/to/files/'</span>
+<span class="keyword">FILEFORMAT</span> = <span class="keyword">CSV</span>
+<span class="keyword">FORMAT_OPTIONS</span> (<span class="string">'header'</span> = <span class="string">'true'</span>);
+                </div>
+                
+                <h3>🧬 Schema Evolution with COPY INTO</h3>
+                <div class="code-block" data-lang="sql">
+<span class="comment">-- Create schemaless table (DBR 11.3+)</span>
+<span class="keyword">CREATE TABLE IF NOT EXISTS</span> main.bronze.products_evolved;
+
+<span class="comment">-- Auto-evolve schema during copy</span>
+<span class="keyword">COPY INTO</span> main.bronze.products_evolved
+<span class="keyword">FROM</span> <span class="string">'/path/to/files/'</span>
+<span class="keyword">FILEFORMAT</span> = <span class="keyword">CSV</span>
+<span class="keyword">FORMAT_OPTIONS</span> (<span class="string">'header'</span> = <span class="string">'true'</span>, <span class="string">'mergeSchema'</span> = <span class="string">'true'</span>)
+<span class="keyword">COPY_OPTIONS</span> (<span class="string">'mergeSchema'</span> = <span class="string">'true'</span>);
+                </div>
+                
+                <h3>🎯 Selective File Loading</h3>
+                <div class="code-block" data-lang="sql">
+<span class="comment">-- Load specific files</span>
+<span class="keyword">COPY INTO</span> main.bronze.orders
+<span class="keyword">FROM</span> <span class="string">'/migration/orders/'</span>
+<span class="keyword">FILEFORMAT</span> = <span class="keyword">CSV</span>
+<span class="keyword">FILES</span> = (<span class="string">'orders_2023.csv'</span>, <span class="string">'orders_2024.csv'</span>)
+<span class="keyword">FORMAT_OPTIONS</span> (<span class="string">'header'</span> = <span class="string">'true'</span>);
+
+<span class="comment">-- Pattern matching</span>
+<span class="keyword">COPY INTO</span> main.bronze.orders
+<span class="keyword">FROM</span> <span class="string">'/migration/orders/'</span>
+<span class="keyword">FILEFORMAT</span> = <span class="keyword">CSV</span>
+<span class="keyword">PATTERN</span> = <span class="string">'order_*.csv'</span>;
+                </div>
+                
+                <h3>🔄 Transformations During Copy</h3>
+                <div class="code-block" data-lang="sql">
+<span class="comment">-- Apply transformations during copy</span>
+<span class="keyword">COPY INTO</span> main.bronze.products (product_id, product_name, category, price, load_date)
+<span class="keyword">FROM</span> (
+    <span class="keyword">SELECT</span> 
+        product_id,
+        <span class="keyword">UPPER</span>(product_name) <span class="keyword">as</span> product_name,
+        category,
+        price,
+        <span class="keyword">current_timestamp</span>() <span class="keyword">as</span> load_date
+    <span class="keyword">FROM</span> <span class="string">'/path/to/products/'</span>
+)
+<span class="keyword">FILEFORMAT</span> = <span class="keyword">CSV</span>
+<span class="keyword">FORMAT_OPTIONS</span> (<span class="string">'header'</span> = <span class="string">'true'</span>);
+                </div>
+                
+                <div class="highlight-box">
+                    <h4>🏆 Why COPY INTO is the "Migration King"</h4>
+                    <ul>
+                        <li><strong>One-time bulk loads:</strong> Perfect for historical data migration</li>
+                        <li><strong>Idempotent operations:</strong> Restart safely without duplicates</li>
+                        <li><strong>Validation mode:</strong> Test before committing</li>
+                        <li><strong>SQL simplicity:</strong> No Python/Scala required</li>
+                        <li><strong>Selective reprocessing:</strong> Cherry-pick problematic files</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Schema Evolution Tab -->
+            <div id="schema" class="tab-content">
+                <h2>📐 Schema Evolution Mastery</h2>
+                
+                <div class="interactive-toggle">
+                    <span>Show AutoLoader Schema Modes:</span>
+                    <div class="toggle active" onclick="toggleSchemaView(this)"></div>
+                </div>
+                
+                <div id="schema-modes" class="schema-evolution">
+                    <div class="evolution-mode">
+                        <span class="mode-name">addNewColumns</span>
+                        <h4>Default Evolution</h4>
+                        <p><strong>Behavior:</strong> Stream stops, updates schema, requires restart<br>
+                        <strong>Use case:</strong> Flexible pipelines expecting new fields</p>
+                    </div>
+                    
+                    <div class="evolution-mode">
+                        <span class="mode-name">none</span>
+                        <h4>No Evolution</h4>
+                        <p><strong>Behavior:</strong> No evolution allowed, ignores new columns<br>
+                        <strong>Use case:</strong> Strict schema enforcement</p>
+                    </div>
+                    
+                    <div class="evolution-mode">
+                        <span class="mode-name">failOnNewColumns</span>
+                        <h4>Strict Mode</h4>
+                        <p><strong>Behavior:</strong> Immediate failure on schema changes<br>
+                        <strong>Use case:</strong> Production systems requiring approval</p>
+                    </div>
+                    
+                    <div class="evolution-mode">
+                        <span class="mode-name">rescue</span>
+                        <h4>Maximum Uptime</h4>
+                        <p><strong>Behavior:</strong> Captures unexpected data in _rescued_data column<br>
+                        <strong>Use case:</strong> Never-fail ingestion pipelines</p>
+                    </div>
+                    
+                    <div class="evolution-mode">
+                        <span class="mode-name">addNewColumnsWithTypeWidening</span>
+                        <h4>Smart Evolution (NEW)</h4>
+                        <p><strong>Behavior:</strong> Auto-widens compatible types (int→long, float→double)<br>
+                        <strong>Use case:</strong> DBR 16.4+ automatic type handling</p>
+                    </div>
+                </div>
+                
+                <div class="diagram-container">
+                    <h3>Schema Mismatch Flow</h3>
+                    <div class="flow-diagram">
+                        <div class="flow-step">New File</div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-step">Schema Compare</div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-step highlight">Mismatch Found</div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-step">Update Schema</div>
+                        <div class="flow-arrow">➡️</div>
+                        <div class="flow-step">Throw Error</div>
+                    </div>
+                    <p>⚠️ <strong>Key Insight:</strong> Schema is updated BEFORE error is thrown!</p>
+                </div>
+                
+                <h3>🔧 Schema Hints Example</h3>
+                <div class="code-block" data-lang="python">
+<span class="comment"># Fine-grained schema control</span>
+df = spark.<span class="keyword">readStream</span>\
+    .<span class="keyword">format</span>(<span class="string">"cloudFiles"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.format"</span>, <span class="string">"json"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaLocation"</span>, <span class="string">"/schemas/"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaHints"</span>, 
+             <span class="string">"user_id long, created_at timestamp, amount decimal(10,2)"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaEvolutionMode"</span>, <span class="string">"addNewColumns"</span>)\
+    .<span class="keyword">load</span>(<span class="string">"/path/"</span>)
+                </div>
+                
+                <h3>🔍 Monitoring Schema Evolution</h3>
+                <div class="code-block" data-lang="sql">
+<span class="comment">-- Check rescued data for analysis</span>
+<span class="keyword">SELECT</span> _rescued_data, _source_file, <span class="keyword">count</span>(*)
+<span class="keyword">FROM</span> main.bronze.products 
+<span class="keyword">WHERE</span> _rescued_data <span class="keyword">IS NOT NULL</span>
+<span class="keyword">GROUP BY</span> _rescued_data, _source_file;
+
+<span class="comment">-- Extract common rescued fields</span>
+<span class="keyword">SELECT</span> 
+  <span class="keyword">get_json_object</span>(_rescued_data, <span class="string">'$.new_field'</span>) <span class="keyword">as</span> new_field_values,
+  <span class="keyword">count</span>(*)
+<span class="keyword">FROM</span> main.bronze.products
+<span class="keyword">WHERE</span> _rescued_data <span class="keyword">LIKE</span> <span class="string">'%new_field%'</span>
+<span class="keyword">GROUP BY</span> <span class="keyword">get_json_object</span>(_rescued_data, <span class="string">'$.new_field'</span>);
+                </div>
+            </div>
+            
+            <!-- Exam Tips Tab -->
+            <div id="exam" class="tab-content">
+                <h2>🎯 Databricks Exam Success Guide</h2>
+                
+                <div class="exam-tips">
+                    <h3>📝 Most Tested Scenarios</h3>
+                    <div class="tip-item">
+                        <strong>Scenario 1:</strong> "CSV files suddenly have a new column, AutoLoader failed with UnknownFieldException"<br>
+                        <strong>Answer:</strong> Schema was updated before error. Just restart the stream.
+                    </div>
+                    <div class="tip-item">
+                        <strong>Scenario 2:</strong> "Pipeline failed halfway through 1000 files. Will restart reprocess all files?"<br>
+                        <strong>Answer:</strong> No. AutoLoader's RocksDB tracks processed files. Only remaining files processed.
+                    </div>
+                    <div class="tip-item">
+                        <strong>Scenario 3:</strong> "Getting millions of files/hour. Directory listing is slow."<br>
+                        <strong>Answer:</strong> Switch to file notification mode with cloud storage events.
+                    </div>
+                    <div class="tip-item">
+                        <strong>Scenario 4:</strong> "Need to migrate 10TB historical data + daily increments."<br>
+                        <strong>Answer:</strong> COPY INTO for migration, AutoLoader for daily ops.
+                    </div>
+                </div>
+                
+                <h3>🔑 Key Concepts to Remember</h3>
+                
+                <div class="responsive-grid">
+                    <div class="evolution-mode">
+                        <h4>🗂️ File Locations</h4>
+                        <ul>
+                            <li><strong>checkpointLocation:</strong> Streaming state (offsets)</li>
+                            <li><strong>schemaLocation:</strong> Schema versions</li>
+                            <li><strong>source:</strong> Raw files</li>
+                            <li><strong>destination:</strong> Delta table</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="evolution-mode">
+                        <h4>⚡ AutoLoader Sampling</h4>
+                        <ul>
+                            <li>Samples first <strong>50GB or 1000 files</strong></li>
+                            <li>CSV/JSON inferred as <strong>strings</strong></li>
+                            <li>Parquet/Avro uses <strong>file metadata</strong></li>
+                            <li>Schema stored in <strong>_schemas directory</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="evolution-mode">
+                        <h4>🔄 Discovery Modes</h4>
+                        <ul>
+                            <li><strong>Directory Listing:</strong> Periodic scans</li>
+                            <li><strong>File Notification:</strong> SNS/SQS events</li>
+                            <li>Notification = <strong>millions of files/hour</strong></li>
+                            <li>Directory = <strong>&lt;10K files</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="evolution-mode">
+                        <h4>📋 COPY INTO Features</h4>
+                        <ul>
+                            <li><strong>Idempotent:</strong> No duplicates</li>
+                            <li><strong>Validation:</strong> Test before load</li>
+                            <li><strong>Selective:</strong> FILES/PATTERN matching</li>
+                            <li><strong>SQL-native:</strong> No Python required</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="highlight-box">
+                    <h4>🧠 Memory Tricks</h4>
+                    <p><strong>AutoLoader = Streaming King</strong> 👑<br>
+                    <strong>COPY INTO = Migration King</strong> 👑</p>
+                    
+                    <p><strong>Schema Evolution:</strong> "Update then Fail" - Schema is ready before restart<br>
+                    <strong>File Discovery:</strong> "50GB or 1000 files" - whichever comes first<br>
+                    <strong>Rescued Data:</strong> JSON blob with source file path</p>
+                </div>
+                
+                <h3>📊 Quick Reference Commands</h3>
+                <div class="code-block" data-lang="python">
+<span class="comment"># AutoLoader production template</span>
+spark.<span class="keyword">readStream</span>.<span class="keyword">format</span>(<span class="string">"cloudFiles"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.format"</span>, <span class="string">"csv"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaLocation"</span>, schema_path)\
+    .<span class="keyword">option</span>(<span class="string">"cloudFiles.schemaEvolutionMode"</span>, <span class="string">"addNewColumnsWithTypeWidening"</span>)\
+    .<span class="keyword">option</span>(<span class="string">"rescuedDataColumn"</span>, <span class="string">"_rescued_data"</span>)\
+    .<span class="keyword">load</span>(source_path)
+                </div>
+                
+                <div class="code-block" data-lang="sql">
+<span class="comment">-- COPY INTO migration template</span>
+<span class="keyword">COPY INTO</span> target_table
+<span class="keyword">FROM</span> <span class="string">'/migration/path/'</span>
+<span class="keyword">FILEFORMAT</span> = <span class="keyword">CSV</span>
+<span class="keyword">VALIDATE</span> <span class="number">100</span> <span class="keyword">ROWS</span>; <span class="comment">-- Test first!</span>
+
+<span class="keyword">COPY INTO</span> target_table
+<span class="keyword">FROM</span> <span class="string">'/migration/path/'</span>
+<span class="keyword">FILEFORMAT</span> = <span class="keyword">CSV</span>
+<span class="keyword">COPY_OPTIONS</span> (<span class="string">'mergeSchema'</span> = <span class="string">'true'</span>);
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.nav-tab');
+            tabButtons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab button
+            event.target.classList.add('active');
+        }
+        
+        function toggleSchemaView(element) {
+            element.classList.toggle('active');
+            const schemaModes = document.getElementById('schema-modes');
+            
+            if (element.classList.contains('active')) {
+                schemaModes.style.display = 'grid';
+            } else {
+                schemaModes.style.display = 'none';
+            }
+        }
+        
+        // Add syntax highlighting
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeBlocks = document.querySelectorAll('.code-block');
+            codeBlocks.forEach(block => {
+                let html = block.innerHTML;
+                // Already has basic highlighting in HTML
+                block.innerHTML = html;
+            });
+        });
+        
+        // Add smooth scrolling for navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const content = document.querySelector('.content');
+                content.scrollTop = 0;
+            });
+        });
+    </script>
+</body>
+</html>

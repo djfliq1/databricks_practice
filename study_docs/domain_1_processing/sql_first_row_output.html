@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL First Row Output</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<h1>🎯 SQL First Row as Output in LakeFlow Jobs</h1>
+<p><strong>Databricks Data Engineer Associate 2026 Certification</strong></p>
+<h2>The Cortana Overview</h2>
+<p>When you need <strong>single-value metrics</strong> from SQL (like totals, averages, max values, or summary stats), capture the <strong>first row</strong> of the result set. This is perfect for pipeline decision-making, quality gates, and conditional routing based on aggregate metrics.</p>
+<hr />
+<h2>🔍 Pattern: <code>.collect()[0]</code> for Single Row Results</h2>
+<h3>Bronze Summary Metrics (First Row Pattern)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/01_bronze_summary_metrics.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Bronze Summary Metrics - First Row Pattern</span>
+<span class="c1"># MAGIC **Capturing single-value SQL results for pipeline decisions**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 Pattern 1: Overall summary metrics (single row)</span>
+<span class="n">summary_metrics</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  COUNT(*) as total_products,</span>
+<span class="s2">  ROUND(AVG(price), 2) as avg_price,</span>
+<span class="s2">  ROUND(MIN(price), 2) as min_price,</span>
+<span class="s2">  ROUND(MAX(price), 2) as max_price,</span>
+<span class="s2">  ROUND(SUM(price), 2) as total_value,</span>
+<span class="s2">  COUNT(DISTINCT category) as category_count,</span>
+
+<span class="s2">  -- Quality metrics</span>
+<span class="s2">  COUNT(CASE WHEN product_id IS NULL THEN 1 END) as null_products,</span>
+<span class="s2">  COUNT(CASE WHEN price &lt;= 0 THEN 1 END) as invalid_prices,</span>
+<span class="s2">  COUNT(CASE WHEN product_name IS NULL OR product_name = &#39;&#39; THEN 1 END) as missing_names,</span>
+
+<span class="s2">  -- Business insights</span>
+<span class="s2">  COUNT(CASE WHEN price &gt; 300 THEN 1 END) as premium_products,</span>
+<span class="s2">  ROUND(AVG(CASE WHEN price &gt; 300 THEN price END), 2) as premium_avg_price,</span>
+
+<span class="s2">  -- Data freshness</span>
+<span class="s2">  MAX(processDate) as latest_process_date,</span>
+<span class="s2">  current_timestamp() as analysis_timestamp</span>
+
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># 🔥 EXAM FOCUS: Get first (and only) row from summary query</span>
+<span class="n">summary_row</span> <span class="o">=</span> <span class="n">summary_metrics</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 Pattern 2: Category performance leader (first row from ordered results)</span>
+<span class="n">top_category</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  category,</span>
+<span class="s2">  COUNT(*) as product_count,</span>
+<span class="s2">  ROUND(AVG(price), 2) as avg_price,</span>
+<span class="s2">  ROUND(SUM(price), 2) as total_value,</span>
+<span class="s2">  ROUND(MAX(price), 2) as highest_price_product</span>
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">GROUP BY category</span>
+<span class="s2">ORDER BY avg_price DESC</span>
+<span class="s2">LIMIT 1</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">top_category_row</span> <span class="o">=</span> <span class="n">top_category</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 Pattern 3: Quality assessment (single row with multiple conditions)</span>
+<span class="n">quality_assessment</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  -- Calculate quality score</span>
+<span class="s2">  CASE </span>
+<span class="s2">    WHEN COUNT(*) = 0 THEN 0</span>
+<span class="s2">    ELSE ROUND(</span>
+<span class="s2">      100.0 * (COUNT(*) - COUNT(CASE WHEN product_id IS NULL OR price &lt;= 0 OR product_name IS NULL THEN 1 END)) / COUNT(*), </span>
+<span class="s2">      2</span>
+<span class="s2">    )</span>
+<span class="s2">  END as quality_score,</span>
+
+<span class="s2">  -- Data completeness ratio</span>
+<span class="s2">  ROUND(100.0 * COUNT(CASE WHEN product_id IS NOT NULL AND price &gt; 0 AND product_name IS NOT NULL THEN 1 END) / COUNT(*), 2) as completeness_ratio,</span>
+
+<span class="s2">  -- Price distribution assessment</span>
+<span class="s2">  CASE </span>
+<span class="s2">    WHEN AVG(price) &gt; 250 THEN &#39;HIGH_VALUE&#39;</span>
+<span class="s2">    WHEN AVG(price) &gt; 150 THEN &#39;MEDIUM_VALUE&#39; </span>
+<span class="s2">    ELSE &#39;LOW_VALUE&#39;</span>
+<span class="s2">  END as value_category,</span>
+
+<span class="s2">  -- Volume assessment</span>
+<span class="s2">  CASE </span>
+<span class="s2">    WHEN COUNT(*) &gt;= 100 THEN &#39;SUFFICIENT&#39;</span>
+<span class="s2">    WHEN COUNT(*) &gt;= 50 THEN &#39;MINIMAL&#39;</span>
+<span class="s2">    ELSE &#39;INSUFFICIENT&#39;</span>
+<span class="s2">  END as volume_status,</span>
+
+<span class="s2">  -- Freshness check (assuming daily loads)</span>
+<span class="s2">  CASE </span>
+<span class="s2">    WHEN MAX(processDate) &gt;= CURRENT_DATE() THEN &#39;FRESH&#39;</span>
+<span class="s2">    WHEN MAX(processDate) &gt;= CURRENT_DATE() - INTERVAL 1 DAY THEN &#39;ACCEPTABLE&#39;</span>
+<span class="s2">    ELSE &#39;STALE&#39;</span>
+<span class="s2">  END as data_freshness</span>
+
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">quality_row</span> <span class="o">=</span> <span class="n">quality_assessment</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 Pattern 4: Customer summary metrics</span>
+<span class="n">customer_summary</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  COUNT(*) as total_customers,</span>
+<span class="s2">  COUNT(DISTINCT domain) as unique_domains,</span>
+<span class="s2">  COUNT(CASE WHEN domain IN (&#39;gmail.com&#39;, &#39;yahoo.com&#39;, &#39;hotmail.com&#39;) THEN 1 END) as personal_email_count,</span>
+<span class="s2">  COUNT(CASE WHEN domain NOT IN (&#39;gmail.com&#39;, &#39;yahoo.com&#39;, &#39;hotmail.com&#39;) THEN 1 END) as business_email_count,</span>
+
+<span class="s2">  -- Geographic distribution</span>
+<span class="s2">  COUNT(DISTINCT location) as unique_locations,</span>
+
+<span class="s2">  -- Signup trend (most recent signup)</span>
+<span class="s2">  MAX(signup_date) as latest_signup,</span>
+<span class="s2">  MIN(signup_date) as earliest_signup,</span>
+
+<span class="s2">  -- Email quality</span>
+<span class="s2">  COUNT(CASE WHEN email NOT LIKE &#39;%@%&#39; OR email IS NULL THEN 1 END) as invalid_emails</span>
+
+<span class="s2">FROM databricks_clar.bronze.customers_bronze</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">customer_row</span> <span class="o">=</span> <span class="n">customer_summary</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🔥 EXAM PATTERN: Convert first row results to task output values</span>
+
+<span class="c1"># Extract values from first row (accessing by column name)</span>
+<span class="n">products_total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">summary_row</span><span class="p">[</span><span class="s2">&quot;total_products&quot;</span><span class="p">])</span>
+<span class="n">products_avg_price</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">summary_row</span><span class="p">[</span><span class="s2">&quot;avg_price&quot;</span><span class="p">])</span> 
+<span class="n">products_max_price</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">summary_row</span><span class="p">[</span><span class="s2">&quot;max_price&quot;</span><span class="p">])</span>
+<span class="n">products_min_price</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">summary_row</span><span class="p">[</span><span class="s2">&quot;min_price&quot;</span><span class="p">])</span>
+<span class="n">category_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">summary_row</span><span class="p">[</span><span class="s2">&quot;category_count&quot;</span><span class="p">])</span>
+<span class="n">null_products</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">summary_row</span><span class="p">[</span><span class="s2">&quot;null_products&quot;</span><span class="p">])</span>
+<span class="n">premium_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">summary_row</span><span class="p">[</span><span class="s2">&quot;premium_products&quot;</span><span class="p">])</span>
+
+<span class="c1"># Top category details (first row from ordered query)</span>
+<span class="n">leading_category</span> <span class="o">=</span> <span class="n">top_category_row</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]</span>
+<span class="n">leading_avg_price</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">top_category_row</span><span class="p">[</span><span class="s2">&quot;avg_price&quot;</span><span class="p">])</span>
+<span class="n">leading_product_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">top_category_row</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">])</span>
+
+<span class="c1"># Quality assessment (first row calculations)</span>
+<span class="n">quality_score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">quality_row</span><span class="p">[</span><span class="s2">&quot;quality_score&quot;</span><span class="p">])</span>
+<span class="n">completeness_ratio</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">quality_row</span><span class="p">[</span><span class="s2">&quot;completeness_ratio&quot;</span><span class="p">])</span>
+<span class="n">value_category</span> <span class="o">=</span> <span class="n">quality_row</span><span class="p">[</span><span class="s2">&quot;value_category&quot;</span><span class="p">]</span>  <span class="c1"># String enum</span>
+<span class="n">volume_status</span> <span class="o">=</span> <span class="n">quality_row</span><span class="p">[</span><span class="s2">&quot;volume_status&quot;</span><span class="p">]</span>    <span class="c1"># String enum</span>
+<span class="n">data_freshness</span> <span class="o">=</span> <span class="n">quality_row</span><span class="p">[</span><span class="s2">&quot;data_freshness&quot;</span><span class="p">]</span>  <span class="c1"># String enum</span>
+
+<span class="c1"># Customer metrics (first row aggregation)</span>
+<span class="n">customers_total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">customer_row</span><span class="p">[</span><span class="s2">&quot;total_customers&quot;</span><span class="p">])</span>
+<span class="n">unique_domains</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">customer_row</span><span class="p">[</span><span class="s2">&quot;unique_domains&quot;</span><span class="p">])</span> 
+<span class="n">business_customers</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">customer_row</span><span class="p">[</span><span class="s2">&quot;business_email_count&quot;</span><span class="p">])</span>
+<span class="n">personal_customers</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">customer_row</span><span class="p">[</span><span class="s2">&quot;personal_email_count&quot;</span><span class="p">])</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 Business logic based on first row SQL results</span>
+
+<span class="c1"># Quality gate decisions</span>
+<span class="n">quality_passed</span> <span class="o">=</span> <span class="n">quality_score</span> <span class="o">&gt;=</span> <span class="mi">95</span> <span class="ow">and</span> <span class="n">completeness_ratio</span> <span class="o">&gt;=</span> <span class="mi">95</span>
+<span class="n">volume_sufficient</span> <span class="o">=</span> <span class="n">volume_status</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SUFFICIENT&#39;</span><span class="p">,</span> <span class="s1">&#39;MINIMAL&#39;</span><span class="p">]</span>
+<span class="n">data_fresh</span> <span class="o">=</span> <span class="n">data_freshness</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;FRESH&#39;</span><span class="p">,</span> <span class="s1">&#39;ACCEPTABLE&#39;</span><span class="p">]</span>
+<span class="n">pipeline_ready</span> <span class="o">=</span> <span class="n">quality_passed</span> <span class="ow">and</span> <span class="n">volume_sufficient</span> <span class="ow">and</span> <span class="n">data_fresh</span>
+
+<span class="c1"># Processing mode decisions</span>
+<span class="k">if</span> <span class="n">value_category</span> <span class="o">==</span> <span class="s1">&#39;HIGH_VALUE&#39;</span> <span class="ow">and</span> <span class="n">premium_count</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+    <span class="n">processing_mode</span> <span class="o">=</span> <span class="s1">&#39;PREMIUM&#39;</span>
+<span class="k">elif</span> <span class="n">value_category</span> <span class="o">==</span> <span class="s1">&#39;MEDIUM_VALUE&#39;</span><span class="p">:</span>
+    <span class="n">processing_mode</span> <span class="o">=</span> <span class="s1">&#39;STANDARD&#39;</span> 
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">processing_mode</span> <span class="o">=</span> <span class="s1">&#39;ECONOMY&#39;</span>
+
+<span class="c1"># Customer segmentation decision</span>
+<span class="n">customer_mix</span> <span class="o">=</span> <span class="s1">&#39;BUSINESS_FOCUSED&#39;</span> <span class="k">if</span> <span class="n">business_customers</span> <span class="o">&gt;</span> <span class="n">personal_customers</span> <span class="k">else</span> <span class="s1">&#39;CONSUMER_FOCUSED&#39;</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🔥 EXAM FOCUS: Single-value task output for downstream routing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="n">task_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Single values from first row queries</span>
+    <span class="s2">&quot;total_products&quot;</span><span class="p">:</span> <span class="n">products_total</span><span class="p">,</span>
+    <span class="s2">&quot;avg_price&quot;</span><span class="p">:</span> <span class="n">products_avg_price</span><span class="p">,</span>
+    <span class="s2">&quot;max_price&quot;</span><span class="p">:</span> <span class="n">products_max_price</span><span class="p">,</span> 
+    <span class="s2">&quot;min_price&quot;</span><span class="p">:</span> <span class="n">products_min_price</span><span class="p">,</span>
+    <span class="s2">&quot;category_count&quot;</span><span class="p">:</span> <span class="n">category_count</span><span class="p">,</span>
+    <span class="s2">&quot;premium_product_count&quot;</span><span class="p">:</span> <span class="n">premium_count</span><span class="p">,</span>
+
+    <span class="c1"># Top performer (first row from ordered query)</span>
+    <span class="s2">&quot;leading_category&quot;</span><span class="p">:</span> <span class="n">leading_category</span><span class="p">,</span>
+    <span class="s2">&quot;leading_avg_price&quot;</span><span class="p">:</span> <span class="n">leading_avg_price</span><span class="p">,</span>
+    <span class="s2">&quot;leading_product_count&quot;</span><span class="p">:</span> <span class="n">leading_product_count</span><span class="p">,</span>
+
+    <span class="c1"># Quality metrics (calculated first row)</span>
+    <span class="s2">&quot;quality_score&quot;</span><span class="p">:</span> <span class="n">quality_score</span><span class="p">,</span>
+    <span class="s2">&quot;completeness_ratio&quot;</span><span class="p">:</span> <span class="n">completeness_ratio</span><span class="p">,</span>
+    <span class="s2">&quot;value_category&quot;</span><span class="p">:</span> <span class="n">value_category</span><span class="p">,</span>
+    <span class="s2">&quot;volume_status&quot;</span><span class="p">:</span> <span class="n">volume_status</span><span class="p">,</span>
+    <span class="s2">&quot;data_freshness&quot;</span><span class="p">:</span> <span class="n">data_freshness</span><span class="p">,</span>
+
+    <span class="c1"># Customer summary (first row aggregation)</span>
+    <span class="s2">&quot;total_customers&quot;</span><span class="p">:</span> <span class="n">customers_total</span><span class="p">,</span>
+    <span class="s2">&quot;unique_domains&quot;</span><span class="p">:</span> <span class="n">unique_domains</span><span class="p">,</span>
+    <span class="s2">&quot;business_customers&quot;</span><span class="p">:</span> <span class="n">business_customers</span><span class="p">,</span>
+    <span class="s2">&quot;personal_customers&quot;</span><span class="p">:</span> <span class="n">personal_customers</span><span class="p">,</span>
+
+    <span class="c1"># Decision flags (derived from first row results)</span>
+    <span class="s2">&quot;quality_passed&quot;</span><span class="p">:</span> <span class="n">quality_passed</span><span class="p">,</span>
+    <span class="s2">&quot;volume_sufficient&quot;</span><span class="p">:</span> <span class="n">volume_sufficient</span><span class="p">,</span>
+    <span class="s2">&quot;data_fresh&quot;</span><span class="p">:</span> <span class="n">data_fresh</span><span class="p">,</span>
+    <span class="s2">&quot;pipeline_ready&quot;</span><span class="p">:</span> <span class="n">pipeline_ready</span><span class="p">,</span>
+    <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="n">processing_mode</span><span class="p">,</span>
+    <span class="s2">&quot;customer_mix&quot;</span><span class="p">:</span> <span class="n">customer_mix</span><span class="p">,</span>
+
+    <span class="c1"># Metadata</span>
+    <span class="s2">&quot;analysis_timestamp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+    <span class="s2">&quot;latest_data_date&quot;</span><span class="p">:</span> <span class="n">summary_row</span><span class="p">[</span><span class="s2">&quot;latest_process_date&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">if</span> <span class="n">summary_row</span><span class="p">[</span><span class="s2">&quot;latest_process_date&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Summary Analysis Complete:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   📊 Products: </span><span class="si">{</span><span class="n">products_total</span><span class="si">}</span><span class="s2"> (avg: $</span><span class="si">{</span><span class="n">products_avg_price</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   🏆 Top Category: </span><span class="si">{</span><span class="n">leading_category</span><span class="si">}</span><span class="s2"> ($</span><span class="si">{</span><span class="n">leading_avg_price</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   📈 Quality Score: </span><span class="si">{</span><span class="n">quality_score</span><span class="si">}</span><span class="s2">% (</span><span class="si">{</span><span class="n">value_category</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   🎯 Pipeline Ready: </span><span class="si">{</span><span class="n">pipeline_ready</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   ⚙️  Processing Mode: </span><span class="si">{</span><span class="n">processing_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Return single values for downstream conditional logic</span>
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">task_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>⚖️ Condition Task Using First Row Results</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># DAB configuration using first row SQL results</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_summary</span>
+<span class="w">    </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/01_bronze_summary_metrics.py</span>
+
+<span class="w">  </span><span class="c1"># Quality gate using single-value results</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quality_gate</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_summary</span>
+<span class="w">    </span><span class="nt">condition_task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;GREATER_THAN_OR_EQUAL&quot;</span>
+<span class="w">      </span><span class="nt">left</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.bronze_summary.values.quality_score}}&quot;</span><span class="w">  </span><span class="c1"># Single value from first row</span>
+<span class="w">      </span><span class="nt">right</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;95&quot;</span>
+
+<span class="w">  </span><span class="c1"># Volume check using first row count</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">volume_check</span><span class="w">  </span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_summary</span>
+<span class="w">    </span><span class="nt">condition_task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;GREATER_THAN_OR_EQUAL&quot;</span>
+<span class="w">      </span><span class="nt">left</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.bronze_summary.values.total_products}}&quot;</span><span class="w">  </span><span class="c1"># Single value from first row</span>
+<span class="w">      </span><span class="nt">right</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;90&quot;</span>
+
+<span class="w">  </span><span class="c1"># Value category routing using first row enum</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">premium_processing</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_summary</span>
+<span class="w">    </span><span class="nt">condition_task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;EQUAL_TO&quot;</span>
+<span class="w">      </span><span class="nt">left</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.bronze_summary.values.value_category}}&quot;</span><span class="w">  </span><span class="c1"># String from first row</span>
+<span class="w">      </span><span class="nt">right</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;HIGH_VALUE&quot;</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 Downstream Task Consuming First Row Results</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/02_silver_using_first_row.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Access single values from upstream first row analysis</span>
+<span class="n">bronze_summary</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bronze_summary&quot;</span><span class="p">))</span>
+
+<span class="c1"># Extract single-value metrics</span>
+<span class="n">avg_price</span> <span class="o">=</span> <span class="n">bronze_summary</span><span class="p">[</span><span class="s2">&quot;avg_price&quot;</span><span class="p">]</span>
+<span class="n">leading_category</span> <span class="o">=</span> <span class="n">bronze_summary</span><span class="p">[</span><span class="s2">&quot;leading_category&quot;</span><span class="p">]</span>
+<span class="n">processing_mode</span> <span class="o">=</span> <span class="n">bronze_summary</span><span class="p">[</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">]</span>
+<span class="n">quality_score</span> <span class="o">=</span> <span class="n">bronze_summary</span><span class="p">[</span><span class="s2">&quot;quality_score&quot;</span><span class="p">]</span>
+<span class="n">customer_mix</span> <span class="o">=</span> <span class="n">bronze_summary</span><span class="p">[</span><span class="s2">&quot;customer_mix&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎯 Processing with mode: </span><span class="si">{</span><span class="n">processing_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Based on avg price: $</span><span class="si">{</span><span class="n">avg_price</span><span class="si">}</span><span class="s2">, top category: </span><span class="si">{</span><span class="n">leading_category</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Adaptive Silver processing based on single-value decisions</span>
+<span class="n">df_products</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">processing_mode</span> <span class="o">==</span> <span class="s1">&#39;PREMIUM&#39;</span><span class="p">:</span>
+    <span class="c1"># Premium processing for high-value datasets</span>
+    <span class="n">df_silver</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;premium&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;tier&quot;</span><span class="p">),</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">leading_category</span><span class="p">,</span> <span class="s2">&quot;flagship&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;standard&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_priority&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;margin_estimate&quot;</span><span class="p">),</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s2">&quot;luxury&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span><span class="p">,</span> <span class="s2">&quot;premium&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;standard&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;price_segment&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="k">elif</span> <span class="n">processing_mode</span> <span class="o">==</span> <span class="s1">&#39;STANDARD&#39;</span><span class="p">:</span>
+    <span class="c1"># Standard processing</span>
+    <span class="n">df_silver</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;standard&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;tier&quot;</span><span class="p">),</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span><span class="p">,</span> <span class="s2">&quot;above_average&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;below_average&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;price_position&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="k">else</span><span class="p">:</span>  <span class="c1"># ECONOMY</span>
+    <span class="c1"># Minimal processing for low-value datasets</span>
+    <span class="n">df_silver</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;product_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;product_name&quot;</span><span class="p">,</span> 
+        <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;price&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;economy&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;tier&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Customer processing based on single-value customer mix</span>
+<span class="n">df_customers</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.customers_bronze&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">customer_mix</span> <span class="o">==</span> <span class="s1">&#39;BUSINESS_FOCUSED&#39;</span><span class="p">:</span>
+    <span class="c1"># Enhanced business customer processing</span>
+    <span class="n">df_customers_silver</span> <span class="o">=</span> <span class="n">df_customers</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;domain&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="s2">&quot;gmail.com&quot;</span><span class="p">,</span> <span class="s2">&quot;yahoo.com&quot;</span><span class="p">,</span> <span class="s2">&quot;hotmail.com&quot;</span><span class="p">),</span> <span class="s2">&quot;personal&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;business&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;customer_type&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;b2b_enhanced&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_tier&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Consumer-focused processing</span>
+    <span class="n">df_customers_silver</span> <span class="o">=</span> <span class="n">df_customers</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;consumer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;customer_type&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;b2c_standard&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_tier&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Write Silver tables with processing mode in name</span>
+<span class="n">silver_suffix</span> <span class="o">=</span> <span class="n">processing_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="n">products_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.silver.products_</span><span class="si">{</span><span class="n">silver_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="n">customers_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.silver.customers_</span><span class="si">{</span><span class="n">customer_mix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="n">df_silver</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">products_table</span><span class="p">)</span>
+<span class="n">df_customers_silver</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">customers_table</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return processing results</span>
+<span class="n">silver_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;processing_mode_used&quot;</span><span class="p">:</span> <span class="n">processing_mode</span><span class="p">,</span>
+    <span class="s2">&quot;customer_mix_used&quot;</span><span class="p">:</span> <span class="n">customer_mix</span><span class="p">,</span>
+    <span class="s2">&quot;products_table_created&quot;</span><span class="p">:</span> <span class="n">products_table</span><span class="p">,</span>
+    <span class="s2">&quot;customers_table_created&quot;</span><span class="p">:</span> <span class="n">customers_table</span><span class="p">,</span>
+    <span class="s2">&quot;input_quality_score&quot;</span><span class="p">:</span> <span class="n">quality_score</span><span class="p">,</span>
+    <span class="s2">&quot;records_processed&quot;</span><span class="p">:</span> <span class="n">df_silver</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">+</span> <span class="n">df_customers_silver</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">silver_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>📊 Your Products Dataset First Row Example</h2>
+<p>Using your 100-row products CSV, here's what first row results would look like:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Example first row results from your data</span>
+<span class="n">summary_row</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;total_products&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s2">&quot;avg_price&quot;</span><span class="p">:</span> <span class="mf">245.67</span><span class="p">,</span>  <span class="c1"># Your actual average</span>
+    <span class="s2">&quot;min_price&quot;</span><span class="p">:</span> <span class="mf">15.19</span><span class="p">,</span>   <span class="c1"># Your actual minimum  </span>
+    <span class="s2">&quot;max_price&quot;</span><span class="p">:</span> <span class="mf">485.11</span><span class="p">,</span>  <span class="c1"># Your actual maximum</span>
+    <span class="s2">&quot;category_count&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>  <span class="c1"># Books, Toys, Electronics, Furniture, Clothing</span>
+    <span class="s2">&quot;premium_products&quot;</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span>  <span class="c1"># Products &gt; 300</span>
+    <span class="s2">&quot;quality_score&quot;</span><span class="p">:</span> <span class="mf">98.0</span>    <span class="c1"># 98% complete data</span>
+<span class="p">}</span>
+
+<span class="n">top_category_row</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="s2">&quot;Books&quot;</span><span class="p">,</span>      <span class="c1"># Highest avg price category</span>
+    <span class="s2">&quot;avg_price&quot;</span><span class="p">:</span> <span class="mf">271.89</span><span class="p">,</span>
+    <span class="s2">&quot;product_count&quot;</span><span class="p">:</span> <span class="mi">22</span>
+<span class="p">}</span>
+
+<span class="n">quality_row</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;quality_score&quot;</span><span class="p">:</span> <span class="mf">98.0</span><span class="p">,</span>
+    <span class="s2">&quot;value_category&quot;</span><span class="p">:</span> <span class="s2">&quot;MEDIUM_VALUE&quot;</span><span class="p">,</span>  <span class="c1"># avg_price 245.67 is between 150-250</span>
+    <span class="s2">&quot;volume_status&quot;</span><span class="p">:</span> <span class="s2">&quot;SUFFICIENT&quot;</span><span class="p">,</span>     <span class="c1"># 100 &gt;= 100</span>
+    <span class="s2">&quot;data_freshness&quot;</span><span class="p">:</span> <span class="s2">&quot;FRESH&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>This would result in:<br />
+- <code>processing_mode = "STANDARD"</code> (MEDIUM_VALUE with 23 premium products)<br />
+- <code>pipeline_ready = true</code> (quality 98% &gt;= 95%)<br />
+- Downstream Silver processing uses standard enrichment, not premium</p>
+<hr />
+<h2>🎯 Advanced First Row Patterns</h2>
+<h3>Time-Series First Row (Latest Value)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Get most recent metric value (first row from ordered time series)</span>
+<span class="n">latest_metric</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  processDate,</span>
+<span class="s2">  COUNT(*) as daily_product_count,</span>
+<span class="s2">  AVG(price) as daily_avg_price</span>
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">GROUP BY processDate</span>
+<span class="s2">ORDER BY processDate DESC</span>
+<span class="s2">LIMIT 1</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">latest_row</span> <span class="o">=</span> <span class="n">latest_metric</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">latest_date</span> <span class="o">=</span> <span class="n">latest_row</span><span class="p">[</span><span class="s2">&quot;processDate&quot;</span><span class="p">]</span>
+<span class="n">latest_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">latest_row</span><span class="p">[</span><span class="s2">&quot;daily_product_count&quot;</span><span class="p">])</span>
+<span class="n">latest_avg</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">latest_row</span><span class="p">[</span><span class="s2">&quot;daily_avg_price&quot;</span><span class="p">])</span>
+</code></pre></div>
+
+<h3>Threshold Detection (First Row Boolean)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Single boolean result from first row</span>
+<span class="n">threshold_check</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  CASE </span>
+<span class="s2">    WHEN COUNT(*) &gt;= 100 AND AVG(price) &gt;= 200 AND MAX(price) &lt;= 1000 THEN true</span>
+<span class="s2">    ELSE false</span>
+<span class="s2">  END as meets_sla_threshold</span>
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">meets_sla</span> <span class="o">=</span> <span class="n">threshold_check</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;meets_sla_threshold&quot;</span><span class="p">]</span>  <span class="c1"># Single boolean value</span>
+</code></pre></div>
+
+<h3>Percentile Analysis (First Row Calculation)</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Advanced first row with percentiles</span>
+<span class="n">percentile_analysis</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY price) as price_p25,</span>
+<span class="s2">  PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY price) as price_median,</span>
+<span class="s2">  PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY price) as price_p75,</span>
+<span class="s2">  PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY price) as price_p90</span>
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">percentiles</span> <span class="o">=</span> <span class="n">percentile_analysis</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">median_price</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">percentiles</span><span class="p">[</span><span class="s2">&quot;price_median&quot;</span><span class="p">])</span>
+<span class="n">p90_price</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">percentiles</span><span class="p">[</span><span class="s2">&quot;price_p90&quot;</span><span class="p">])</span>
+</code></pre></div>
+
+<hr />
+<h2>🚨 Exam Key Points</h2>
+<h3>First Row Patterns:</h3>
+<ol>
+<li><strong>Summary Metrics</strong> → <code>COUNT(*), AVG(), MAX()</code> in single row</li>
+<li><strong>Top/Bottom Analysis</strong> → <code>ORDER BY ... LIMIT 1</code> for extremes  </li>
+<li><strong>Quality Assessment</strong> → Calculated scores in single row</li>
+<li><strong>Business Logic</strong> → <code>CASE WHEN</code> conditions returning single values</li>
+<li><strong>Boolean Flags</strong> → True/false decisions from single row calculations</li>
+</ol>
+<h3>Access Pattern:</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Always the same pattern</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT ...&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">value</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;column_name&quot;</span><span class="p">]</span>  <span class="c1"># Extract by column name</span>
+</code></pre></div>
+
+<h3>Common Exam Scenarios:</h3>
+<ul>
+<li>"Get the highest-performing category" → <code>ORDER BY avg_price DESC LIMIT 1</code></li>
+<li>"Quality gate based on completeness ratio" → Single row calculation</li>
+<li>"Conditional processing based on data volume" → <code>COUNT(*)</code> first row</li>
+<li>"Route based on value category" → <code>CASE WHEN AVG(price)...</code> first row</li>
+</ul>
+<h3>Gotchas:</h3>
+<ul>
+<li>❌ <code>result[0]["column"]</code> → Use <code>result["column"]</code> after <code>.collect()[0]</code></li>
+<li>❌ Forgetting <code>.collect()[0]</code> → Gets DataFrame, not row data</li>
+<li>❌ Multiple rows when expecting one → Use <code>LIMIT 1</code> or aggregate functions</li>
+<li>✅ Always handle potential <code>None</code> values from SQL results</li>
+<li>✅ Convert to appropriate Python types (<code>int()</code>, <code>float()</code>, <code>str()</code>)</li>
+</ul>
+<p><strong>The Pattern:</strong> Single SQL Query → First Row → Extract Values → Task Output → Downstream Decisions</p>
+<p>This turns aggregate SQL analysis into <strong>single-value pipeline controls</strong> — perfect for quality gates, routing decisions, and adaptive processing! 🫡</p>
+</body>
+</html>

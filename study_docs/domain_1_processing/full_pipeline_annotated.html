@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Full Pipeline — Annotated · databricks_clar</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root {
+  --bg: #0a0c10;
+  --surface: #0f1318;
+  --card: #161b22;
+  --card2: #1c2128;
+  --border: #21262d;
+  --cyan: #00e5ff;
+  --green: #39d353;
+  --yellow: #f0c040;
+  --red: #f85149;
+  --purple: #bc8cff;
+  --orange: #ff8c42;
+  --blue: #58a6ff;
+  --muted: #6e7681;
+  --text: #c9d1d9;
+  --heading: #f0f6fc;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  padding: 0;
+  margin: 0;
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 40px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.page-header-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.page-header h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--heading);
+  margin-bottom: 8px;
+}
+.page-header h1 span { color: var(--cyan); }
+.page-header-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.header-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.pill-bronze { background: rgba(205,127,50,.1); color: #cd7f32; border-color: rgba(205,127,50,.3); }
+.pill-silver { background: rgba(192,192,192,.1); color: #c0c0c0; border-color: rgba(192,192,192,.3); }
+.pill-gold   { background: rgba(240,192,64,.1);  color: var(--yellow); border-color: rgba(240,192,64,.3); }
+.pill-cdc    { background: rgba(188,140,255,.1); color: var(--purple); border-color: rgba(188,140,255,.3); }
+.pill-merge  { background: rgba(0,229,255,.1);   color: var(--cyan);   border-color: rgba(0,229,255,.3); }
+
+/* ── MAIN LAYOUT ── */
+.main { max-width: 1200px; margin: 0 auto; padding: 40px 48px; }
+
+/* ── SECTION BLOCKS ── */
+.pipeline-section {
+  margin-bottom: 56px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.section-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.badge-bronze { background: rgba(205,127,50,.15); color: #cd7f32; border: 1px solid rgba(205,127,50,.3); }
+.badge-silver { background: rgba(192,192,192,.15); color: #c0c0c0; border: 1px solid rgba(192,192,192,.3); }
+.badge-gold   { background: rgba(240,192,64,.15);  color: var(--yellow); border: 1px solid rgba(240,192,64,.3); }
+.badge-cdc    { background: rgba(188,140,255,.15); color: var(--purple); border: 1px solid rgba(188,140,255,.3); }
+.badge-merge  { background: rgba(0,229,255,.15);   color: var(--cyan);   border: 1px solid rgba(0,229,255,.3); }
+.badge-import { background: rgba(57,211,83,.15);   color: var(--green);  border: 1px solid rgba(57,211,83,.3); }
+
+.section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--heading);
+}
+
+/* ── GOAL / RATIONALE BLOCK ── */
+.rationale {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.rationale-col h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.goal-label   { color: var(--cyan); }
+.why-label    { color: var(--green); }
+.tradeoff-label { color: var(--yellow); }
+
+.rationale-col p {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+}
+.rationale-col ul {
+  list-style: none;
+  padding: 0;
+}
+.rationale-col ul li {
+  font-size: 13px;
+  color: var(--text);
+  padding: 4px 0 4px 16px;
+  position: relative;
+  line-height: 1.6;
+}
+.rationale-col ul li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+}
+.rationale-col ul li strong { color: var(--heading); }
+
+/* Three-col rationale */
+.rationale-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* ── CODE BLOCK ── */
+.code-wrapper {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.code-topbar {
+  background: #161b22;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.code-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+}
+.dot-red    { background: #f85149; }
+.dot-yellow { background: #f0c040; }
+.dot-green  { background: #39d353; }
+.code-filename {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 8px;
+}
+pre {
+  padding: 24px 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 2;
+  overflow-x: auto;
+  tab-size: 4;
+  white-space: pre;
+}
+
+/* ── SYNTAX COLORS ── */
+.kw   { color: #ff79c6; }          /* keywords */
+.dec  { color: var(--yellow); }    /* decorators */
+.fn   { color: var(--blue); }      /* function names */
+.str  { color: var(--green); }     /* strings */
+.cmt  { color: #484f58; font-style: italic; } /* comments */
+.cm2  { color: var(--muted); font-style: italic; } /* section comments */
+.key  { color: var(--cyan); }      /* keys/options */
+.val  { color: var(--orange); }    /* values/numbers */
+.cls  { color: #ffa657; }          /* class names */
+.op   { color: var(--muted); }     /* operators */
+
+/* ── INLINE ANNOTATION ── */
+.annotation {
+  background: rgba(0,229,255,.05);
+  border-left: 3px solid var(--cyan);
+  border-radius: 0 6px 6px 0;
+  padding: 12px 16px;
+  margin: 16px 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.annotation strong { color: var(--cyan); }
+
+.warn-annotation {
+  background: rgba(248,81,73,.05);
+  border-left: 3px solid var(--red);
+  border-radius: 0 6px 6px 0;
+  padding: 12px 16px;
+  margin: 16px 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.warn-annotation strong { color: var(--red); }
+
+/* ── FLOW CONNECTOR ── */
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  gap: 12px;
+}
+.flow-arrow::before, .flow-arrow::after {
+  content: '';
+  flex: 1;
+  max-width: 80px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border));
+}
+.flow-arrow::after {
+  background: linear-gradient(to left, transparent, var(--border));
+}
+
+/* ── DECISION TABLE ── */
+.decision-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 16px;
+}
+.decision-table th {
+  background: #0d1117;
+  color: var(--heading);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.decision-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid #1a1f27;
+  vertical-align: top;
+}
+.decision-table tr:last-child td { border-bottom: none; }
+.decision-table tr:hover td { background: rgba(255,255,255,.02); }
+.decision-table td:first-child { color: var(--heading); font-weight: 500; }
+.chosen { color: var(--green); font-weight: 600; }
+.notchosen { color: var(--muted); }
+
+/* ── FOOTER ── */
+.page-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 48px;
+  padding: 20px 48px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+
+<!-- ══ PAGE HEADER ══ -->
+<div class="page-header">
+  <div class="page-header-tag">Full Annotated Pipeline · databricks_clar</div>
+  <h1>Bronze → Silver → Gold <span>Pipeline</span></h1>
+  <div class="page-header-sub">Complete Lakeflow Declarative Pipeline with design rationale, resource decisions, and inline code commentary</div>
+  <div class="header-pills">
+    <span class="pill pill-bronze">Bronze · Auto Loader</span>
+    <span class="pill pill-silver">Silver · Streaming Enrichment</span>
+    <span class="pill pill-gold">Gold · Materialized View</span>
+    <span class="pill pill-cdc">Auto CDC · SCD1</span>
+    <span class="pill pill-merge">MERGE INTO · PySpark</span>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ══ SECTION 0 — IMPORTS ══ -->
+<div class="pipeline-section">
+  <div class="section-header">
+    <span class="section-badge badge-import">00 · Setup</span>
+    <div class="section-title">Imports & Configuration</div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-col">
+      <h4 class="goal-label">Goal</h4>
+      <p>Establish the correct import path for Lakeflow Declarative Pipelines and bring in only the Spark functions we'll actually use. No wildcard imports — keeps the dependency surface clear and the Catalyst optimizer's job simpler.</p>
+    </div>
+    <div class="rationale-col">
+      <h4 class="why-label">Why This Over Other Options</h4>
+      <ul>
+        <li><strong>from pyspark import pipelines as dp</strong> is the 2026 import. The old <code>import dlt</code> is the legacy path — wrong on the exam</li>
+        <li>Aliasing as <code>dp</code> keeps decorator syntax short and readable</li>
+        <li>Explicit function imports (not <code>from pyspark.sql.functions import *</code>) avoid namespace pollution</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-wrapper">
+    <div class="code-topbar">
+      <div class="code-dot dot-red"></div>
+      <div class="code-dot dot-yellow"></div>
+      <div class="code-dot dot-green"></div>
+      <div class="code-filename">pipeline_products.py</div>
+    </div>
+    <pre><span class="cm2"># ═══════════════════════════════════════════════════════════════════
+# LAKEFLOW DECLARATIVE PIPELINE — databricks_clar
+# Full Medallion: Bronze → Silver → Gold + Auto CDC + MERGE
+# Products Dataset · 100 rows · 5 categories
+# ═══════════════════════════════════════════════════════════════════</span>
+
+<span class="cm2"># ── IMPORTS ──────────────────────────────────────────────────────────
+# 'pipelines as dp' is the 2026 Lakeflow import path.
+# Previously 'import dlt' — that is now legacy/wrong on the exam.</span>
+<span class="kw">from</span> pyspark <span class="kw">import</span> pipelines <span class="kw">as</span> dp
+
+<span class="cm2"># Explicit imports only — no wildcard. Keeps optimizer scope clean.</span>
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> (
+    col, upper, lit, avg, count,
+    current_timestamp, when
+)
+<span class="kw">from</span> pyspark.sql.types <span class="kw">import</span> StructType, StructField, IntegerType, StringType, DoubleType, TimestampType</pre>
+  </div>
+</div>
+
+<!-- FLOW ARROW -->
+<div class="flow-arrow">BRONZE LAYER ↓</div>
+
+<!-- ══ SECTION 1 — BRONZE ══ -->
+<div class="pipeline-section">
+  <div class="section-header">
+    <span class="section-badge badge-bronze">01 · Bronze</span>
+    <div class="section-title">Raw Ingestion — Auto Loader</div>
+  </div>
+
+  <div class="rationale rationale-3">
+    <div class="rationale-col">
+      <h4 class="goal-label">Goal</h4>
+      <p>Land raw CSV files from the Volume into a Delta table with zero transformation. Bronze is a faithful copy of the source — we don't clean here, we just capture. If something goes wrong upstream, we can always replay from Bronze.</p>
+    </div>
+    <div class="rationale-col">
+      <h4 class="why-label">Why Auto Loader Over COPY INTO</h4>
+      <ul>
+        <li><strong>Auto Loader</strong> — Structured Streaming, incremental, checkpoint-backed, scales to millions of files</li>
+        <li><strong>COPY INTO</strong> — SQL batch command, manual trigger, no streaming state. Better for one-time migration, not ongoing ingestion</li>
+        <li>Auto Loader gives exactly-once delivery automatically via the checkpoint</li>
+        <li><strong>availableNow trigger</strong> used instead of continuous — processes queued files then stops, saving compute cost vs a 24/7 running stream</li>
+      </ul>
+    </div>
+    <div class="rationale-col">
+      <h4 class="tradeoff-label">Resource Decision</h4>
+      <ul>
+        <li>No schema enforcement at Bronze — <code>inferSchema=true</code> trades a small overhead for flexibility when source evolves</li>
+        <li><code>@dp.expect</code> (WARN mode) logs quality violations without dropping rows or killing the pipeline — appropriate for raw landing where we want everything in, violations visible</li>
+        <li>Checkpoint stored in the same catalog Volume — keeps state co-located with data</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-wrapper">
+    <div class="code-topbar">
+      <div class="code-dot dot-red"></div>
+      <div class="code-dot dot-yellow"></div>
+      <div class="code-dot dot-green"></div>
+      <div class="code-filename">pipeline_products.py · Bronze Layer</div>
+    </div>
+    <pre><span class="cm2"># ── BRONZE LAYER ─────────────────────────────────────────────────────
+# Raw landing zone. No transforms — faithful copy of source.
+# Purpose: replayable source of truth if Silver/Gold need to be rebuilt.</span>
+
+<span class="dec">@dp.table</span>(
+    name=<span class="str">"bronze_products_raw"</span>,
+    <span class="cm2"># comment = visible in Unity Catalog lineage UI</span>
+    comment=<span class="str">"Raw product CSV ingested from bronze volume via Auto Loader"</span>,
+    table_properties={
+        <span class="cm2"># Deletion vectors = soft deletes (mark rows deleted, defer file rewrite)
+        # Reduces write amplification vs immediate file compaction</span>
+        <span class="str">"delta.enableDeletionVectors"</span>: <span class="str">"true"</span>
+    }
+)
+<span class="cm2"># WARN mode: log the violation, keep the row.
+# At Bronze we want EVERYTHING in — we'll enforce quality at Silver.
+# Using expect_or_fail here would kill the pipeline on a single bad row.</span>
+<span class="dec">@dp.expect</span>(<span class="str">"price_not_null"</span>,    <span class="str">"price IS NOT NULL"</span>)
+<span class="dec">@dp.expect</span>(<span class="str">"product_id_valid"</span>, <span class="str">"product_id IS NOT NULL"</span>)
+<span class="kw">def</span> <span class="fn">bronze_products_raw</span>():
+    <span class="kw">return</span> (
+        spark.readStream
+
+        <span class="cm2"># cloudFiles = Auto Loader source format (not the file format)
+        # Think of it as: "use the Auto Loader engine"</span>
+        .format(<span class="str">"cloudFiles"</span>)
+
+        <span class="cm2"># cloudFiles.format tells Auto Loader what the actual files ARE
+        # This is separate from .format("cloudFiles") above — common confusion point</span>
+        .option(<span class="str">"cloudFiles.format"</span>,        <span class="str">"csv"</span>)
+        .option(<span class="str">"header"</span>,                    <span class="str">"true"</span>)
+
+        <span class="cm2"># inferSchema adds one pass to read the schema from the files.
+        # Trade-off: small overhead vs manually maintaining a schema definition.
+        # For a 100-row CSV with stable structure, inference is fine.</span>
+        .option(<span class="str">"inferSchema"</span>,               <span class="str">"true"</span>)
+
+        <span class="cm2"># schemaLocation persists the inferred schema between runs.
+        # Without this, Auto Loader re-infers on every restart — wasteful.</span>
+        .option(<span class="str">"cloudFiles.schemaLocation"</span>,  <span class="str">"/Volumes/databricks_clar/bronze/schema/products"</span>)
+
+        <span class="cm2"># addNewColumns = if source adds a column, Auto Loader adds it to the table.
+        # Alternative: failOnNewColumns (strict) or rescue (quarantine new cols).
+        # For a dev/learning pipeline, addNewColumns is the safe default.</span>
+        .option(<span class="str">"cloudFiles.schemaEvolutionMode"</span>, <span class="str">"addNewColumns"</span>)
+
+        <span class="cm2"># FOLDER path — not a file path. Auto Loader watches the directory.
+        # Pointing at a specific file breaks incremental tracking.</span>
+        .load(<span class="str">"/Volumes/databricks_clar/bronze/bronze_volume/products/"</span>)
+
+        <span class="cm2"># Stamp ingestion time on every row at Bronze.
+        # Useful for debugging: when exactly did this row land?</span>
+        .withColumn(<span class="str">"_ingested_at"</span>, current_timestamp())
+    )</pre>
+  </div>
+
+  <div class="annotation">
+    <strong>Checkpoint note:</strong> In a DAB-deployed pipeline, the checkpoint location is managed automatically by the pipeline — you don't set it manually in the <code>@dp.table</code> decorator. The framework handles exactly-once delivery. In a standalone streaming job outside DLT/SDP, you'd set <code>.option("checkpointLocation", "...")</code> on the <code>writeStream</code>.
+  </div>
+</div>
+
+<!-- FLOW ARROW -->
+<div class="flow-arrow">STAGING VIEW (intermediate, not published) ↓</div>
+
+<!-- ══ SECTION 2 — STAGING VIEW ══ -->
+<div class="pipeline-section">
+  <div class="section-header">
+    <span class="section-badge badge-silver" style="background:rgba(100,166,255,.15);color:var(--blue);border-color:rgba(100,166,255,.3);">02 · Staging</span>
+    <div class="section-title">Staging View — Intermediate Transform</div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-col">
+      <h4 class="goal-label">Goal</h4>
+      <p>Apply lightweight transforms (uppercase, type cast) between Bronze and Silver without publishing an intermediate table to Unity Catalog. The staging view is an in-pipeline temp step — it exists only during pipeline execution and consumes no storage.</p>
+    </div>
+    <div class="rationale-col">
+      <h4 class="why-label">Why a View Over Another Table</h4>
+      <ul>
+        <li><strong>Zero storage cost</strong> — staging views are never materialized to disk. A staging table would write another full copy of the data</li>
+        <li>Keeps the UC namespace clean — analysts won't accidentally query a half-transformed intermediate table</li>
+        <li>Transforms here are simple column operations — not worth the storage and compute overhead of a full materialized table</li>
+        <li>If transforms were expensive (ML scoring, window functions over large windows), a table would be justified to avoid recomputation</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-wrapper">
+    <div class="code-topbar">
+      <div class="code-dot dot-red"></div>
+      <div class="code-dot dot-yellow"></div>
+      <div class="code-dot dot-green"></div>
+      <div class="code-filename">pipeline_products.py · Staging View</div>
+    </div>
+    <pre><span class="cm2"># ── STAGING VIEW ──────────────────────────────────────────────────────
+# In-pipeline only — NOT published to Unity Catalog.
+# Use for: lightweight transforms between Bronze and Silver.
+# Cost: zero additional storage. Compute: runs inline during pipeline.</span>
+
+<span class="dec">@dp.view</span>(name=<span class="str">"products_staging_vw"</span>)
+<span class="kw">def</span> <span class="fn">products_staging_vw</span>():
+    <span class="kw">return</span> (
+        spark.readStream
+
+        <span class="cm2"># skipChangeCommits=True is REQUIRED when reading a Delta table
+        # that has CDC (update/delete operations) as a streaming source.
+        # Without it, update/delete commit markers cause a streaming error.
+        # Our Bronze table may get OPTIMIZE or VACUUM operations — this handles that.</span>
+        .option(<span class="str">"skipChangeCommits"</span>, <span class="val">True</span>)
+
+        <span class="cm2"># Reference the Bronze table defined above by name.
+        # Lakeflow resolves this as a pipeline dependency automatically.</span>
+        .table(<span class="str">"bronze_products_raw"</span>)
+
+        <span class="cm2"># Normalize category to uppercase for consistent downstream joins.
+        # "Books" vs "BOOKS" would be two different groups in GROUP BY — bad.</span>
+        .withColumn(<span class="str">"category"</span>, upper(col(<span class="str">"category"</span>)))
+
+        <span class="cm2"># Price as double — inferSchema may have read it as string from CSV.
+        # Explicit cast ensures downstream AVG/SUM operations work correctly.</span>
+        .withColumn(<span class="str">"price"</span>, col(<span class="str">"price"</span>).cast(DoubleType()))
+
+        <span class="cm2"># Explicit processing flag for lineage visibility.
+        # When querying Silver, this tells you the row came through the pipeline.</span>
+        .withColumn(<span class="str">"flag"</span>, lit(<span class="str">"pipeline_processed"</span>))
+    )</pre>
+  </div>
+</div>
+
+<!-- FLOW ARROW -->
+<div class="flow-arrow">SILVER LAYER ↓</div>
+
+<!-- ══ SECTION 3 — SILVER ══ -->
+<div class="pipeline-section">
+  <div class="section-header">
+    <span class="section-badge badge-silver">03 · Silver</span>
+    <div class="section-title">Clean & Enriched — Streaming Table</div>
+  </div>
+
+  <div class="rationale rationale-3">
+    <div class="rationale-col">
+      <h4 class="goal-label">Goal</h4>
+      <p>Produce a clean, schema-enforced, de-duplicated Silver table that's safe for downstream analytics and ML. Silver is where data quality becomes a hard contract — not just a warning.</p>
+    </div>
+    <div class="rationale-col">
+      <h4 class="why-label">Expectation Mode Decision</h4>
+      <ul>
+        <li>Bronze used <code>@dp.expect</code> (WARN) — capture everything, flag violations</li>
+        <li>Silver uses <code>@dp.expect_or_drop</code> — rows that violate quality rules are silently dropped before they pollute downstream aggregations</li>
+        <li><code>@dp.expect_or_fail</code> (stop pipeline) is reserved for truly unrecoverable violations — not used here because a few bad rows shouldn't halt the entire pipeline</li>
+      </ul>
+    </div>
+    <div class="rationale-col">
+      <h4 class="tradeoff-label">Resource Decision</h4>
+      <ul>
+        <li>Streaming table (<code>@dp.table</code>) — not a materialized view — because we're reading from a streaming Bronze source and want incremental processing</li>
+        <li>Reading from the staging view (not Bronze directly) reuses the transform logic already computed — avoids re-reading Bronze twice</li>
+        <li>No repartition — for 100 rows this is unnecessary overhead. At scale (100M+ rows), you'd repartition to match the number of output files you want</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-wrapper">
+    <div class="code-topbar">
+      <div class="code-dot dot-red"></div>
+      <div class="code-dot dot-yellow"></div>
+      <div class="code-dot dot-green"></div>
+      <div class="code-filename">pipeline_products.py · Silver Layer</div>
+    </div>
+    <pre><span class="cm2"># ── SILVER LAYER ──────────────────────────────────────────────────────
+# Clean, enriched, quality-gated. This is the table analysts query.
+# Hard quality contract: bad rows are DROPPED, not just flagged.
+# Schema is enforced — no inferred types here.</span>
+
+<span class="dec">@dp.table</span>(
+    name=<span class="str">"silver_products_enriched"</span>,
+    comment=<span class="str">"Cleaned, enriched products — primary Silver table for analytics"</span>,
+    table_properties={
+        <span class="cm2"># Liquid Clustering on category + price — the two columns most
+        # commonly used in WHERE clauses and GROUP BY downstream.
+        # More flexible than Z-ORDER: idempotent, key changes don't require
+        # a full table rewrite. Replaces static partitioning.</span>
+        <span class="str">"delta.feature.liquidClustering"</span>: <span class="str">"enabled"</span>
+    }
+)
+
+<span class="cm2"># expect_or_drop: row fails → row removed → pipeline continues.
+# We don't want nulls in product_id — they'd break any JOIN downstream.
+# We don't want negative prices — they'd corrupt AVG calculations.</span>
+<span class="dec">@dp.expect_or_drop</span>(<span class="str">"product_id_not_null"</span>, <span class="str">"product_id IS NOT NULL"</span>)
+<span class="dec">@dp.expect_or_drop</span>(<span class="str">"price_positive"</span>,      <span class="str">"price > 0"</span>)
+<span class="dec">@dp.expect_or_drop</span>(<span class="str">"category_not_null"</span>,   <span class="str">"category IS NOT NULL"</span>)
+
+<span class="kw">def</span> <span class="fn">silver_products_enriched</span>():
+    <span class="kw">return</span> (
+        spark.readStream
+
+        <span class="cm2"># Required when source is a Delta table with CDC operations.
+        # The staging view feeds from Bronze which can receive OPTIMIZE/VACUUM.
+        # Without this flag, those commit markers cause a streaming read error.</span>
+        .option(<span class="str">"skipChangeCommits"</span>, <span class="val">True</span>)
+
+        <span class="cm2"># Read from staging view — not Bronze directly.
+        # Staging already applied: uppercase, cast, flag column.
+        # Reading from staging avoids duplicating that transform logic here.</span>
+        .table(<span class="str">"products_staging_vw"</span>)
+
+        <span class="cm2"># Add a price tier column — drives downstream Gold categorization.
+        # Using when/otherwise instead of a UDF: SQL-native, Catalyst-optimized,
+        # no Python serialization overhead.</span>
+        .withColumn(
+            <span class="str">"price_tier"</span>,
+            when(col(<span class="str">"price"</span>) &gt;= <span class="val">400</span>, <span class="str">"PREMIUM"</span>)
+            .when(col(<span class="str">"price"</span>) &gt;= <span class="val">200</span>, <span class="str">"MID"</span>)
+            .otherwise(<span class="str">"BUDGET"</span>)
+        )
+
+        <span class="cm2"># Drop the ingestion metadata column — Silver consumers don't need it.
+        # Keeps the schema clean for downstream JOINs and aggregations.</span>
+        .drop(<span class="str">"_ingested_at"</span>)
+    )</pre>
+  </div>
+
+  <div class="annotation">
+    <strong>Why Liquid Clustering over partitioning:</strong> Static partitions (PARTITIONED BY category) work well when cardinality is low and query patterns are fixed. But if query patterns change or cardinality grows, you're rewriting the table. Liquid Clustering lets you change the clustering keys without a full rewrite — idempotent and adaptive. For a learning pipeline with 5 categories and evolving query patterns, Liquid Clustering is the right default.
+  </div>
+</div>
+
+<!-- FLOW ARROW -->
+<div class="flow-arrow">GOLD LAYER ↓</div>
+
+<!-- ══ SECTION 4 — GOLD ══ -->
+<div class="pipeline-section">
+  <div class="section-header">
+    <span class="section-badge badge-gold">04 · Gold</span>
+    <div class="section-title">Business Aggregates — Materialized View</div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-col">
+      <h4 class="goal-label">Goal</h4>
+      <p>Produce a business-ready aggregation — category-level summary with product count, average price, and tier breakdown. Gold tables are what BI tools and dashboards query. They should be fast, pre-aggregated, and never require the end user to write GROUP BY queries.</p>
+    </div>
+    <div class="rationale-col">
+      <h4 class="why-label">Why Materialized View, Not @dp.table</h4>
+      <ul>
+        <li><strong>@dp.table</strong> = streaming table. Requires a streaming source. Aggregations on streams require stateful operations (window functions, watermarks) — complex and resource-intensive</li>
+        <li><strong>@dp.materialized_view</strong> = batch. Full refresh on each pipeline run. For a category summary that needs to reflect the latest complete Silver state, a full refresh is correct — a streaming aggregate would produce partial results mid-run</li>
+        <li>Gold aggregations are by nature not incremental — you always want the final number, not a running total</li>
+        <li>Swapping <code>@dp.materialized_view</code> with <code>@dp.table</code> here is the #1 exam trap for this section</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-wrapper">
+    <div class="code-topbar">
+      <div class="code-dot dot-red"></div>
+      <div class="code-dot dot-yellow"></div>
+      <div class="code-dot dot-green"></div>
+      <div class="code-filename">pipeline_products.py · Gold Layer</div>
+    </div>
+    <pre><span class="cm2"># ── GOLD LAYER ────────────────────────────────────────────────────────
+# Business-ready aggregation. Full refresh on every pipeline run.
+# BI dashboards and SQL Warehouses query this table — it must be fast.
+#
+# IMPORTANT: @dp.materialized_view — NOT @dp.table.
+# Gold aggregations need the full Silver state, not a streaming partial.
+# @dp.table requires a streaming source; GROUP BY on a stream needs
+# stateful windowing which is complex and expensive for this use case.</span>
+
+<span class="dec">@dp.materialized_view</span>(
+    name=<span class="str">"gold_category_summary"</span>,
+    comment=<span class="str">"Category-level product summary — primary Gold table for dashboards"</span>
+)
+<span class="kw">def</span> <span class="fn">gold_category_summary</span>():
+    <span class="kw">return</span> spark.sql(<span class="str">"""
+        SELECT
+            category,
+
+            -- Core business metrics
+            COUNT(*)       AS product_count,
+            ROUND(AVG(price), 2) AS avg_price,
+            MIN(price)     AS min_price,
+            MAX(price)     AS max_price,
+
+            -- Tier distribution — how many products in each price band?
+            -- Useful for category mix analysis without joining back to Silver
+            COUNT(CASE WHEN price_tier = 'PREMIUM' THEN 1 END) AS premium_count,
+            COUNT(CASE WHEN price_tier = 'MID'     THEN 1 END) AS mid_count,
+            COUNT(CASE WHEN price_tier = 'BUDGET'  THEN 1 END) AS budget_count,
+
+            -- Pipeline metadata — when did this Gold row last refresh?
+            current_timestamp() AS last_refreshed_at
+
+        FROM databricks_clar.silver.products_enriched
+        GROUP BY category
+        ORDER BY avg_price DESC
+    """</span>)</pre>
+  </div>
+
+  <div class="annotation">
+    <strong>Reading from the UC table path, not pipeline alias:</strong> The Gold materialized view reads from <code>databricks_clar.silver.products_enriched</code> using the full three-part Unity Catalog name rather than the in-pipeline alias <code>"silver_products_enriched"</code>. Either works inside a pipeline, but the full path is more explicit and works correctly if the pipeline is split across files later.
+  </div>
+</div>
+
+<!-- FLOW ARROW -->
+<div class="flow-arrow">AUTO CDC LAYER ↓</div>
+
+<!-- ══ SECTION 5 — AUTO CDC ══ -->
+<div class="pipeline-section">
+  <div class="section-header">
+    <span class="section-badge badge-cdc">05 · Auto CDC</span>
+    <div class="section-title">Change Data Capture — SCD Type 1</div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-col">
+      <h4 class="goal-label">Goal</h4>
+      <p>Handle product updates (price changes, category corrections) from a CDC-enabled source. Auto CDC processes INSERT, UPDATE, and DELETE operations from the source and applies them as upserts to the Silver target. The result is always the current state of the product — no duplicates.</p>
+    </div>
+    <div class="rationale-col">
+      <h4 class="why-label">SCD1 vs SCD2 Decision</h4>
+      <ul>
+        <li><strong>SCD Type 1</strong> (chosen): overwrite. Product ID 5 gets a new price → old price is gone. Use when you need current state only — dashboards, operational reporting</li>
+        <li><strong>SCD Type 2</strong>: keep history. Product ID 5 price change → new row added with effective dates. Use when you need "what was the price last Tuesday?" — compliance, audit, ML feature engineering</li>
+        <li>For this pipeline, we chose SCD1 — Gold already aggregates current prices. Historical pricing would require SCD2 on a separate table</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-wrapper">
+    <div class="code-topbar">
+      <div class="code-dot dot-red"></div>
+      <div class="code-dot dot-yellow"></div>
+      <div class="code-dot dot-green"></div>
+      <div class="code-filename">pipeline_products.py · Auto CDC</div>
+    </div>
+    <pre><span class="cm2"># ── AUTO CDC — SCD TYPE 1 ─────────────────────────────────────────────
+# Handles: INSERT, UPDATE, DELETE from a CDC-enabled source.
+# SCD1 = always current state. Old values are overwritten, not kept.
+# Use SCD2 (stored_as_scd_type=2) when you need historical record.
+#
+# create_auto_cdc_flow() replaces the old apply_changes() in legacy DLT.
+# The function name changed with the Lakeflow rebrand.</span>
+
+<span class="cm2"># First: declare the target table (empty shell — CDC will populate it)</span>
+<span class="dec">@dp.table</span>(name=<span class="str">"silver_products_current"</span>,
+          comment=<span class="str">"Current state of all products — maintained by Auto CDC"</span>)
+<span class="kw">def</span> <span class="fn">silver_products_current</span>(): <span class="kw">pass</span>
+
+<span class="cm2"># Then: wire up the CDC flow that feeds the target table above</span>
+dp.create_auto_cdc_flow(
+
+    <span class="cm2"># source: the CDC-enabled Bronze table (with _change_type column)
+    # This is a STRING — not a function call, not col().
+    # Common mistake: wrapping in col() like sequence_by below.</span>
+    source=<span class="str">"bronze_products_cdc"</span>,
+
+    <span class="cm2"># target: the table declared above — also a string</span>
+    target=<span class="str">"silver_products_current"</span>,
+
+    <span class="cm2"># keys: the column(s) that uniquely identify a record.
+    # Matches + same key → UPDATE. New key → INSERT. Deleted key → DELETE.</span>
+    keys=[<span class="str">"product_id"</span>],
+
+    <span class="cm2"># sequence_by: tells CDC which record is "newer" when conflicts arise.
+    # MUST be col() — not a string. "processDate" as a string = runtime error.
+    # The column must be monotonically increasing (timestamp, version number).</span>
+    sequence_by=col(<span class="str">"processDate"</span>),
+
+    <span class="cm2"># No stored_as_scd_type = SCD1 (default).
+    # Add stored_as_scd_type=2 for full history with __START_AT/__END_AT cols.</span>
+
+    <span class="cm2"># except_column_list: exclude CDC metadata columns from the target table.
+    # _change_type is CDC plumbing — Silver consumers shouldn't see it.
+    # Note: it's except_column_list, NOT except_columns (common exam typo).</span>
+    except_column_list=[<span class="str">"_change_type"</span>, <span class="str">"_commit_timestamp"</span>]
+)</pre>
+  </div>
+
+  <div class="warn-annotation">
+    <strong>sequence_by trap:</strong> This is the most commonly missed syntax detail. <code>sequence_by=col("processDate")</code> is correct. <code>sequence_by="processDate"</code> is a runtime error. The <code>col()</code> wrapper is required — it creates a Column expression, not just a string name.
+  </div>
+</div>
+
+<!-- FLOW ARROW -->
+<div class="flow-arrow">MERGE INTO (PySpark alternative) ↓</div>
+
+<!-- ══ SECTION 6 — MERGE ══ -->
+<div class="pipeline-section">
+  <div class="section-header">
+    <span class="section-badge badge-merge">06 · MERGE INTO</span>
+    <div class="section-title">Manual Upsert — PySpark MERGE (Non-Pipeline Context)</div>
+  </div>
+
+  <div class="rationale">
+    <div class="rationale-col">
+      <h4 class="goal-label">Goal</h4>
+      <p>Demonstrate the PySpark MERGE INTO pattern — the manual alternative to Auto CDC when you're working outside a Lakeflow pipeline (standalone notebook, scheduled job). MERGE gives you full control over the upsert logic at the cost of more code to maintain.</p>
+    </div>
+    <div class="rationale-col">
+      <h4 class="why-label">Auto CDC vs Manual MERGE</h4>
+      <table class="decision-table">
+        <tr><th>Aspect</th><th>Auto CDC</th><th>MERGE INTO</th></tr>
+        <tr><td>Context</td><td class="chosen">✓ Inside pipeline</td><td>Notebook / Job</td></tr>
+        <tr><td>Code volume</td><td class="chosen">✓ ~10 lines</td><td>~25 lines</td></tr>
+        <tr><td>SCD2 support</td><td class="chosen">✓ Built-in</td><td class="notchosen">Manual, complex</td></tr>
+        <tr><td>Flexibility</td><td class="notchosen">Pipeline-bound</td><td class="chosen">✓ Runs anywhere</td></tr>
+        <tr><td>Out of order</td><td class="chosen">✓ Handled via sequence_by</td><td>Manual logic needed</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="code-wrapper">
+    <div class="code-topbar">
+      <div class="code-dot dot-red"></div>
+      <div class="code-dot dot-yellow"></div>
+      <div class="code-dot dot-green"></div>
+      <div class="code-filename">notebook_merge_products.py · Standalone MERGE</div>
+    </div>
+    <pre><span class="cm2"># ── MERGE INTO (PySpark) ──────────────────────────────────────────────
+# Use this pattern in: standalone notebooks, LakeFlow Job tasks,
+# or any context OUTSIDE a Lakeflow Declarative Pipeline.
+# Inside a pipeline: use create_auto_cdc_flow() instead — less code, more features.
+#
+# Pattern: check if Silver table exists first.
+# First run: write (table doesn't exist yet).
+# Subsequent runs: MERGE (upsert only changed rows).</span>
+
+<span class="kw">from</span> delta.tables <span class="kw">import</span> DeltaTable
+
+<span class="cm2"># Load the incoming batch of changes</span>
+df_updates = (
+    spark.read.format(<span class="str">"csv"</span>)
+    .option(<span class="str">"header"</span>, <span class="str">"true"</span>)
+    .option(<span class="str">"inferSchema"</span>, <span class="str">"true"</span>)
+    .load(<span class="str">"/Volumes/databricks_clar/bronze/bronze_volume/products/"</span>)
+    .withColumn(<span class="str">"category"</span>, upper(col(<span class="str">"category"</span>)))
+    .withColumn(<span class="str">"price"</span>, col(<span class="str">"price"</span>).cast(DoubleType()))
+)
+
+<span class="cm2"># TARGET TABLE NAME — using three-part Unity Catalog path</span>
+target_table = <span class="str">"databricks_clar.silver.products_enriched"</span>
+
+<span class="kw">if</span> spark.catalog.tableExists(target_table):
+
+    <span class="cm2"># Table exists → MERGE (upsert pattern)
+    # DeltaTable.forName() loads the existing Delta table as a DeltaTable object.
+    # This is required for the .merge() API — spark.table() returns a DataFrame,
+    # which doesn't have the .merge() method.</span>
+    target = DeltaTable.forName(spark, target_table)
+
+    (
+        target.alias(<span class="str">"trg"</span>)
+        .merge(
+
+            <span class="cm2"># Source DataFrame aliased as "src"</span>
+            df_updates.alias(<span class="str">"src"</span>),
+
+            <span class="cm2"># Match condition — how do we identify the same record?
+            # product_id is our business key — must be unique in Silver.</span>
+            <span class="str">"trg.product_id = src.product_id"</span>
+        )
+
+        <span class="cm2"># Matched row (product exists) → update ALL columns from source.
+        # updateAll() is shorthand for mapping every column by name.
+        # Use updateExpr({"price": "src.price"}) for selective column updates.</span>
+        .whenMatchedUpdateAll()
+
+        <span class="cm2"># No match (new product) → insert the row into Silver.
+        # insertAll() maps all source columns to target columns by name.</span>
+        .whenNotMatchedInsertAll()
+
+        <span class="cm2"># Execute the MERGE — this is when the actual write happens.</span>
+        .execute()
+    )
+
+<span class="kw">else</span>:
+    <span class="cm2"># First run — table doesn't exist yet.
+    # Write the initial dataset as a new Delta table.
+    # Mode "append" on a fresh table = same as overwrite for the first run,
+    # but "append" is safer if the table creation races with another writer.</span>
+    (
+        df_updates.write
+        .format(<span class="str">"delta"</span>)
+        .mode(<span class="str">"append"</span>)
+        .saveAsTable(target_table)
+    )</pre>
+  </div>
+
+  <div class="annotation">
+    <strong>DeltaTable.forName() vs spark.table():</strong> This is a common point of confusion. <code>spark.table("table_name")</code> returns a DataFrame — read-only. <code>DeltaTable.forName(spark, "table_name")</code> returns a DeltaTable object that exposes the <code>.merge()</code>, <code>.delete()</code>, and <code>.update()</code> APIs. You need the DeltaTable object for any mutating operation.
+  </div>
+</div>
+
+<!-- ══ SECTION 7 — SUMMARY ══ -->
+<div class="pipeline-section">
+  <div class="section-header">
+    <span class="section-badge" style="background:rgba(57,211,83,.15);color:var(--green);border:1px solid rgba(57,211,83,.3);">07 · Summary</span>
+    <div class="section-title">Design Decisions at a Glance</div>
+  </div>
+
+  <div class="code-wrapper" style="border-radius:8px;">
+    <div class="code-topbar">
+      <div class="code-dot dot-red"></div>
+      <div class="code-dot dot-yellow"></div>
+      <div class="code-dot dot-green"></div>
+      <div class="code-filename">Pipeline Design Decisions</div>
+    </div>
+    <table class="decision-table" style="margin:0;">
+      <tr>
+        <th>Layer / Pattern</th>
+        <th>Chosen Approach</th>
+        <th>Rejected Alternative</th>
+        <th>Reason</th>
+      </tr>
+      <tr>
+        <td>Bronze ingestion</td>
+        <td class="chosen">Auto Loader (cloudFiles)</td>
+        <td class="notchosen">COPY INTO</td>
+        <td>Streaming, incremental, exactly-once. COPY INTO is batch/manual</td>
+      </tr>
+      <tr>
+        <td>Bronze trigger</td>
+        <td class="chosen">availableNow=True</td>
+        <td class="notchosen">Continuous stream</td>
+        <td>Processes queued files then stops — saves compute vs 24/7 stream</td>
+      </tr>
+      <tr>
+        <td>Bronze quality</td>
+        <td class="chosen">@dp.expect (WARN)</td>
+        <td class="notchosen">@dp.expect_or_fail</td>
+        <td>Bronze captures everything. Violations are flagged, not discarded</td>
+      </tr>
+      <tr>
+        <td>Intermediate transform</td>
+        <td class="chosen">Staging view (no storage)</td>
+        <td class="notchosen">Additional Bronze table</td>
+        <td>Zero storage cost. Transforms too simple to justify materialization</td>
+      </tr>
+      <tr>
+        <td>Silver quality</td>
+        <td class="chosen">@dp.expect_or_drop</td>
+        <td class="notchosen">@dp.expect (WARN)</td>
+        <td>Silver is the quality contract. Bad rows dropped, pipeline continues</td>
+      </tr>
+      <tr>
+        <td>Silver clustering</td>
+        <td class="chosen">Liquid Clustering (category, price)</td>
+        <td class="notchosen">PARTITION BY category</td>
+        <td>Idempotent, flexible key changes. Static partitions require full rewrite to change</td>
+      </tr>
+      <tr>
+        <td>Gold table type</td>
+        <td class="chosen">@dp.materialized_view</td>
+        <td class="notchosen">@dp.table (streaming)</td>
+        <td>Aggregations need full Silver state. Streaming aggregates produce partial results</td>
+      </tr>
+      <tr>
+        <td>CDC pattern</td>
+        <td class="chosen">create_auto_cdc_flow()</td>
+        <td class="notchosen">Manual MERGE INTO</td>
+        <td>Inside pipeline: Auto CDC is ~10 lines vs ~25 for MERGE. SCD2 built-in</td>
+      </tr>
+      <tr>
+        <td>CDC type</td>
+        <td class="chosen">SCD Type 1 (current state)</td>
+        <td class="notchosen">SCD Type 2 (history)</td>
+        <td>Dashboards need current prices. Historical pricing = separate SCD2 table</td>
+      </tr>
+      <tr>
+        <td>Gold column calcs</td>
+        <td class="chosen">when/otherwise (SQL-native)</td>
+        <td class="notchosen">Python UDF</td>
+        <td>SQL-native runs in Catalyst optimizer. UDFs serialize to Python = slower</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<div class="page-footer">
+  <span>databricks_clar · Full Annotated Pipeline · Bronze → Silver → Gold</span>
+  <span>April 2026 · Certified Data Engineer Associate Prep</span>
+</div>
+
+</body>
+</html>

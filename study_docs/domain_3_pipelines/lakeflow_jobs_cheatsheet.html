@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LakeFlow Jobs — Cheat Sheet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0c10;--card:#161b22;--border:#21262d;--cyan:#00e5ff;--green:#39d353;--yellow:#f0c040;--red:#f85149;--purple:#bc8cff;--orange:#ff8c42;--muted:#6e7681;--text:#c9d1d9;--heading:#f0f6fc;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6;padding:32px 24px;max-width:1200px;margin:0 auto;}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px;display:flex;align-items:flex-end;gap:20px;}
+.tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
+h1{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--heading);}
+h1 span{color:var(--orange);}
+.badge{margin-left:auto;background:rgba(255,140,66,.08);border:1px solid rgba(255,140,66,.25);color:var(--orange);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;border-radius:4px;white-space:nowrap;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+.full{margin-bottom:16px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 20px;}
+.ct{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.c1{border-top:2px solid var(--orange);}.c1 .dot{background:var(--orange);}
+.c2{border-top:2px solid var(--green);}.c2 .dot{background:var(--green);}
+.c3{border-top:2px solid var(--yellow);}.c3 .dot{background:var(--yellow);}
+.c4{border-top:2px solid var(--cyan);}.c4 .dot{background:var(--cyan);}
+.c5{border-top:2px solid var(--purple);}.c5 .dot{background:var(--purple);}
+.c6{border-top:2px solid var(--red);}.c6 .dot{background:var(--red);}
+pre{background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;overflow-x:auto;margin:10px 0;line-height:1.8;}
+.kw{color:var(--purple);}.str{color:var(--green);}.cmt{color:var(--muted);font-style:italic;}.key{color:var(--cyan);}.val{color:var(--orange);}
+ul{list-style:none;}
+ul li{padding:5px 0;padding-left:16px;position:relative;font-size:13px;border-bottom:1px solid #1a1f27;}
+ul li:last-child{border-bottom:none;}
+ul li::before{content:'›';position:absolute;left:0;color:var(--muted);}
+ul li strong{color:var(--heading);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#0d1117;color:var(--heading);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:9px 12px;border-bottom:1px solid #1a1f27;vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+td:first-child{color:var(--heading);font-weight:500;}
+.trap{background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.25);border-left:3px solid var(--red);border-radius:4px;padding:12px 14px;margin:8px 0;font-size:13px;}
+.tl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--red);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+.tip{background:rgba(57,211,83,.07);border:1px solid rgba(57,211,83,.2);border-left:3px solid var(--green);border-radius:4px;padding:12px 14px;margin:8px 0;font-size:13px;}
+.tipl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+.div{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin:28px 0 14px;display:flex;align-items:center;gap:12px;}
+.div::before,.div::after{content:'';flex:1;height:1px;background:var(--border);}
+.div::before{flex:0 0 16px;}
+.check{color:var(--green);}.cross{color:var(--red);}
+.ftr{border-top:1px solid var(--border);margin-top:32px;padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+</style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<div class="hdr">
+  <div>
+    <div class="tag">Sections 12–13 · Orchestration</div>
+    <h1>LakeFlow <span>Jobs</span></h1>
+    <div style="font-size:13px;color:var(--muted);margin-top:6px;">formerly Databricks Workflows · databricks_clar</div>
+  </div>
+  <div class="badge">EXAM DOMAIN: Productionizing 18%</div>
+</div>
+
+<div class="card c1 full">
+  <div class="ct"><span class="dot"></span>Cortana TL;DR</div>
+  <ul>
+    <li><strong>Job = DAG of tasks</strong> — tasks run in dependency order, each task is a unit of work</li>
+    <li><strong>Task types:</strong> Notebook, Python Script, SQL, DLT Pipeline, For Each, Spark Submit</li>
+    <li><strong>Task values</strong> = pass data between tasks via <code>dbutils.jobs.taskValues</code></li>
+    <li><strong>Compute options:</strong> Job cluster (recommended), All-purpose cluster, Serverless</li>
+    <li><strong>Triggers:</strong> Scheduled (cron), File arrival, Continuous, Manual</li>
+  </ul>
+</div>
+
+<div class="div">Task Types</div>
+<div class="grid3">
+  <div class="card c2">
+    <div class="ct"><span class="dot"></span>Notebook Task</div>
+    <pre><span class="cmt"># Pass parameters into notebook</span>
+dbutils.widgets.get(<span class="str">"category"</span>)
+
+<span class="cmt"># Set task value output</span>
+dbutils.jobs.taskValues.set(
+  key=<span class="str">"record_count"</span>,
+  value=df.count()
+)</pre>
+    <ul><li>Most flexible — full PySpark/SQL support</li><li>Can read/write task values</li></ul>
+  </div>
+  <div class="card c3">
+    <div class="ct"><span class="dot"></span>SQL Task</div>
+    <pre><span class="cmt">-- Run SQL against a warehouse</span>
+<span class="kw">SELECT</span>
+  category,
+  <span class="kw">COUNT</span>(*) <span class="kw">as</span> cnt,
+  <span class="kw">AVG</span>(price) <span class="kw">as</span> avg_price
+<span class="kw">FROM</span> databricks_clar.silver.products_enriched
+<span class="kw">GROUP BY</span> category</pre>
+    <ul><li>Runs on SQL Warehouse (not cluster)</li><li>Output: first row as SQL task output</li></ul>
+  </div>
+  <div class="card c4">
+    <div class="ct"><span class="dot"></span>For Each Task</div>
+    <pre><span class="cmt"># For Each iterates over a list
+# Input: JSON array from prior task
+# Iterates: runs child task per item</span>
+
+<span class="cmt"># In child notebook:</span>
+item = dbutils.widgets.get(<span class="str">"item"</span>)
+<span class="cmt"># item = each element of the array</span></pre>
+    <ul><li>Parallel execution of child task</li><li>Great for per-category processing</li></ul>
+  </div>
+</div>
+
+<div class="div">Task Values — Pass Data Between Tasks</div>
+<div class="card c5 full">
+  <div class="ct"><span class="dot"></span>dbutils.jobs.taskValues</div>
+  <pre><span class="cmt"># Task A: Set a value</span>
+result = databricks_clar.silver.products_enriched
+record_count = spark.sql(<span class="str">"SELECT COUNT(*) FROM databricks_clar.silver.products_enriched"</span>).collect()[<span class="val">0</span>][<span class="val">0</span>]
+dbutils.jobs.taskValues.set(key=<span class="str">"record_count"</span>, value=record_count)
+
+<span class="cmt"># Task B: Read the value from Task A</span>
+count = dbutils.jobs.taskValues.get(
+  taskKey=<span class="str">"task_a"</span>,
+  key=<span class="str">"record_count"</span>,
+  default=<span class="val">0</span>,
+  debugValue=<span class="val">100</span>
+)
+
+<span class="cmt"># Reference in YAML / UI with dynamic values syntax</span>
+<span class="cmt"># {{tasks.task_a.values.record_count}}</span></pre>
+  <ul style="margin-top:12px;">
+    <li><strong>debugValue</strong> — returned when running notebook interactively (not in job context)</li>
+    <li><strong>default</strong> — returned if the key doesn't exist</li>
+    <li>Values must be JSON-serializable (string, number, list, dict)</li>
+    <li>Dynamic values syntax in YAML: <code>{"{{tasks.task_name.values.key}}"}</code></li>
+  </ul>
+</div>
+
+<div class="div">Triggers & Schedules</div>
+<div class="card c3 full">
+  <div class="ct"><span class="dot"></span>Four Trigger Types</div>
+  <table>
+    <tr><th>Trigger</th><th>When It Fires</th><th>Use Case</th></tr>
+    <tr><td>Scheduled (Cron)</td><td>Time-based — every N minutes, daily, weekly</td><td>Nightly ETL, hourly refresh, weekly reports</td></tr>
+    <tr><td>File Arrival</td><td>New file lands in a Volume or cloud storage path</td><td>Event-driven ingestion — process when data arrives</td></tr>
+    <tr><td>Continuous</td><td>Runs immediately after prior run completes</td><td>Near-real-time processing with minimal gap</td></tr>
+    <tr><td>Manual</td><td>User-triggered via UI, API, or CLI</td><td>One-off runs, testing, on-demand backfill</td></tr>
+  </table>
+  <pre style="margin-top:14px;"><span class="cmt"># Quartz cron in YAML</span>
+<span class="key">schedule</span>:
+  <span class="key">quartz_cron_expression</span>: <span class="str">"0 0 6 * * ?"</span>  <span class="cmt"># 6am daily</span>
+  <span class="key">timezone_id</span>: <span class="str">"America/New_York"</span></pre>
+</div>
+
+<div class="div">Compute Selection</div>
+<div class="grid3">
+  <div class="card c2">
+    <div class="ct"><span class="dot"></span>Job Cluster (Recommended)</div>
+    <ul>
+      <li>Created at job start, terminated at end</li>
+      <li>Pay only while job runs</li>
+      <li>Config locked per job — consistent runs</li>
+      <li><strong>Exam default answer</strong> for scheduled jobs</li>
+    </ul>
+  </div>
+  <div class="card c6">
+    <div class="ct"><span class="dot"></span>All-Purpose Cluster</div>
+    <ul>
+      <li>Always-on, shared across users</li>
+      <li>More expensive — running 24/7</li>
+      <li>OK for interactive dev, not prod jobs</li>
+      <li>Risk: cluster config may change unexpectedly</li>
+    </ul>
+  </div>
+  <div class="card c4">
+    <div class="ct"><span class="dot"></span>Serverless</div>
+    <ul>
+      <li>Instant start — no provisioning wait</li>
+      <li>Managed by Databricks</li>
+      <li>Best for: short jobs, fast iteration</li>
+      <li>Higher per-DBU cost, zero ops overhead</li>
+    </ul>
+  </div>
+</div>
+
+<div class="div">Exam Traps</div>
+<div class="full">
+  <div class="trap"><div class="tl">⚠ Trap 01</div><strong>All-purpose clusters are expensive for scheduled jobs.</strong> The exam-correct answer for nightly ETL compute is always Job Cluster — created on trigger, terminated on completion.</div>
+  <div class="trap"><div class="tl">⚠ Trap 02</div><strong>Task values ≠ notebook widgets.</strong> <code>dbutils.jobs.taskValues</code> passes data between tasks. <code>dbutils.widgets</code> passes parameters into a notebook. Different systems, different purposes.</div>
+  <div class="trap"><div class="tl">⚠ Trap 03</div><strong>For Each requires a JSON array input.</strong> The input to For Each must be a JSON array (from a prior SQL Rows task or task value). It can't iterate over arbitrary data types.</div>
+  <div class="tip"><div class="tipl">✓ Key Point</div><strong>Dynamic values syntax:</strong> <code>{"{{tasks.task_name.values.key_name}}"}</code> — this is how you reference task outputs in YAML or other task configs. The double-curly syntax is specific to LakeFlow Jobs dynamic values.</div>
+  <div class="tip"><div class="tipl">✓ Key Point</div><strong>File arrival trigger = event-driven pipeline.</strong> Set a path on a Unity Catalog Volume and the job fires whenever a new file lands there. No polling, no cron — pure event-driven.</div>
+</div>
+
+<div class="ftr">
+  <span>databricks_clar · Sections 12–13 — LakeFlow Jobs</span>
+  <span>April 2026 · Certified Data Engineer Associate Prep</span>
+</div>
+</body>
+</html>

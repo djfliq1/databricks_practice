@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity Catalog UDFs - Exam Cheat Sheet</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: white;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: #bfdbfe;
+            margin-bottom: 20px;
+        }
+        
+        .exam-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #ddd;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: #2a2a2a;
+            border-bottom: 1px solid #404040;
+            overflow-x: auto;
+        }
+        
+        .nav-tab {
+            background: none;
+            border: none;
+            color: #999;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .nav-tab:hover {
+            background: #333;
+            color: #e0e0e0;
+        }
+        
+        .nav-tab.active {
+            color: #60a5fa;
+            border-bottom-color: #3b82f6;
+            background: #1e1e1e;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .section-icon {
+            font-size: 2rem;
+            margin-right: 12px;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+        
+        .card {
+            background: #252525;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #404040;
+            transition: border-color 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: #3b82f6;
+        }
+        
+        .card h3 {
+            color: #60a5fa;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .card h4 {
+            color: #93c5fd;
+            font-size: 1.1rem;
+            margin: 20px 0 10px;
+            font-weight: 500;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .grid-item {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .grid-item h5 {
+            color: #60a5fa;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .grid-item p {
+            color: #ccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .code-block {
+            background: #000;
+            color: #00ff88;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            border: 1px solid #333;
+        }
+        
+        .code-block .comment {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .code-block .keyword {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .code-block .string {
+            color: #ffd93d;
+        }
+        
+        .inline-code {
+            background: #333;
+            color: #00ff88;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            color: #93c5fd;
+        }
+        
+        .alert-warning {
+            background: rgba(251, 191, 36, 0.1);
+            border-color: #fbbf24;
+            color: #fcd34d;
+        }
+        
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+        
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: #22c55e;
+            color: #86efac;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: #1e1e1e;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .comparison-table th {
+            background: #333;
+            color: #60a5fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .comparison-table td {
+            padding: 12px;
+            border-bottom: 1px solid #404040;
+            color: #ccc;
+        }
+        
+        .comparison-table tr:hover {
+            background: #2a2a2a;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        .tag {
+            background: #333;
+            color: #60a5fa;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #404040;
+        }
+        
+        .tag.positive {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            border-color: #22c55e;
+        }
+        
+        .tag.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-color: #ef4444;
+        }
+        
+        .syntax-pattern {
+            background: #1e1e1e;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .syntax-pattern h5 {
+            color: #60a5fa;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .exam-question {
+            background: #2a1a3a;
+            border: 1px solid #8b5cf6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .exam-question h5 {
+            color: #c4b5fd;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .exam-question .answer {
+            color: #86efac;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .quick-ref {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .quick-ref-item {
+            background: #333;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .quick-ref-item .label {
+            color: #60a5fa;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .quick-ref-item .value {
+            color: #ccc;
+        }
+        
+        .footer {
+            background: #1a1a1a;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #333;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .nav-tabs {
+                justify-content: flex-start;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .scroll-to-top.visible {
+            opacity: 1;
+        }
+        
+        .scroll-to-top:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Unity Catalog UDFs</h1>
+            <div class="subtitle">Complete Exam Reference Guide</div>
+            <div class="exam-badge">Databricks Data Engineer Associate 2026</div>
+        </header>
+        
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="showSection('overview')">🎯 Overview</button>
+            <button class="nav-tab" onclick="showSection('sql-scalar')">📝 SQL Scalar</button>
+            <button class="nav-tab" onclick="showSection('python-scalar')">🐍 Python Scalar</button>
+            <button class="nav-tab" onclick="showSection('udtf')">📊 UDTFs</button>
+            <button class="nav-tab" onclick="showSection('governance')">🔐 Governance</button>
+            <button class="nav-tab" onclick="showSection('exam-tips')">🎓 Exam Prep</button>
+        </nav>
+        
+        <main class="content">
+            <!-- Overview Section -->
+            <section id="overview" class="section active">
+                <div class="section-header">
+                    <span class="section-icon">🎯</span>
+                    <h2 class="section-title">Function Types Overview</h2>
+                </div>
+                
+                <div class="card">
+                    <h3>Quick Comparison Matrix</h3>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Function Type</th>
+                                <th>Persistence</th>
+                                <th>Governance</th>
+                                <th>Performance</th>
+                                <th>Complexity</th>
+                                <th>Requirements</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Session UDF</strong></td>
+                                <td>❌ Dies with cluster</td>
+                                <td>❌ None</td>
+                                <td>⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                                <td>Any compute</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SQL Scalar</strong></td>
+                                <td>✅ Metastore</td>
+                                <td>✅ GRANT/REVOKE</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                                <td>⭐⭐</td>
+                                <td>Any compute</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Python Scalar</strong></td>
+                                <td>✅ Metastore</td>
+                                <td>✅ GRANT/REVOKE</td>
+                                <td>⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐</td>
+                                <td>DBR 13.3+, serverless</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Python UDTF</strong></td>
+                                <td>✅ Metastore</td>
+                                <td>✅ GRANT/REVOKE</td>
+                                <td>⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐</td>
+                                <td>DBR 13.3+, serverless</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card">
+                    <h3>Three-Part Naming Convention</h3>
+                    <div class="code-block">
+<span class="keyword">catalog</span>.<span class="keyword">schema</span>.<span class="keyword">function_name</span>
+
+<span class="comment">-- Example</span>
+<span class="string">prod.retail.apply_discount</span>
+<span class="string">databricks_clar.retail.price_tier</span>
+                    </div>
+                    
+                    <div class="quick-ref">
+                        <div class="quick-ref-item">
+                            <span class="label">GRANT EXECUTE</span>
+                            <span class="value">Function access control</span>
+                        </div>
+                        <div class="quick-ref-item">
+                            <span class="label">USE CATALOG</span>
+                            <span class="value">Required on catalog</span>
+                        </div>
+                        <div class="quick-ref-item">
+                            <span class="label">USE SCHEMA</span>
+                            <span class="value">Required on schema</span>
+                        </div>
+                        <div class="quick-ref-item">
+                            <span class="label">DESCRIBE FUNCTION</span>
+                            <span class="value">View definition</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>💡 Exam Strategy:</strong> Look for keywords like "persistent", "governed", "across workspaces" → Unity Catalog UDF. Look for "session dies" or "cluster restart" → Session UDF.
+                </div>
+            </section>
+            
+            <!-- SQL Scalar Section -->
+            <section id="sql-scalar" class="section">
+                <div class="section-header">
+                    <span class="section-icon">📝</span>
+                    <h2 class="section-title">SQL Scalar Functions</h2>
+                </div>
+                
+                <div class="card">
+                    <h3>Core Syntax Pattern</h3>
+                    <div class="code-block">
+<span class="keyword">CREATE OR REPLACE FUNCTION</span> catalog.schema.function_name(param <span class="keyword">TYPE</span>)
+<span class="keyword">RETURNS</span> return_type
+<span class="keyword">RETURN</span> sql_expression;
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Common Patterns</h3>
+                    
+                    <div class="syntax-pattern">
+                        <h5>CASE-based Categorization</h5>
+                        <div class="code-block">
+<span class="keyword">CREATE FUNCTION</span> databricks_clar.retail.price_tier(price <span class="keyword">DOUBLE</span>)
+<span class="keyword">RETURNS</span> <span class="keyword">STRING</span>
+<span class="keyword">RETURN CASE</span>
+  <span class="keyword">WHEN</span> price >= <span class="string">400</span> <span class="keyword">THEN</span> <span class="string">'PREMIUM'</span>
+  <span class="keyword">WHEN</span> price >= <span class="string">200</span> <span class="keyword">THEN</span> <span class="string">'MID'</span>
+  <span class="keyword">ELSE</span> <span class="string">'BUDGET'</span>
+<span class="keyword">END</span>;
+                        </div>
+                    </div>
+                    
+                    <div class="syntax-pattern">
+                        <h5>Mathematical Operations</h5>
+                        <div class="code-block">
+<span class="keyword">CREATE FUNCTION</span> apply_tax(price <span class="keyword">DOUBLE</span>, tax_rate <span class="keyword">DOUBLE</span>)
+<span class="keyword">RETURNS</span> <span class="keyword">DOUBLE</span>
+<span class="keyword">RETURN</span> <span class="keyword">ROUND</span>(price * (<span class="string">1</span> + tax_rate), <span class="string">2</span>);
+                        </div>
+                    </div>
+                    
+                    <div class="syntax-pattern">
+                        <h5>String Manipulation</h5>
+                        <div class="code-block">
+<span class="keyword">CREATE FUNCTION</span> format_product_code(category <span class="keyword">STRING</span>, product_id <span class="keyword">INT</span>)
+<span class="keyword">RETURNS</span> <span class="keyword">STRING</span>
+<span class="keyword">RETURN</span> <span class="keyword">CONCAT</span>(
+  <span class="keyword">UPPER</span>(<span class="keyword">LEFT</span>(category, <span class="string">3</span>)), 
+  <span class="string">'-'</span>, 
+  <span class="keyword">LPAD</span>(<span class="keyword">CAST</span>(product_id <span class="keyword">AS</span> <span class="keyword">STRING</span>), <span class="string">6</span>, <span class="string">'0'</span>)
+);
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Performance Benefits</h3>
+                    <div class="grid">
+                        <div class="grid-item">
+                            <h5>Catalyst Optimization</h5>
+                            <p>Query optimizer can inline and optimize SQL expressions</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>Pushdown Eligible</h5>
+                            <p>Can be pushed down to storage layer for better performance</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>No Serialization</h5>
+                            <p>No Python serialization overhead like Python UDFs</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>~20% Faster</h5>
+                            <p>Typically faster than equivalent Python UDFs</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <strong>❌ SQL Scalar Limitations:</strong><br>
+                    • Single expression only (no multi-statement blocks)<br>
+                    • No non-deterministic functions (RAND(), CURRENT_TIMESTAMP())<br>
+                    • No external calls or side effects<br>
+                    • Limited to SQL built-in functions
+                </div>
+            </section>
+            
+            <!-- Python Scalar Section -->
+            <section id="python-scalar" class="section">
+                <div class="section-header">
+                    <span class="section-icon">🐍</span>
+                    <h2 class="section-title">Python Scalar Functions</h2>
+                </div>
+                
+                <div class="card">
+                    <h3>Runtime Requirements</h3>
+                    <div class="grid">
+                        <div class="grid-item">
+                            <h5>DBR 13.3 LTS+</h5>
+                            <p>Minimum Databricks Runtime version required</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>Serverless/Shared</h5>
+                            <p>Must run on serverless or shared access mode clusters</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>Deterministic Only</h5>
+                            <p>No randomness, external calls, or side effects</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>Built-in Libraries</h5>
+                            <p>No package installations - built-in Python only</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Core Syntax</h3>
+                    <div class="code-block">
+<span class="keyword">CREATE OR REPLACE FUNCTION</span> function_name(param <span class="keyword">TYPE</span>) 
+<span class="keyword">RETURNS</span> return_type
+<span class="keyword">LANGUAGE PYTHON</span>
+<span class="keyword">AS</span> $$
+  <span class="comment"># Python code here</span>
+  <span class="keyword">return</span> result
+$$;
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Available vs Unavailable Libraries</h3>
+                    <div class="grid">
+                        <div class="grid-item">
+                            <h5>✅ Available</h5>
+                            <div class="tags">
+                                <span class="tag positive">json</span>
+                                <span class="tag positive">datetime</span>
+                                <span class="tag positive">re</span>
+                                <span class="tag positive">math</span>
+                                <span class="tag positive">hashlib</span>
+                                <span class="tag positive">base64</span>
+                            </div>
+                            <p>String operations, timedelta calculations, basic math functions</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>❌ Not Available</h5>
+                            <div class="tags">
+                                <span class="tag negative">requests</span>
+                                <span class="tag negative">pandas</span>
+                                <span class="tag negative">numpy</span>
+                                <span class="tag negative">external APIs</span>
+                                <span class="tag negative">file I/O</span>
+                                <span class="tag negative">pip installs</span>
+                            </div>
+                            <p>No external libraries or network access</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Complex Example</h3>
+                    <div class="code-block">
+<span class="keyword">CREATE FUNCTION</span> databricks_clar.retail.calculate_loyalty_points(
+  price <span class="keyword">DOUBLE</span>, 
+  category <span class="keyword">STRING</span>, 
+  is_member <span class="keyword">BOOLEAN</span>
+)
+<span class="keyword">RETURNS</span> <span class="keyword">INT</span>
+<span class="keyword">LANGUAGE PYTHON</span>
+<span class="keyword">AS</span> $$
+  base_points = <span class="keyword">int</span>(price * <span class="string">0.1</span>)
+  
+  <span class="keyword">if</span> category == <span class="string">"Electronics"</span>:
+    multiplier = <span class="string">3</span> <span class="keyword">if</span> is_member <span class="keyword">else</span> <span class="string">2</span>
+  <span class="keyword">elif</span> category == <span class="string">"Books"</span>:
+    multiplier = <span class="string">2</span> <span class="keyword">if</span> is_member <span class="keyword">else</span> <span class="string">1</span>
+  <span class="keyword">else</span>:
+    multiplier = <span class="string">1</span>
+    
+  <span class="keyword">return</span> base_points * multiplier
+$$;
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>⚠️ Common Gotcha:</strong> Import statements go inside the function body, not at the top level. Runtime errors happen during execution, not function creation.
+                </div>
+            </section>
+            
+            <!-- UDTF Section -->
+            <section id="udtf" class="section">
+                <div class="section-header">
+                    <span class="section-icon">📊</span>
+                    <h2 class="section-title">User Defined Table Functions</h2>
+                </div>
+                
+                <div class="card">
+                    <h3>Scalar vs Table Functions</h3>
+                    <div class="grid">
+                        <div class="grid-item">
+                            <h5>Scalar UDF</h5>
+                            <p><strong>Pattern:</strong> input → single value<br>
+                            <strong>Usage:</strong> <code class="inline-code">SELECT func(col) FROM table</code><br>
+                            <strong>Location:</strong> SELECT clause</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>Table UDF (UDTF)</h5>
+                            <p><strong>Pattern:</strong> input → multiple rows<br>
+                            <strong>Usage:</strong> <code class="inline-code">SELECT * FROM TABLE(func(val))</code><br>
+                            <strong>Location:</strong> FROM clause with TABLE() wrapper</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Core Syntax</h3>
+                    <div class="code-block">
+<span class="keyword">CREATE OR REPLACE FUNCTION</span> explode_data(input <span class="keyword">STRING</span>)
+<span class="keyword">RETURNS TABLE</span>(col1 <span class="keyword">TYPE</span>, col2 <span class="keyword">TYPE</span>)
+<span class="keyword">LANGUAGE PYTHON</span>
+<span class="keyword">AS</span> $$
+  <span class="keyword">for</span> item <span class="keyword">in</span> input.split(<span class="string">','</span>):
+    <span class="keyword">yield</span> (item.strip(), <span class="keyword">len</span>(item))
+$$;
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Key Requirements</h3>
+                    <div class="quick-ref">
+                        <div class="quick-ref-item">
+                            <span class="label">RETURNS TABLE</span>
+                            <span class="value">Define output schema</span>
+                        </div>
+                        <div class="quick-ref-item">
+                            <span class="label">yield keyword</span>
+                            <span class="value">Not return</span>
+                        </div>
+                        <div class="quick-ref-item">
+                            <span class="label">TABLE() wrapper</span>
+                            <span class="value">Required in FROM clause</span>
+                        </div>
+                        <div class="quick-ref-item">
+                            <span class="label">LATERAL VIEW</span>
+                            <span class="value">For row expansion</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Common Use Cases</h3>
+                    
+                    <div class="syntax-pattern">
+                        <h5>String Explosion to Rows</h5>
+                        <div class="code-block">
+<span class="comment">-- Input: "Electronics,Books,Toys"</span>
+<span class="comment">-- Output: 3 rows with category and position</span>
+
+<span class="keyword">CREATE FUNCTION</span> explode_categories(category_list <span class="keyword">STRING</span>)
+<span class="keyword">RETURNS TABLE</span>(category <span class="keyword">STRING</span>, position <span class="keyword">INT</span>)
+<span class="keyword">LANGUAGE PYTHON</span> <span class="keyword">AS</span> $$
+  <span class="keyword">if not</span> category_list:
+    <span class="keyword">return</span>
+  categories = category_list.split(<span class="string">','</span>)
+  <span class="keyword">for</span> i, category <span class="keyword">in</span> <span class="keyword">enumerate</span>(categories):
+    <span class="keyword">yield</span> (category.strip(), i + <span class="string">1</span>)
+$$;
+                        </div>
+                    </div>
+                    
+                    <div class="syntax-pattern">
+                        <h5>Price Tier Generation</h5>
+                        <div class="code-block">
+<span class="comment">-- Input: 367.34</span>
+<span class="comment">-- Output: All tiers with current flag</span>
+
+<span class="keyword">SELECT</span> p.product_name, p.price, t.tier_name, t.is_current
+<span class="keyword">FROM</span>   products p
+<span class="keyword">LATERAL VIEW TABLE</span>(generate_price_tiers(p.price)) t;
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <strong>❌ Common Mistakes:</strong><br>
+                    • Using UDTF without TABLE() wrapper<br>
+                    • Using <code>return</code> instead of <code>yield</code><br>
+                    • Calling UDTF in SELECT clause like scalar function<br>
+                    • Missing LATERAL VIEW for row expansion
+                </div>
+            </section>
+            
+            <!-- Governance Section -->
+            <section id="governance" class="section">
+                <div class="section-header">
+                    <span class="section-icon">🔐</span>
+                    <h2 class="section-title">Governance & Security</h2>
+                </div>
+                
+                <div class="card">
+                    <h3>Permission Model</h3>
+                    <div class="grid">
+                        <div class="grid-item">
+                            <h5>Catalog Level</h5>
+                            <p><code class="inline-code">USE CATALOG</code><br>
+                            Required to access anything in the catalog</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>Schema Level</h5>
+                            <p><code class="inline-code">USE SCHEMA</code><br>
+                            Required to see functions in the schema</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>Function Level</h5>
+                            <p><code class="inline-code">EXECUTE</code><br>
+                            Required to call the specific function</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Common Commands</h3>
+                    <div class="code-block">
+<span class="comment">-- Grant function access</span>
+<span class="keyword">GRANT EXECUTE ON FUNCTION</span> catalog.schema.func_name <span class="keyword">TO</span> <span class="string">`analysts`</span>;
+
+<span class="comment">-- Revoke access</span>
+<span class="keyword">REVOKE EXECUTE ON FUNCTION</span> catalog.schema.func_name <span class="keyword">FROM</span> <span class="string">`user@company.com`</span>;
+
+<span class="comment">-- View permissions</span>
+<span class="keyword">SHOW GRANTS ON FUNCTION</span> catalog.schema.func_name;
+
+<span class="comment">-- Inspect function</span>
+<span class="keyword">DESCRIBE FUNCTION EXTENDED</span> catalog.schema.func_name;
+
+<span class="comment">-- Drop function</span>
+<span class="keyword">DROP FUNCTION IF EXISTS</span> catalog.schema.func_name;
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Lifecycle Management</h3>
+                    <div class="quick-ref">
+                        <div class="quick-ref-item">
+                            <span class="label">CREATE OR REPLACE</span>
+                            <span class="value">Update existing safely</span>
+                        </div>
+                        <div class="quick-ref-item">
+                            <span class="label">IF EXISTS</span>
+                            <span class="value">Safe drop operations</span>
+                        </div>
+                        <div class="quick-ref-item">
+                            <span class="label">COMMENT</span>
+                            <span class="value">Function documentation</span>
+                        </div>
+                        <div class="quick-ref-item">
+                            <span class="label">Audit Logs</span>
+                            <span class="value">Usage tracking</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>📝 Exam Tip:</strong> Questions about "restricting access" or "only analysts can call" → GRANT EXECUTE. Questions about "function not found" → check USE CATALOG + USE SCHEMA permissions.
+                </div>
+            </section>
+            
+            <!-- Exam Tips Section -->
+            <section id="exam-tips" class="section">
+                <div class="section-header">
+                    <span class="section-icon">🎓</span>
+                    <h2 class="section-title">Exam Preparation</h2>
+                </div>
+                
+                <div class="card">
+                    <h3>High-Frequency Question Patterns</h3>
+                    
+                    <div class="exam-question">
+                        <h5>Q: Which UDF type is fastest for simple CASE logic?</h5>
+                        <p>A) Session UDF<br>B) SQL scalar UDF<br>C) Python UDF<br>D) UDTF</p>
+                        <div class="answer">✅ B) SQL scalar UDF (Catalyst optimized, pushdown eligible)</div>
+                    </div>
+                    
+                    <div class="exam-question">
+                        <h5>Q: What's required for Python UDFs in Unity Catalog?</h5>
+                        <p>A) Any DBR version<br>B) DBR 13.3+ on any cluster<br>C) DBR 13.3+ on serverless/shared clusters<br>D) DBR 15.0+ only</p>
+                        <div class="answer">✅ C) DBR 13.3+ on serverless or shared access clusters</div>
+                    </div>
+                    
+                    <div class="exam-question">
+                        <h5>Q: How do you call a UDTF in a query?</h5>
+                        <p>A) SELECT udtf_name() FROM table<br>B) SELECT * FROM TABLE(udtf_name())<br>C) SELECT TABLE udtf_name() FROM table<br>D) FROM udtf_name() SELECT *</p>
+                        <div class="answer">✅ B) SELECT * FROM TABLE(udtf_name()) - TABLE() wrapper required</div>
+                    </div>
+                    
+                    <div class="exam-question">
+                        <h5>Q: User can see a function but can't execute it. What's missing?</h5>
+                        <p>A) USE CATALOG permission<br>B) USE SCHEMA permission<br>C) EXECUTE permission<br>D) MODIFY permission</p>
+                        <div class="answer">✅ C) GRANT EXECUTE ON FUNCTION permission</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Memory Tricks</h3>
+                    <div class="grid">
+                        <div class="grid-item">
+                            <h5>"Session" vs "Unity Catalog"</h5>
+                            <p>Session = temporary, dies with cluster<br>
+                            Unity Catalog = permanent, metastore-backed</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>"SQL" vs "Python"</h5>
+                            <p>SQL = fast but limited (single expression)<br>
+                            Python = flexible but slower (multi-line)</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>"Scalar" vs "Table"</h5>
+                            <p>Scalar = one value output<br>
+                            Table = many rows output with yield</p>
+                        </div>
+                        <div class="grid-item">
+                            <h5>"DBR 13.3+"</h5>
+                            <p>Magic number for Python UDFs<br>
+                            + serverless/shared clusters only</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Final Exam Checklist</h3>
+                    <div class="tags">
+                        <span class="tag">Three-part naming</span>
+                        <span class="tag">GRANT EXECUTE pattern</span>
+                        <span class="tag">yield vs return</span>
+                        <span class="tag">TABLE() wrapper</span>
+                        <span class="tag">DBR 13.3+ requirement</span>
+                        <span class="tag">Deterministic only</span>
+                        <span class="tag">Catalyst optimization</span>
+                        <span class="tag">Serverless/shared mode</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success">
+                    <strong>🚀 You're Ready!</strong> You've covered all the major UDF concepts for the Databricks Data Engineer Associate exam. Focus on the permission model, runtime requirements, and syntax patterns for maximum points.
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <button class="scroll-to-top" onclick="scrollToTop()">↑</button>
+    
+    <script>
+        // Section navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update tab states
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Scroll to top of content
+            document.querySelector('.content').scrollTop = 0;
+        }
+        
+        // Scroll to top functionality
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        
+        // Show scroll-to-top button when scrolling
+        window.addEventListener('scroll', function() {
+            const scrollButton = document.querySelector('.scroll-to-top');
+            if (window.pageYOffset > 300) {
+                scrollButton.classList.add('visible');
+            } else {
+                scrollButton.classList.remove('visible');
+            }
+        });
+        
+        // Syntax highlighting for code blocks
+        function highlightSyntax() {
+            document.querySelectorAll('.code-block').forEach(block => {
+                let content = block.innerHTML;
+                
+                // Highlight SQL keywords
+                content = content.replace(/\b(CREATE|OR|REPLACE|FUNCTION|RETURNS|RETURN|LANGUAGE|PYTHON|AS|SELECT|FROM|WHERE|CASE|WHEN|THEN|ELSE|END|GRANT|REVOKE|EXECUTE|ON|TO|TABLE|LATERAL|VIEW|DROP|IF|EXISTS|DESCRIBE|EXTENDED|SHOW|GRANTS)\b/g, 
+                    '<span class="keyword">$1</span>');
+                
+                // Highlight strings
+                content = content.replace(/('[^']*'|"[^"]*")/g, '<span class="string">$1</span>');
+                
+                // Highlight comments
+                content = content.replace(/(--[^\n]*)/g, '<span class="comment">$1</span>');
+                
+                block.innerHTML = content;
+            });
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            highlightSyntax();
+        });
+        
+        // Add click animation to cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.transition = 'transform 0.2s ease';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOR EACH SQL Rows</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<h1>🔄 For Each SQL Rows in LakeFlow Jobs</h1>
+<p><strong>Databricks Data Engineer Associate 2026 Certification</strong></p>
+<h2>The Cortana Overview</h2>
+<p><strong>For Each tasks</strong> iterate over lists of values, executing the same logic for each item. Combined with SQL row results, this creates <strong>per-category processing</strong>, <strong>per-customer pipelines</strong>, and <strong>parallel execution patterns</strong>. Essential for scalable data processing where each row needs individual handling.</p>
+<hr />
+<h2>🎯 Core Pattern: SQL Rows → List → For Each Task</h2>
+<h3>Step 1: SQL Analysis to Generate Row List</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/01_category_analysis_for_each.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Category Analysis - Generate List for For Each Processing</span>
+<span class="c1"># MAGIC **SQL rows converted to list for parallel category processing**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 SQL query to get category breakdown (multiple rows)</span>
+<span class="n">category_analysis</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT </span>
+<span class="s2">  category,</span>
+<span class="s2">  COUNT(*) as product_count,</span>
+<span class="s2">  ROUND(AVG(price), 2) as avg_price,</span>
+<span class="s2">  ROUND(MIN(price), 2) as min_price,</span>
+<span class="s2">  ROUND(MAX(price), 2) as max_price,</span>
+<span class="s2">  ROUND(SUM(price), 2) as total_value,</span>
+
+<span class="s2">  -- Processing priority based on value</span>
+<span class="s2">  CASE </span>
+<span class="s2">    WHEN AVG(price) &gt; 250 THEN &#39;HIGH&#39;</span>
+<span class="s2">    WHEN AVG(price) &gt; 150 THEN &#39;MEDIUM&#39;</span>
+<span class="s2">    ELSE &#39;LOW&#39;</span>
+<span class="s2">  END as priority,</span>
+
+<span class="s2">  -- Processing complexity</span>
+<span class="s2">  CASE </span>
+<span class="s2">    WHEN COUNT(*) &gt; 25 THEN &#39;COMPLEX&#39;</span>
+<span class="s2">    WHEN COUNT(*) &gt; 15 THEN &#39;STANDARD&#39;</span>
+<span class="s2">    ELSE &#39;SIMPLE&#39;</span>
+<span class="s2">  END as complexity,</span>
+
+<span class="s2">  -- Estimated processing time (minutes)</span>
+<span class="s2">  CASE </span>
+<span class="s2">    WHEN COUNT(*) &gt; 25 AND AVG(price) &gt; 250 THEN 15</span>
+<span class="s2">    WHEN COUNT(*) &gt; 15 THEN 10</span>
+<span class="s2">    ELSE 5</span>
+<span class="s2">  END as estimated_minutes</span>
+
+<span class="s2">FROM databricks_clar.bronze.products_bronze</span>
+<span class="s2">GROUP BY category</span>
+<span class="s2">HAVING COUNT(*) &gt;= 1  -- Only categories with products</span>
+<span class="s2">ORDER BY avg_price DESC</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Collect all category rows for For Each processing</span>
+<span class="n">category_rows</span> <span class="o">=</span> <span class="n">category_analysis</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🔥 EXAM FOCUS: Convert SQL rows to For Each parameter list</span>
+
+<span class="c1"># Method 1: Simple list of category names</span>
+<span class="n">category_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_rows</span><span class="p">]</span>
+
+<span class="c1"># Method 2: List of category configurations (complex objects)</span>
+<span class="n">category_configs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_rows</span><span class="p">:</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;category_name&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;product_count&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;avg_price&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;avg_price&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;min_price&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;min_price&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;max_price&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;max_price&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;total_value&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;total_value&quot;</span><span class="p">]),</span>
+        <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;priority&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;complexity&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;complexity&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;estimated_minutes&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;estimated_minutes&quot;</span><span class="p">]),</span>
+
+        <span class="c1"># Derived processing parameters</span>
+        <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="s2">&quot;premium&quot;</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;priority&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;HIGH&quot;</span> <span class="k">else</span> <span class="s2">&quot;standard&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="mi">1000</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;complexity&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;SIMPLE&quot;</span> <span class="k">else</span> <span class="mi">500</span><span class="p">,</span>
+        <span class="s2">&quot;enable_caching&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">20</span>
+    <span class="p">}</span>
+    <span class="n">category_configs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 Your Products Dataset Example Results</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;📊 Category Analysis Results:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">category_rows</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;category&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;product_count&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> products, avg $</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;avg_price&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;priority&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> priority)&quot;</span><span class="p">)</span>
+
+<span class="c1"># Expected output for your data:</span>
+<span class="c1"># 1. Books: 22 products, avg $271.89 (HIGH priority)</span>
+<span class="c1"># 2. Toys: 21 products, avg $261.87 (HIGH priority)  </span>
+<span class="c1"># 3. Electronics: 14 products, avg $241.36 (MEDIUM priority)</span>
+<span class="c1"># 4. Furniture: 18 products, avg $230.32 (MEDIUM priority)</span>
+<span class="c1"># 5. Clothing: 20 products, avg $199.84 (MEDIUM priority)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return both simple list and complex configs for For Each tasks</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="n">task_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;category_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">category_rows</span><span class="p">),</span>
+    <span class="s2">&quot;category_names&quot;</span><span class="p">:</span> <span class="n">category_names</span><span class="p">,</span>  <span class="c1"># Simple list for basic For Each</span>
+    <span class="s2">&quot;category_configs&quot;</span><span class="p">:</span> <span class="n">category_configs</span><span class="p">,</span>  <span class="c1"># Complex objects for advanced For Each</span>
+    <span class="s2">&quot;total_products&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_rows</span><span class="p">),</span>
+    <span class="s2">&quot;high_priority_categories&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_rows</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;priority&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;HIGH&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;estimated_total_time&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;estimated_minutes&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">category_rows</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">category_names</span><span class="p">)</span><span class="si">}</span><span class="s2"> categories for For Each processing&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔥 High priority: </span><span class="si">{</span><span class="n">task_output</span><span class="p">[</span><span class="s1">&#39;high_priority_categories&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⏱️  Total estimated time: </span><span class="si">{</span><span class="n">task_output</span><span class="p">[</span><span class="s1">&#39;estimated_total_time&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> minutes&quot;</span><span class="p">)</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">task_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🔄 For Each Task Configuration in DAB</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># databricks.yml - For Each with SQL row results</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">category_processing_job</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">category_processing_pipeline</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># Step 1: Analyze categories and generate lists</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">category_analysis</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/01_category_analysis_for_each.py</span>
+
+<span class="w">        </span><span class="c1"># Step 2: For Each category processing (simple version)</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_categories_simple</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">category_analysis</span>
+<span class="w">          </span><span class="nt">for_each_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">inputs</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.category_analysis.values.category_names}}&quot;</span><span class="w">  </span><span class="c1"># [&quot;Books&quot;, &quot;Toys&quot;, ...]</span>
+<span class="w">            </span><span class="nt">task</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_single_category</span>
+<span class="w">              </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/02_process_single_category.py</span>
+<span class="w">                </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">                  </span><span class="nt">category_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{input}}&quot;</span><span class="w">  </span><span class="c1"># Each category name from the list</span>
+
+<span class="w">        </span><span class="c1"># Step 3: For Each with complex configurations </span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_categories_advanced</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">category_analysis</span>
+<span class="w">          </span><span class="nt">for_each_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">inputs</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.category_analysis.values.category_configs}}&quot;</span><span class="w">  </span><span class="c1"># Complex objects</span>
+<span class="w">            </span><span class="nt">task</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_category_advanced</span>
+<span class="w">              </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">                </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/03_process_category_advanced.py</span>
+<span class="w">                </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">                  </span><span class="nt">category_config</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{input}}&quot;</span><span class="w">  </span><span class="c1"># Full config object for each category</span>
+
+<span class="w">        </span><span class="c1"># Step 4: Aggregate results from all For Each iterations</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregate_results</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_categories_advanced</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/04_aggregate_category_results.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">category_configs</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.category_analysis.values.category_configs}}&quot;</span>
+</code></pre></div>
+
+<hr />
+<h2>📋 Single Category Processing (For Each Worker)</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/02_process_single_category.py</span>
+<span class="c1"># This runs once per category (5 times for your dataset)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Process Single Category - For Each Worker</span>
+<span class="c1"># MAGIC **Executed once per category from SQL row analysis**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Get the current category being processed</span>
+<span class="n">category_name</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;category_name&quot;</span><span class="p">)</span>  <span class="c1"># &quot;Books&quot;, &quot;Toys&quot;, etc.</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎯 Processing category: </span><span class="si">{</span><span class="n">category_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Load only this category&#39;s data</span>
+<span class="n">df_category</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT *</span>
+<span class="s2">FROM databricks_clar.bronze.products_bronze </span>
+<span class="s2">WHERE category = &#39;</span><span class="si">{</span><span class="n">category_name</span><span class="si">}</span><span class="s2">&#39;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">category_count</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">category_avg_price</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="s2">&quot;avg&quot;</span><span class="p">})</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Found </span><span class="si">{</span><span class="n">category_count</span><span class="si">}</span><span class="s2"> products with avg price $</span><span class="si">{</span><span class="n">category_avg_price</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Category-specific processing logic</span>
+<span class="k">if</span> <span class="n">category_avg_price</span> <span class="o">&gt;</span> <span class="mi">250</span><span class="p">:</span>
+    <span class="c1"># Premium processing for high-value categories</span>
+    <span class="n">df_processed</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;premium&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_tier&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.30</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;estimated_margin&quot;</span><span class="p">),</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">category_avg_price</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s2">&quot;luxury&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">category_avg_price</span><span class="p">,</span> <span class="s2">&quot;premium&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;standard&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;price_segment&quot;</span><span class="p">),</span>
+        <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processed_timestamp&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">processing_mode</span> <span class="o">=</span> <span class="s2">&quot;premium&quot;</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Standard processing</span>
+    <span class="n">df_processed</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;standard&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_tier&quot;</span><span class="p">),</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">category_avg_price</span><span class="p">,</span> <span class="s2">&quot;above_avg&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;below_avg&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;price_position&quot;</span><span class="p">),</span>
+        <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processed_timestamp&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">processing_mode</span> <span class="o">=</span> <span class="s2">&quot;standard&quot;</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Write category-specific Silver table</span>
+<span class="n">silver_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.silver.products_</span><span class="si">{</span><span class="n">category_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="n">df_processed</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">silver_table</span><span class="p">)</span>
+
+<span class="c1"># Category-specific data quality check</span>
+<span class="n">null_count</span> <span class="o">=</span> <span class="n">df_processed</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">())</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">quality_score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="n">null_count</span> <span class="o">/</span> <span class="n">category_count</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span> <span class="k">if</span> <span class="n">category_count</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Created </span><span class="si">{</span><span class="n">silver_table</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="n">category_count</span><span class="si">}</span><span class="s2"> products&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📈 Processing mode: </span><span class="si">{</span><span class="n">processing_mode</span><span class="si">}</span><span class="s2">, Quality: </span><span class="si">{</span><span class="n">quality_score</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return results for this category iteration</span>
+<span class="n">category_result</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="n">category_name</span><span class="p">,</span>
+    <span class="s2">&quot;products_processed&quot;</span><span class="p">:</span> <span class="n">category_count</span><span class="p">,</span>
+    <span class="s2">&quot;avg_price&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">category_avg_price</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="n">processing_mode</span><span class="p">,</span>
+    <span class="s2">&quot;silver_table&quot;</span><span class="p">:</span> <span class="n">silver_table</span><span class="p">,</span>
+    <span class="s2">&quot;quality_score&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">quality_score</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s2">&quot;null_count&quot;</span><span class="p">:</span> <span class="n">null_count</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">category_result</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🔧 Advanced For Each with Complex SQL Objects</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/03_process_category_advanced.py</span>
+<span class="c1"># Advanced For Each worker with full category configuration</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Get the complex category configuration object</span>
+<span class="n">category_config_raw</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;category_config&quot;</span><span class="p">)</span>
+<span class="n">category_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">category_config_raw</span><span class="p">)</span>
+
+<span class="c1"># Extract configuration parameters</span>
+<span class="n">category_name</span> <span class="o">=</span> <span class="n">category_config</span><span class="p">[</span><span class="s2">&quot;category_name&quot;</span><span class="p">]</span>
+<span class="n">product_count</span> <span class="o">=</span> <span class="n">category_config</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">]</span>
+<span class="n">avg_price</span> <span class="o">=</span> <span class="n">category_config</span><span class="p">[</span><span class="s2">&quot;avg_price&quot;</span><span class="p">]</span>
+<span class="n">priority</span> <span class="o">=</span> <span class="n">category_config</span><span class="p">[</span><span class="s2">&quot;priority&quot;</span><span class="p">]</span>
+<span class="n">complexity</span> <span class="o">=</span> <span class="n">category_config</span><span class="p">[</span><span class="s2">&quot;complexity&quot;</span><span class="p">]</span>
+<span class="n">processing_mode</span> <span class="o">=</span> <span class="n">category_config</span><span class="p">[</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">]</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="n">category_config</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">]</span>
+<span class="n">enable_caching</span> <span class="o">=</span> <span class="n">category_config</span><span class="p">[</span><span class="s2">&quot;enable_caching&quot;</span><span class="p">]</span>
+<span class="n">estimated_minutes</span> <span class="o">=</span> <span class="n">category_config</span><span class="p">[</span><span class="s2">&quot;estimated_minutes&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎯 Processing </span><span class="si">{</span><span class="n">category_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">priority</span><span class="si">}</span><span class="s2"> priority, </span><span class="si">{</span><span class="n">complexity</span><span class="si">}</span><span class="s2"> complexity&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚙️  Mode: </span><span class="si">{</span><span class="n">processing_mode</span><span class="si">}</span><span class="s2">, Batch: </span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s2">, Cache: </span><span class="si">{</span><span class="n">enable_caching</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Load category data with caching optimization</span>
+<span class="n">df_category</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT * FROM databricks_clar.bronze.products_bronze </span>
+<span class="s2">WHERE category = &#39;</span><span class="si">{</span><span class="n">category_name</span><span class="si">}</span><span class="s2">&#39;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Apply caching if configured</span>
+<span class="k">if</span> <span class="n">enable_caching</span><span class="p">:</span>
+    <span class="n">df_category</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;💾 Applied caching for large category&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🔥 EXAM PATTERN: Adaptive processing based on SQL-derived parameters</span>
+
+<span class="k">if</span> <span class="n">processing_mode</span> <span class="o">==</span> <span class="s2">&quot;premium&quot;</span><span class="p">:</span>
+    <span class="c1"># Premium processing with advanced analytics</span>
+    <span class="n">df_processed</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">priority</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;priority_tier&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">complexity</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;complexity_tier&quot;</span><span class="p">),</span>
+
+        <span class="c1"># Advanced price analytics</span>
+        <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">avg_price</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;price_ratio&quot;</span><span class="p">),</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span> <span class="o">+</span> <span class="p">(</span><span class="n">avg_price</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">),</span> <span class="s2">&quot;luxury&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span> <span class="o">+</span> <span class="p">(</span><span class="n">avg_price</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">),</span> <span class="s2">&quot;premium&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span> <span class="o">-</span> <span class="p">(</span><span class="n">avg_price</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">),</span> <span class="s2">&quot;standard&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;budget&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;detailed_segment&quot;</span><span class="p">),</span>
+
+        <span class="c1"># Category-specific margins</span>
+        <span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">*</span> 
+         <span class="n">when</span><span class="p">(</span><span class="n">priority</span> <span class="o">==</span> <span class="s2">&quot;HIGH&quot;</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">priority</span> <span class="o">==</span> <span class="s2">&quot;MEDIUM&quot;</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mf">0.15</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;category_margin&quot;</span><span class="p">),</span>
+
+        <span class="c1"># Processing metadata</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;batch_size_used&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">estimated_minutes</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_time_estimate&quot;</span><span class="p">),</span>
+        <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processed_timestamp&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Standard processing</span>
+    <span class="n">df_processed</span> <span class="o">=</span> <span class="n">df_category</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">priority</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;priority_tier&quot;</span><span class="p">),</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span><span class="p">,</span> <span class="s2">&quot;above_average&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;below_average&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;simple_segment&quot;</span><span class="p">),</span>
+        <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processed_timestamp&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Category-specific transformations based on complexity</span>
+<span class="k">if</span> <span class="n">complexity</span> <span class="o">==</span> <span class="s2">&quot;COMPLEX&quot;</span><span class="p">:</span>
+    <span class="c1"># Additional enrichment for complex categories</span>
+    <span class="n">df_processed</span> <span class="o">=</span> <span class="n">df_processed</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span>
+        <span class="s2">&quot;complexity_score&quot;</span><span class="p">,</span> 
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span> <span class="o">*</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">avg_price</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span>
+        <span class="s2">&quot;investment_category&quot;</span><span class="p">,</span>
+        <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;complexity_score&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;high_investment&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;complexity_score&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;medium_investment&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;low_investment&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Write with dynamic partitioning based on priority</span>
+<span class="n">silver_table</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.silver.products_</span><span class="si">{</span><span class="n">category_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">priority</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="k">if</span> <span class="n">priority</span> <span class="o">==</span> <span class="s2">&quot;HIGH&quot;</span><span class="p">:</span>
+    <span class="c1"># High priority gets partitioned tables</span>
+    <span class="n">df_processed</span><span class="o">.</span><span class="n">write</span> \
+        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">partitionBy</span><span class="p">(</span><span class="s2">&quot;detailed_segment&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">silver_table</span><span class="p">)</span>
+    <span class="n">partitioning</span> <span class="o">=</span> <span class="s2">&quot;by_segment&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Standard priority gets non-partitioned tables  </span>
+    <span class="n">df_processed</span><span class="o">.</span><span class="n">write</span> \
+        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="n">silver_table</span><span class="p">)</span>
+    <span class="n">partitioning</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Advanced quality metrics based on configuration</span>
+<span class="n">processed_count</span> <span class="o">=</span> <span class="n">df_processed</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">null_ids</span> <span class="o">=</span> <span class="n">df_processed</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isNull</span><span class="p">())</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">invalid_prices</span> <span class="o">=</span> <span class="n">df_processed</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+<span class="n">quality_score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">((</span><span class="n">null_ids</span> <span class="o">+</span> <span class="n">invalid_prices</span><span class="p">)</span> <span class="o">/</span> <span class="n">processed_count</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span> <span class="k">if</span> <span class="n">processed_count</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+<span class="c1"># Category performance vs prediction</span>
+<span class="n">processing_variance</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">processed_count</span> <span class="o">-</span> <span class="n">product_count</span><span class="p">)</span> <span class="o">/</span> <span class="n">product_count</span> <span class="k">if</span> <span class="n">product_count</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Completed </span><span class="si">{</span><span class="n">category_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">processed_count</span><span class="si">}</span><span class="s2"> products processed&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Quality: </span><span class="si">{</span><span class="n">quality_score</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%, Variance: </span><span class="si">{</span><span class="n">processing_variance</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return comprehensive results for aggregation</span>
+<span class="n">advanced_result</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="n">category_name</span><span class="p">,</span>
+    <span class="s2">&quot;input_config&quot;</span><span class="p">:</span> <span class="n">category_config</span><span class="p">,</span>  <span class="c1"># Pass through original config</span>
+    <span class="s2">&quot;processing_results&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;products_processed&quot;</span><span class="p">:</span> <span class="n">processed_count</span><span class="p">,</span>
+        <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="n">processing_mode</span><span class="p">,</span>
+        <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="n">priority</span><span class="p">,</span>
+        <span class="s2">&quot;complexity&quot;</span><span class="p">:</span> <span class="n">complexity</span><span class="p">,</span>
+        <span class="s2">&quot;silver_table&quot;</span><span class="p">:</span> <span class="n">silver_table</span><span class="p">,</span>
+        <span class="s2">&quot;partitioning&quot;</span><span class="p">:</span> <span class="n">partitioning</span><span class="p">,</span>
+        <span class="s2">&quot;caching_used&quot;</span><span class="p">:</span> <span class="n">enable_caching</span><span class="p">,</span>
+        <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">batch_size</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;quality_metrics&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;quality_score&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">quality_score</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="s2">&quot;null_ids&quot;</span><span class="p">:</span> <span class="n">null_ids</span><span class="p">,</span>
+        <span class="s2">&quot;invalid_prices&quot;</span><span class="p">:</span> <span class="n">invalid_prices</span><span class="p">,</span>
+        <span class="s2">&quot;processing_variance&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">processing_variance</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;performance&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;estimated_minutes&quot;</span><span class="p">:</span> <span class="n">estimated_minutes</span><span class="p">,</span>
+        <span class="s2">&quot;actual_count&quot;</span><span class="p">:</span> <span class="n">processed_count</span><span class="p">,</span>
+        <span class="s2">&quot;expected_count&quot;</span><span class="p">:</span> <span class="n">product_count</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">advanced_result</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>📊 For Each Results Aggregation</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/04_aggregate_category_results.py</span>
+<span class="c1"># Collect and analyze all For Each results</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># Get the original category configurations</span>
+<span class="n">category_configs_raw</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;category_configs&quot;</span><span class="p">)</span>
+<span class="n">category_configs</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">category_configs_raw</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Aggregating results from </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">category_configs</span><span class="p">)</span><span class="si">}</span><span class="s2"> category For Each iterations&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🔥 EXAM PATTERN: Read For Each results from system tables</span>
+
+<span class="c1"># Query job run results to get For Each outputs</span>
+<span class="n">job_run_id</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;job_run_id&quot;</span><span class="p">,</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT uuid() as id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+
+<span class="c1"># In real implementation, you&#39;d query system tables:</span>
+<span class="c1"># for_each_results = spark.sql(f&quot;&quot;&quot;</span>
+<span class="c1"># SELECT task_key, task_values </span>
+<span class="c1"># FROM system.lakeflow.task_runs </span>
+<span class="c1"># WHERE run_id = &#39;{job_run_id}&#39; </span>
+<span class="c1">#   AND task_key LIKE &#39;process_category_advanced_%&#39;</span>
+<span class="c1"># &quot;&quot;&quot;).collect()</span>
+
+<span class="c1"># For demo, simulate the For Each results based on your data</span>
+<span class="n">simulated_results</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">category_configs</span><span class="p">:</span>
+    <span class="n">category</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;category_name&quot;</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="n">category</span><span class="p">,</span>
+        <span class="s2">&quot;processing_results&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;products_processed&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;product_count&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;priority&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;silver_table&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;databricks_clar.silver.products_</span><span class="si">{</span><span class="n">category</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;priority&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;quality_metrics&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;quality_score&quot;</span><span class="p">:</span> <span class="mf">98.5</span> <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;priority&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;HIGH&quot;</span> <span class="k">else</span> <span class="mf">96.2</span><span class="p">,</span>
+            <span class="s2">&quot;null_ids&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;invalid_prices&quot;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="n">simulated_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Aggregate For Each processing results</span>
+<span class="n">total_products_processed</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;processing_results&quot;</span><span class="p">][</span><span class="s2">&quot;products_processed&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">simulated_results</span><span class="p">)</span>
+<span class="n">high_priority_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">simulated_results</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;processing_results&quot;</span><span class="p">][</span><span class="s2">&quot;priority&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;HIGH&quot;</span><span class="p">)</span>
+<span class="n">premium_processing_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">simulated_results</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;processing_results&quot;</span><span class="p">][</span><span class="s2">&quot;processing_mode&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;premium&quot;</span><span class="p">)</span>
+
+<span class="n">avg_quality_score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;quality_metrics&quot;</span><span class="p">][</span><span class="s2">&quot;quality_score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">simulated_results</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">simulated_results</span><span class="p">)</span>
+
+<span class="c1"># Processing summary by priority</span>
+<span class="n">priority_summary</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">simulated_results</span><span class="p">:</span>
+    <span class="n">priority</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;processing_results&quot;</span><span class="p">][</span><span class="s2">&quot;priority&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">priority</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">priority_summary</span><span class="p">:</span>
+        <span class="n">priority_summary</span><span class="p">[</span><span class="n">priority</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;products&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="n">priority_summary</span><span class="p">[</span><span class="n">priority</span><span class="p">][</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">priority_summary</span><span class="p">[</span><span class="n">priority</span><span class="p">][</span><span class="s2">&quot;products&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;processing_results&quot;</span><span class="p">][</span><span class="s2">&quot;products_processed&quot;</span><span class="p">]</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Create aggregated Silver tables list for Gold processing</span>
+<span class="n">silver_tables_created</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;processing_results&quot;</span><span class="p">][</span><span class="s2">&quot;silver_table&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">simulated_results</span><span class="p">]</span>
+
+<span class="c1"># Generate Gold aggregation strategy based on For Each results</span>
+<span class="n">gold_strategy</span> <span class="o">=</span> <span class="s2">&quot;priority_based&quot;</span> <span class="k">if</span> <span class="n">high_priority_count</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;standard&quot;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ For Each Processing Complete:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   📊 Total products: </span><span class="si">{</span><span class="n">total_products_processed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   🏆 High priority categories: </span><span class="si">{</span><span class="n">high_priority_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   ⚡ Premium processing: </span><span class="si">{</span><span class="n">premium_processing_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   📈 Average quality: </span><span class="si">{</span><span class="n">avg_quality_score</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   🎯 Gold strategy: </span><span class="si">{</span><span class="n">gold_strategy</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return aggregated results for downstream Gold processing</span>
+<span class="n">aggregated_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;for_each_summary&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;categories_processed&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">simulated_results</span><span class="p">),</span>
+        <span class="s2">&quot;total_products&quot;</span><span class="p">:</span> <span class="n">total_products_processed</span><span class="p">,</span>
+        <span class="s2">&quot;high_priority_categories&quot;</span><span class="p">:</span> <span class="n">high_priority_count</span><span class="p">,</span>
+        <span class="s2">&quot;premium_processing_categories&quot;</span><span class="p">:</span> <span class="n">premium_processing_count</span><span class="p">,</span>
+        <span class="s2">&quot;average_quality_score&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">avg_quality_score</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;priority_breakdown&quot;</span><span class="p">:</span> <span class="n">priority_summary</span><span class="p">,</span>
+    <span class="s2">&quot;silver_tables&quot;</span><span class="p">:</span> <span class="n">silver_tables_created</span><span class="p">,</span>
+    <span class="s2">&quot;gold_strategy&quot;</span><span class="p">:</span> <span class="n">gold_strategy</span><span class="p">,</span>
+    <span class="s2">&quot;category_results&quot;</span><span class="p">:</span> <span class="n">simulated_results</span>  <span class="c1"># Full results for detailed analysis</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">aggregated_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 Your Products Dataset For Each Example</h2>
+<p>Based on your 5 categories with ~100 total products:</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># For Each execution for your data:</span>
+<span class="nt">for_each_inputs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;Books&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Toys&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Electronics&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Furniture&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;Clothing&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="c1"># Each iteration processes:</span>
+<span class="c1"># 1. Books: 22 products, HIGH priority → premium processing</span>
+<span class="c1"># 2. Toys: 21 products, HIGH priority → premium processing  </span>
+<span class="c1"># 3. Electronics: 14 products, MEDIUM priority → standard processing</span>
+<span class="c1"># 4. Furniture: 18 products, MEDIUM priority → standard processing</span>
+<span class="c1"># 5. Clothing: 20 products, MEDIUM priority → standard processing</span>
+
+<span class="c1"># Results in 5 Silver tables:</span>
+<span class="c1"># - products_books_high</span>
+<span class="c1"># - products_toys_high</span>
+<span class="c1"># - products_electronics_medium</span>
+<span class="c1"># - products_furniture_medium  </span>
+<span class="c1"># - products_clothing_medium</span>
+</code></pre></div>
+
+<hr />
+<h2>🚨 Exam Key Points</h2>
+<h3>For Each with SQL Rows Patterns:</h3>
+<ol>
+<li><strong>SQL Analysis</strong> → Multiple rows → Convert to list → For Each input</li>
+<li><strong>Simple For Each</strong> → List of strings/IDs for basic iteration</li>
+<li><strong>Complex For Each</strong> → List of configuration objects for advanced processing</li>
+<li><strong>Worker Tasks</strong> → Process one item per iteration with parameters</li>
+<li><strong>Result Aggregation</strong> → Collect all For Each outputs for downstream tasks</li>
+</ol>
+<h3>For Each Task Configuration:</h3>
+<div class="codehilite"><pre><span></span><code><span class="nt">for_each_task</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">inputs</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.analysis.values.category_names}}&quot;</span><span class="w">  </span><span class="c1"># List from SQL rows</span>
+<span class="w">  </span><span class="nt">task</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">worker_task</span>
+<span class="w">    </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./worker.py</span>
+<span class="w">      </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">item</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{input}}&quot;</span><span class="w">  </span><span class="c1"># Current iteration item</span>
+</code></pre></div>
+
+<h3>Common Exam Scenarios:</h3>
+<ul>
+<li>"Process each category separately" → SQL GROUP BY → For Each categories</li>
+<li>"Per-customer pipeline execution" → SQL customer list → For Each customers</li>
+<li>"Parallel processing based on SQL analysis" → SQL rows → For Each objects</li>
+<li>"Dynamic table creation per group" → For Each with group-specific logic</li>
+</ul>
+<h3>Gotchas:</h3>
+<ul>
+<li>❌ For Each inputs must be JSON arrays: <code>["item1", "item2"]</code> or <code>[{obj1}, {obj2}]</code></li>
+<li>❌ Worker task parameters are strings, parse JSON for complex objects</li>
+<li>❌ For Each results aren't automatically aggregated, need explicit aggregation task</li>
+<li>✅ Use <code>{{input}}</code> to access current iteration item in worker task</li>
+<li>✅ SQL rows → Python list → JSON → For Each inputs is the standard flow</li>
+<li>✅ Return structured JSON from worker tasks for result aggregation</li>
+</ul>
+<p><strong>The Pattern:</strong> SQL Analysis → Row Collection → List Generation → For Each Execution → Result Aggregation</p>
+<p>This turns <strong>SQL GROUP BY results into parallel processing pipelines</strong> — essential for scalable category-based, customer-based, or partition-based data processing! 🫡</p>
+</body>
+</html>

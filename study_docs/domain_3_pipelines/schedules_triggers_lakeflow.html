@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedules & Triggers in LakeFlow</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-cyan: #00e5ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--accent-cyan); font-size: 2rem; margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { color: var(--accent-cyan); font-size: 1.5rem; margin: 1.5rem 0 0.8rem; }
+        h3 { color: var(--accent-orange); font-size: 1.2rem; margin: 1.2rem 0 0.6rem; }
+        h4, h5 { color: var(--text-secondary); margin: 1rem 0 0.5rem; }
+        p { margin: 0.5rem 0; }
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: var(--bg-tertiary);
+            color: var(--accent-orange);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .codehilite { background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; border: 1px solid var(--border-color); }
+        .codehilite pre { background: none; border: none; padding: 0; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th { background: var(--bg-tertiary); color: var(--accent-cyan); padding: 0.75rem 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border-color); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-color); }
+        tr:last-child td { border-bottom: none; }
+        blockquote {
+            border-left: 4px solid var(--accent-cyan);
+            background: var(--bg-secondary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        ul, ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+        li { margin: 0.3rem 0; }
+        hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+        strong { color: var(--accent-orange); }
+        em { color: var(--text-secondary); font-style: italic; }
+        img { max-width: 100%; border-radius: 8px; }
+    </style>
+<style>
+/* SymDBStudy unified dark theme override */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0c10; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+::-webkit-scrollbar-corner { background: #0a0c10; }
+* { scrollbar-width: thin; scrollbar-color: #30363d #0a0c10; }
+body {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+}
+</style><script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll("pre").forEach(function(pre) {
+        var btn = document.createElement("button");
+        btn.textContent = "Copy";
+        btn.style.cssText = "position:absolute;top:6px;right:6px;background:#30363d;color:#e6edf3;border:1px solid #484f58;border-radius:4px;padding:3px 10px;cursor:pointer;font-size:12px;opacity:0;transition:opacity 0.2s;z-index:10;font-family:monospace;";
+        pre.style.position = "relative";
+        pre.addEventListener("mouseenter", function() { btn.style.opacity = "1"; });
+        pre.addEventListener("mouseleave", function() { btn.style.opacity = "0"; });
+        btn.addEventListener("click", function() {
+            var code = pre.querySelector("code") || pre;
+            navigator.clipboard.writeText(code.textContent).then(function() {
+                btn.textContent = "Copied!";
+                btn.style.background = "#238636";
+                setTimeout(function() { btn.textContent = "Copy"; btn.style.background = "#30363d"; }, 1500);
+            });
+        });
+        pre.appendChild(btn);
+    });
+});
+</script>
+</head>
+<body>
+<h1>⏰ Schedules and Triggers in LakeFlow Jobs</h1>
+<p><strong>Databricks Data Engineer Associate 2026 Certification</strong></p>
+<h2>The Cortana Overview</h2>
+<p><strong>Triggers</strong> determine WHEN your jobs run. <strong>Schedules</strong> are time-based triggers using cron expressions. But triggers also include <strong>file arrival</strong>, <strong>continuous streaming</strong>, <strong>external webhooks</strong>, and <strong>manual execution</strong>. Understanding trigger types and their use cases is critical for the 2026 exam.</p>
+<hr />
+<h2>🎯 Trigger Types Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Trigger Type</th>
+<th>When to Use</th>
+<th>Your Products Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scheduled</strong></td>
+<td>Regular ETL, daily/weekly reports</td>
+<td>Process products CSV daily at 2 AM</td>
+</tr>
+<tr>
+<td><strong>File Arrival</strong></td>
+<td>Event-driven processing</td>
+<td>New products file → trigger pipeline</td>
+</tr>
+<tr>
+<td><strong>Continuous</strong></td>
+<td>Streaming data, real-time processing</td>
+<td>Continuous product updates stream</td>
+</tr>
+<tr>
+<td><strong>Manual</strong></td>
+<td>Development, testing, ad-hoc runs</td>
+<td>Run product analysis on-demand</td>
+</tr>
+<tr>
+<td><strong>Webhook</strong></td>
+<td>External system integration</td>
+<td>External catalog update → trigger job</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>📅 Scheduled Triggers (Cron-Based)</h2>
+<h3>Basic Schedule Patterns</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># databricks.yml - Various schedule examples</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">products_scheduled_pipeline</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products_scheduled_processing</span>
+
+<span class="w">      </span><span class="c1"># 🔥 EXAM FOCUS: Common cron patterns</span>
+<span class="w">      </span><span class="nt">schedule</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">quartz_cron_expression</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?&quot;</span><span class="w">  </span><span class="c1"># Daily at 2 AM</span>
+<span class="w">        </span><span class="nt">timezone_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;America/New_York&quot;</span>
+<span class="w">        </span><span class="nt">pause_status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">UNPAUSED</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bronze_ingestion</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/bronze_products.py</span>
+
+<span class="c1"># Other common schedule examples:</span>
+<span class="nt">schedules</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">daily_2am</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?&quot;</span><span class="w">           </span><span class="c1"># Every day at 2 AM</span>
+<span class="w">  </span><span class="nt">hourly</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?&quot;</span><span class="w">              </span><span class="c1"># Every hour at top of hour</span>
+<span class="w">  </span><span class="nt">weekdays_6am</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">6</span><span class="nv"> </span><span class="s">?</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">MON-FRI&quot;</span><span class="w">  </span><span class="c1"># Weekdays at 6 AM  </span>
+<span class="w">  </span><span class="nt">weekly_sunday</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">3</span><span class="nv"> </span><span class="s">?</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">SUN&quot;</span><span class="w">     </span><span class="c1"># Sundays at 3 AM</span>
+<span class="w">  </span><span class="nt">monthly_1st</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">1</span><span class="nv"> </span><span class="s">1</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?&quot;</span><span class="w">         </span><span class="c1"># 1st of month at 1 AM</span>
+<span class="w">  </span><span class="nt">every_15min</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">*/15</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?&quot;</span><span class="w">      </span><span class="c1"># Every 15 minutes</span>
+<span class="w">  </span><span class="nt">twice_daily</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">8,20</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?&quot;</span><span class="w">      </span><span class="c1"># 8 AM and 8 PM daily</span>
+</code></pre></div>
+
+<h3>Advanced Schedule Configuration</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Advanced scheduled job for your products pipeline</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">products_advanced_schedule</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products_advanced_scheduled_pipeline</span>
+
+<span class="w">      </span><span class="c1"># Primary schedule</span>
+<span class="w">      </span><span class="nt">schedule</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">quartz_cron_expression</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">30</span><span class="nv"> </span><span class="s">1</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?&quot;</span><span class="w">  </span><span class="c1"># Daily at 1:30 AM</span>
+<span class="w">        </span><span class="nt">timezone_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;America/New_York&quot;</span>
+<span class="w">        </span><span class="nt">pause_status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">UNPAUSED</span>
+
+<span class="w">      </span><span class="c1"># Advanced scheduling options</span>
+<span class="w">      </span><span class="nt">max_concurrent_runs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># Prevent overlapping runs</span>
+
+<span class="w">      </span><span class="c1"># Timeout and retry configuration  </span>
+<span class="w">      </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7200</span><span class="w">  </span><span class="c1"># 2 hours max</span>
+
+<span class="w">      </span><span class="c1"># Queue configuration for busy periods</span>
+<span class="w">      </span><span class="nt">queue</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># Queue runs if resources unavailable</span>
+
+<span class="w">      </span><span class="c1"># Notification configuration</span>
+<span class="w">      </span><span class="nt">email_notifications</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">on_start</span><span class="p">:</span><span class="w"> </span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data-team@company.com</span>
+<span class="w">        </span><span class="nt">on_success</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">clarence@company.com</span><span class="w">  </span>
+<span class="w">        </span><span class="nt">on_failure</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">clarence@company.com</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data-team@company.com</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">on-call@company.com</span>
+<span class="w">        </span><span class="nt">on_duration_warning_threshold_exceeded</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">performance-team@company.com</span>
+
+<span class="w">      </span><span class="c1"># Performance monitoring</span>
+<span class="w">      </span><span class="nt">health</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">metric</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RUN_DURATION_SECONDS&quot;</span>
+<span class="w">            </span><span class="nt">op</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;GREATER_THAN&quot;</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3600</span><span class="w">  </span><span class="c1"># Alert if &gt; 1 hour</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products_bronze_scheduled</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/01_bronze_products_scheduled.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">execution_mode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;scheduled&quot;</span>
+<span class="w">              </span><span class="nt">schedule_timezone</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;America/New_York&quot;</span>
+<span class="w">              </span><span class="nt">expected_arrival_window</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;01:00-02:00&quot;</span>
+</code></pre></div>
+
+<hr />
+<h2>📁 File Arrival Triggers (Event-Driven)</h2>
+<h3>Unity Catalog Volume File Events</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># File arrival trigger for your products CSV</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">products_file_trigger</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products_file_arrival_pipeline</span>
+
+<span class="w">      </span><span class="c1"># 🎯 EXAM PATTERN: File arrival trigger</span>
+<span class="w">      </span><span class="nt">trigger</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">file_arrival</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/Volumes/databricks_clar/bronze/incoming/products/&quot;</span>
+<span class="w">          </span><span class="nt">min_time_between_triggers_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">          </span><span class="nt">wait_after_last_change_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_new_products_file</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/02_file_arrival_processor.py</span>
+</code></pre></div>
+
+<h3>File Arrival Processing Logic</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/02_file_arrival_processor.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## File Arrival Triggered Processing</span>
+<span class="c1"># MAGIC **Process new files as they arrive in Unity Catalog volumes**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># Get file arrival context from job trigger</span>
+<span class="n">trigger_info</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;trigger_type&quot;</span><span class="p">:</span> <span class="s2">&quot;file_arrival&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;execution_time&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+    <span class="s2">&quot;volume_path&quot;</span><span class="p">:</span> <span class="s2">&quot;/Volumes/databricks_clar/bronze/incoming/products/&quot;</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔔 File arrival triggered at </span><span class="si">{</span><span class="n">trigger_info</span><span class="p">[</span><span class="s1">&#39;execution_time&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🔥 EXAM PATTERN: List and process new files</span>
+<span class="n">volume_path</span> <span class="o">=</span> <span class="s2">&quot;/Volumes/databricks_clar/bronze/incoming/products/&quot;</span>
+
+<span class="c1"># List files in the trigger directory</span>
+<span class="n">new_files</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">volume_path</span><span class="p">)</span>
+<span class="n">csv_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">new_files</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">)]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📁 Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">csv_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> CSV files to process:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">file_info</span> <span class="ow">in</span> <span class="n">csv_files</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - </span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">file_info</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2"> bytes)&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Process each new file</span>
+<span class="n">processed_files</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">total_records</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">for</span> <span class="n">file_info</span> <span class="ow">in</span> <span class="n">csv_files</span><span class="p">:</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">file_info</span><span class="o">.</span><span class="n">path</span>
+    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_info</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">file_size</span> <span class="o">=</span> <span class="n">file_info</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔄 Processing </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Load the new file</span>
+        <span class="n">df_new_products</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;inferSchema&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+        <span class="c1"># Add file metadata for tracking</span>
+        <span class="n">df_with_metadata</span> <span class="o">=</span> <span class="n">df_new_products</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+            <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+            <span class="n">lit</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;source_file&quot;</span><span class="p">),</span>
+            <span class="n">lit</span><span class="p">(</span><span class="n">file_size</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;source_file_size&quot;</span><span class="p">),</span>
+            <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;ingestion_timestamp&quot;</span><span class="p">),</span>
+            <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;file_arrival&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;trigger_type&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">file_record_count</span> <span class="o">=</span> <span class="n">df_with_metadata</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="n">total_records</span> <span class="o">+=</span> <span class="n">file_record_count</span>
+
+        <span class="c1"># Append to Bronze table (merge logic could be added)</span>
+        <span class="n">df_with_metadata</span><span class="o">.</span><span class="n">write</span> \
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Move processed file to archive</span>
+        <span class="n">archive_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/Volumes/databricks_clar/bronze/archive/products/</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y/%m/</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">archive_path</span><span class="p">)</span>
+        <span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>  <span class="c1"># Remove from incoming</span>
+
+        <span class="n">processed_files</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;file_name&quot;</span><span class="p">:</span> <span class="n">file_name</span><span class="p">,</span>
+            <span class="s2">&quot;file_size&quot;</span><span class="p">:</span> <span class="n">file_size</span><span class="p">,</span>
+            <span class="s2">&quot;records_processed&quot;</span><span class="p">:</span> <span class="n">file_record_count</span><span class="p">,</span>
+            <span class="s2">&quot;archive_path&quot;</span><span class="p">:</span> <span class="n">archive_path</span><span class="p">,</span>
+            <span class="s2">&quot;processing_status&quot;</span><span class="p">:</span> <span class="s2">&quot;SUCCESS&quot;</span>
+        <span class="p">})</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">file_record_count</span><span class="si">}</span><span class="s2"> records → archived&quot;</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Error processing </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Move failed file to error directory</span>
+        <span class="n">error_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/Volumes/databricks_clar/bronze/errors/products/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">error_path</span><span class="p">)</span>
+        <span class="n">dbutils</span><span class="o">.</span><span class="n">fs</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+        <span class="n">processed_files</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;file_name&quot;</span><span class="p">:</span> <span class="n">file_name</span><span class="p">,</span>
+            <span class="s2">&quot;file_size&quot;</span><span class="p">:</span> <span class="n">file_size</span><span class="p">,</span>
+            <span class="s2">&quot;records_processed&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;error_path&quot;</span><span class="p">:</span> <span class="n">error_path</span><span class="p">,</span>
+            <span class="s2">&quot;processing_status&quot;</span><span class="p">:</span> <span class="s2">&quot;FAILED&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="p">})</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Return file processing results</span>
+<span class="n">processing_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;trigger_type&quot;</span><span class="p">:</span> <span class="s2">&quot;file_arrival&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;processing_timestamp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+    <span class="s2">&quot;files_found&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">csv_files</span><span class="p">),</span>
+    <span class="s2">&quot;files_processed&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">processed_files</span><span class="p">),</span>
+    <span class="s2">&quot;total_records_ingested&quot;</span><span class="p">:</span> <span class="n">total_records</span><span class="p">,</span>
+    <span class="s2">&quot;processed_files&quot;</span><span class="p">:</span> <span class="n">processed_files</span><span class="p">,</span>
+    <span class="s2">&quot;volume_path&quot;</span><span class="p">:</span> <span class="n">volume_path</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎯 File arrival processing complete:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   📊 </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">csv_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files found, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">processed_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> processed&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   📈 </span><span class="si">{</span><span class="n">total_records</span><span class="si">}</span><span class="s2"> total records ingested&quot;</span><span class="p">)</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">processing_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🔄 Continuous Triggers (Streaming)</h2>
+<h3>Continuous Job Configuration</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Continuous streaming job for real-time product updates</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">products_continuous_stream</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products_continuous_streaming</span>
+
+<span class="w">      </span><span class="c1"># 🔥 EXAM FOCUS: Continuous trigger</span>
+<span class="w">      </span><span class="nt">trigger</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">periodic</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">          </span><span class="nt">unit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SECONDS</span>
+<span class="w">        </span><span class="c1"># OR use continuous trigger:</span>
+<span class="w">        </span><span class="c1"># continuous:</span>
+<span class="w">        </span><span class="c1">#   pause_status: UNPAUSED</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">continuous_product_stream</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/03_continuous_streaming.py</span>
+
+<span class="w">      </span><span class="c1"># Continuous job specific settings</span>
+<span class="w">      </span><span class="nt">max_concurrent_runs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># Always 1 for continuous</span>
+<span class="w">      </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">   </span><span class="c1"># No timeout for continuous jobs</span>
+</code></pre></div>
+
+<h3>Continuous Streaming Logic</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/03_continuous_streaming.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># MAGIC %md</span>
+<span class="c1"># MAGIC ## Continuous Product Streaming</span>
+<span class="c1"># MAGIC **Continuously process product updates using Structured Streaming**</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.streaming</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataStreamReader</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🎯 EXAM PATTERN: Structured Streaming with continuous trigger</span>
+
+<span class="c1"># Set up streaming source (Auto Loader for files)</span>
+<span class="n">streaming_df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">readStream</span> \
+    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;cloudFiles&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;cloudFiles.format&quot;</span><span class="p">,</span> <span class="s2">&quot;csv&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;cloudFiles.schemaLocation&quot;</span><span class="p">,</span> <span class="s2">&quot;/Volumes/databricks_clar/bronze/schemas/products/&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/Volumes/databricks_clar/bronze/streaming/products/&quot;</span><span class="p">)</span>
+
+<span class="c1"># Add streaming metadata</span>
+<span class="n">streaming_with_metadata</span> <span class="o">=</span> <span class="n">streaming_df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+    <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;stream_ingestion_time&quot;</span><span class="p">),</span>
+    <span class="n">input_file_name</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;source_stream_file&quot;</span><span class="p">),</span>
+    <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;continuous_stream&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;trigger_type&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Streaming transformations for your products data</span>
+<span class="n">transformed_stream</span> <span class="o">=</span> <span class="n">streaming_with_metadata</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_id&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_name&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;double&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;processDate&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;stream_ingestion_time&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;source_stream_file&quot;</span><span class="p">),</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;trigger_type&quot;</span><span class="p">),</span>
+
+    <span class="c1"># Real-time enrichments</span>
+    <span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">250</span><span class="p">,</span> <span class="s2">&quot;HIGH_VALUE&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;MEDIUM_VALUE&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="s2">&quot;LOW_VALUE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;value_category&quot;</span><span class="p">),</span>
+
+    <span class="c1"># Streaming window for aggregations</span>
+    <span class="n">window</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;stream_ingestion_time&quot;</span><span class="p">),</span> <span class="s2">&quot;5 minutes&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;processing_window&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># 🔥 CONTINUOUS TRIGGER: Write streaming results</span>
+<span class="n">streaming_query</span> <span class="o">=</span> <span class="n">transformed_stream</span><span class="o">.</span><span class="n">writeStream</span> \
+    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">outputMode</span><span class="p">(</span><span class="s2">&quot;append&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;checkpointLocation&quot;</span><span class="p">,</span> <span class="s2">&quot;/Volumes/databricks_clar/bronze/checkpoints/products_stream/&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="n">continuous</span><span class="o">=</span><span class="s2">&quot;10 seconds&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">toTable</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_streaming&quot;</span><span class="p">)</span>
+
+<span class="c1"># For job context, we need to handle the streaming query</span>
+<span class="c1"># In continuous jobs, the streaming query runs indefinitely</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔄 Continuous streaming started for products pipeline&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Checkpoint location: /Volumes/databricks_clar/bronze/checkpoints/products_stream/&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;⚡ Trigger interval: 10 seconds continuous&quot;</span><span class="p">)</span>
+
+<span class="c1"># The streaming query continues running...</span>
+<span class="c1"># In notebook context, you might want to run for a specific duration</span>
+<span class="n">streaming_query</span><span class="o">.</span><span class="n">awaitTermination</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># Runs indefinitely</span>
+</code></pre></div>
+
+<hr />
+<h2>🎯 Manual Triggers and Testing</h2>
+<h3>Manual Execution Patterns</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Manual trigger configuration for development/testing</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">products_manual_testing</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products_manual_pipeline</span>
+
+<span class="w">      </span><span class="c1"># No schedule/trigger = manual only</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">manual_products_analysis</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/04_manual_execution.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">execution_mode</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;manual&quot;</span>
+<span class="w">              </span><span class="nt">test_data_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/Volumes/databricks_clar/bronze/test_data/&quot;</span>
+
+<span class="w">      </span><span class="c1"># Manual execution settings</span>
+<span class="w">      </span><span class="nt">max_concurrent_runs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># Allow multiple manual runs</span>
+
+<span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;analysis_type&quot;</span>
+<span class="w">          </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;full_analysis&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;category_filter&quot;</span><span class="w">  </span>
+<span class="w">          </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;all_categories&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;date_range&quot;</span>
+<span class="w">          </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;last_30_days&quot;</span>
+</code></pre></div>
+
+<h3>Manual Execution Logic</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/04_manual_execution.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Manual execution with parameters</span>
+<span class="n">execution_mode</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;execution_mode&quot;</span><span class="p">)</span>
+<span class="n">analysis_type</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;analysis_type&quot;</span><span class="p">)</span>
+<span class="n">category_filter</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;category_filter&quot;</span><span class="p">)</span>
+<span class="n">date_range</span> <span class="o">=</span> <span class="n">dbutils</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date_range&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🎯 Manual execution started:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Mode: </span><span class="si">{</span><span class="n">execution_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Analysis: </span><span class="si">{</span><span class="n">analysis_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Category: </span><span class="si">{</span><span class="n">category_filter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Date range: </span><span class="si">{</span><span class="n">date_range</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Load data based on manual parameters</span>
+<span class="k">if</span> <span class="n">category_filter</span> <span class="o">==</span> <span class="s2">&quot;all_categories&quot;</span><span class="p">:</span>
+    <span class="n">df_products</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">df_products</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">category_filter</span><span class="p">)</span>
+
+<span class="c1"># Apply date filtering for manual analysis</span>
+<span class="k">if</span> <span class="n">date_range</span> <span class="o">==</span> <span class="s2">&quot;last_30_days&quot;</span><span class="p">:</span>
+    <span class="n">df_filtered</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;processDate&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">date_sub</span><span class="p">(</span><span class="n">current_date</span><span class="p">(),</span> <span class="mi">30</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="k">elif</span> <span class="n">date_range</span> <span class="o">==</span> <span class="s2">&quot;last_7_days&quot;</span><span class="p">:</span>
+    <span class="n">df_filtered</span> <span class="o">=</span> <span class="n">df_products</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;processDate&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">date_sub</span><span class="p">(</span><span class="n">current_date</span><span class="p">(),</span> <span class="mi">7</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">df_filtered</span> <span class="o">=</span> <span class="n">df_products</span>
+
+<span class="n">record_count</span> <span class="o">=</span> <span class="n">df_filtered</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📊 Manual analysis dataset: </span><span class="si">{</span><span class="n">record_count</span><span class="si">}</span><span class="s2"> records&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Perform analysis based on type</span>
+<span class="k">if</span> <span class="n">analysis_type</span> <span class="o">==</span> <span class="s2">&quot;full_analysis&quot;</span><span class="p">:</span>
+    <span class="c1"># Comprehensive analysis</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">df_filtered</span><span class="o">.</span><span class="n">groupBy</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">count</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;product_count&quot;</span><span class="p">),</span>
+        <span class="n">avg</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;avg_price&quot;</span><span class="p">),</span>
+        <span class="nb">min</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;min_price&quot;</span><span class="p">),</span>
+        <span class="nb">max</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;max_price&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="k">elif</span> <span class="n">analysis_type</span> <span class="o">==</span> <span class="s2">&quot;price_analysis&quot;</span><span class="p">:</span>
+    <span class="c1"># Price-focused analysis</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">df_filtered</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">),</span>
+        <span class="n">col</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">groupBy</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">percentile_approx</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;median_price&quot;</span><span class="p">),</span>
+        <span class="n">percentile_approx</span><span class="p">(</span><span class="s2">&quot;price&quot;</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;p95_price&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Quick summary</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">df_filtered</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">count</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_products&quot;</span><span class="p">),</span>
+        <span class="n">countDistinct</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;unique_categories&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="c1"># Return manual execution results</span>
+<span class="n">manual_output</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;execution_mode&quot;</span><span class="p">:</span> <span class="n">execution_mode</span><span class="p">,</span>
+    <span class="s2">&quot;analysis_type&quot;</span><span class="p">:</span> <span class="n">analysis_type</span><span class="p">,</span>
+    <span class="s2">&quot;category_filter&quot;</span><span class="p">:</span> <span class="n">category_filter</span><span class="p">,</span>
+    <span class="s2">&quot;date_range&quot;</span><span class="p">:</span> <span class="n">date_range</span><span class="p">,</span>
+    <span class="s2">&quot;records_analyzed&quot;</span><span class="p">:</span> <span class="n">record_count</span><span class="p">,</span>
+    <span class="s2">&quot;results&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">row</span><span class="o">.</span><span class="n">asDict</span><span class="p">()</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">],</span>
+    <span class="s2">&quot;manual_execution_complete&quot;</span><span class="p">:</span> <span class="kc">True</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">manual_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🌐 Webhook Triggers (External Integration)</h2>
+<h3>Webhook Configuration</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Webhook trigger for external system integration</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">products_webhook_pipeline</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products_webhook_triggered</span>
+
+<span class="w">      </span><span class="c1"># Webhook endpoint configuration  </span>
+<span class="w">      </span><span class="nt">webhook</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># This creates a unique webhook URL for triggering the job</span>
+<span class="w">        </span><span class="c1"># Format: https://&lt;workspace-url&gt;/api/2.1/jobs/&lt;job-id&gt;/run-now</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">webhook_triggered_processing</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/05_webhook_processor.py</span>
+<span class="w">            </span><span class="nt">base_parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">trigger_source</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;webhook&quot;</span>
+</code></pre></div>
+
+<h3>Webhook Processing</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># notebooks/05_webhook_processor.py</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="c1"># Webhook context (would be provided by external system)</span>
+<span class="n">webhook_context</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;trigger_source&quot;</span><span class="p">:</span> <span class="s2">&quot;external_catalog_system&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;product_catalog_update&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+    <span class="s2">&quot;external_job_id&quot;</span><span class="p">:</span> <span class="s2">&quot;CAT_UPDATE_2024_001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;products_affected&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;P001&quot;</span><span class="p">,</span> <span class="s2">&quot;P002&quot;</span><span class="p">,</span> <span class="s2">&quot;P015&quot;</span><span class="p">,</span> <span class="s2">&quot;P023&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🌐 Webhook triggered by </span><span class="si">{</span><span class="n">webhook_context</span><span class="p">[</span><span class="s1">&#39;trigger_source&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;📅 Event: </span><span class="si">{</span><span class="n">webhook_context</span><span class="p">[</span><span class="s1">&#39;event_type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># COMMAND ----------</span>
+<span class="c1"># Process webhook-specific data</span>
+<span class="n">affected_products</span> <span class="o">=</span> <span class="n">webhook_context</span><span class="p">[</span><span class="s2">&quot;products_affected&quot;</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="n">affected_products</span><span class="p">:</span>
+    <span class="c1"># Process only affected products</span>
+    <span class="n">df_affected</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;product_id&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">affected_products</span><span class="p">))</span>
+
+    <span class="c1"># Add webhook metadata</span>
+    <span class="n">df_with_webhook_info</span> <span class="o">=</span> <span class="n">df_affected</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+        <span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">webhook_context</span><span class="p">[</span><span class="s2">&quot;external_job_id&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;external_job_id&quot;</span><span class="p">),</span>
+        <span class="n">lit</span><span class="p">(</span><span class="n">webhook_context</span><span class="p">[</span><span class="s2">&quot;event_type&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;trigger_event&quot;</span><span class="p">),</span>
+        <span class="n">current_timestamp</span><span class="p">()</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;webhook_processing_time&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Update Silver layer for affected products only</span>
+    <span class="n">df_with_webhook_info</span><span class="o">.</span><span class="n">write</span> \
+        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;replaceWhere&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;product_id IN (</span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">f</span><span class="err">\</span><span class="s2">&quot;&#39;</span><span class="si">{p}</span><span class="s2">&#39;</span><span class="se">\&quot;</span><span class="s2">] for p in affected_products)})&quot;</span><span class="p">)</span><span class="w"> </span><span class="err">\</span>
+<span class="w">        </span><span class="o">.</span><span class="n">saveAsTable</span><span class="p">(</span><span class="s2">&quot;databricks_clar.silver.products_webhook_updates&quot;</span><span class="p">)</span>
+
+<span class="w">    </span><span class="n">processed_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">df_with_webhook_info</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+<span class="k">else</span><span class="p">:</span>
+<span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="n">Full</span><span class="w"> </span><span class="n">refresh</span><span class="w"> </span><span class="n">triggered</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">webhook</span>
+<span class="w">    </span><span class="n">df_all</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;databricks_clar.bronze.products_bronze&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="n">processed_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">df_all</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+<span class="n">webhook_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;trigger_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;webhook&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;webhook_context&quot;</span><span class="p">:</span><span class="w"> </span><span class="n">webhook_context</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;products_processed&quot;</span><span class="p">:</span><span class="w"> </span><span class="n">processed_count</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;processing_mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;incremental&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">affected_products</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;full_refresh&quot;</span>
+<span class="p">}</span>
+
+<span class="n">dbutils</span><span class="o">.</span><span class="n">notebook</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">webhook_output</span><span class="p">))</span>
+</code></pre></div>
+
+<hr />
+<h2>🔗 Advanced Trigger Patterns</h2>
+<h3>Multi-Trigger Job Configuration</h3>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Job with multiple trigger types (advanced pattern)</span>
+<span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">jobs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">products_multi_trigger</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">products_advanced_triggers</span>
+
+<span class="w">      </span><span class="c1"># Primary schedule</span>
+<span class="w">      </span><span class="nt">schedule</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">quartz_cron_expression</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0</span><span class="nv"> </span><span class="s">0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">?&quot;</span>
+<span class="w">        </span><span class="nt">timezone_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;America/New_York&quot;</span>
+<span class="w">        </span><span class="nt">pause_status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">UNPAUSED</span>
+
+<span class="w">      </span><span class="c1"># Also enable manual and webhook triggers</span>
+<span class="w">      </span><span class="nt">webhook</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">  </span><span class="c1"># Enable webhook endpoint</span>
+
+<span class="w">      </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">        </span><span class="c1"># Conditional logic based on trigger type</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">determine_trigger_type</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/06_trigger_detection.py</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scheduled_processing</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">determine_trigger_type</span>
+<span class="w">          </span><span class="nt">run_if</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.determine_trigger_type.values.trigger_type}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">&#39;scheduled&#39;&quot;</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/07_scheduled_processing.py</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">manual_processing</span><span class="w">  </span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">determine_trigger_type</span>
+<span class="w">          </span><span class="nt">run_if</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.determine_trigger_type.values.trigger_type}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">&#39;manual&#39;&quot;</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/08_manual_processing.py</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">webhook_processing</span>
+<span class="w">          </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">task_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">determine_trigger_type</span>
+<span class="w">          </span><span class="nt">run_if</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{tasks.determine_trigger_type.values.trigger_type}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">&#39;webhook&#39;&quot;</span>
+<span class="w">          </span><span class="nt">notebook_task</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">notebook_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./notebooks/09_webhook_processing.py</span>
+</code></pre></div>
+
+<hr />
+<h2>📊 Trigger Comparison Table</h2>
+<table>
+<thead>
+<tr>
+<th>Trigger Type</th>
+<th>Latency</th>
+<th>Use Case</th>
+<th>Concurrency</th>
+<th>Cost</th>
+<th>Your Products Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Scheduled</strong></td>
+<td>Minutes-Hours</td>
+<td>Batch ETL, Reports</td>
+<td>Low</td>
+<td>Low</td>
+<td>Daily product analysis</td>
+</tr>
+<tr>
+<td><strong>File Arrival</strong></td>
+<td>Seconds</td>
+<td>Event-driven ETL</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>New CSV → immediate processing</td>
+</tr>
+<tr>
+<td><strong>Continuous</strong></td>
+<td>Sub-second</td>
+<td>Real-time streaming</td>
+<td>High</td>
+<td>High</td>
+<td>Live product price updates</td>
+</tr>
+<tr>
+<td><strong>Manual</strong></td>
+<td>Immediate</td>
+<td>Testing, Ad-hoc</td>
+<td>High</td>
+<td>Low</td>
+<td>Development analysis runs</td>
+</tr>
+<tr>
+<td><strong>Webhook</strong></td>
+<td>Seconds</td>
+<td>External integration</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Catalog system → update pipeline</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🚨 Exam Key Points</h2>
+<h3>Cron Expression Patterns (Memorize These):</h3>
+<div class="codehilite"><pre><span></span><code><span class="s2">&quot;0 0 2 * * ?&quot;</span><span class="w">     </span><span class="c1"># Daily at 2 AM</span>
+<span class="s2">&quot;0 0 * * * ?&quot;</span><span class="w">     </span><span class="c1"># Every hour</span>
+<span class="s2">&quot;0 */15 * * * ?&quot;</span><span class="w">  </span><span class="c1"># Every 15 minutes</span>
+<span class="s2">&quot;0 0 6 ? * MON-FRI&quot;</span><span class="w">  </span><span class="c1"># Weekdays at 6 AM</span>
+<span class="s2">&quot;0 0 1 1 * ?&quot;</span><span class="w">     </span><span class="c1"># Monthly (1st day, 1 AM)</span>
+</code></pre></div>
+
+<h3>Trigger Decision Matrix:</h3>
+<ul>
+<li><strong>Predictable data arrival</strong> → Scheduled</li>
+<li><strong>Unpredictable file arrival</strong> → File arrival trigger  </li>
+<li><strong>Real-time requirements</strong> → Continuous</li>
+<li><strong>External system events</strong> → Webhook</li>
+<li><strong>Development/testing</strong> → Manual</li>
+</ul>
+<h3>Common Exam Scenarios:</h3>
+<ul>
+<li>"Daily ETL at 3 AM Eastern" → Scheduled trigger with timezone</li>
+<li>"Process files as they arrive" → File arrival trigger on volumes</li>
+<li>"Real-time streaming pipeline" → Continuous trigger</li>
+<li>"External system notification" → Webhook trigger</li>
+<li>"Prevent overlapping runs" → <code>max_concurrent_runs: 1</code></li>
+</ul>
+<h3>Gotchas:</h3>
+<ul>
+<li>❌ Continuous jobs with <code>timeout_seconds</code> → Continuous jobs shouldn't have timeouts</li>
+<li>❌ File arrival without <code>min_time_between_triggers</code> → Can cause rapid re-triggering</li>
+<li>❌ Scheduled job without timezone → Uses cluster timezone (inconsistent)</li>
+<li>✅ Always specify timezone for scheduled triggers</li>
+<li>✅ Use queueing for resource contention: <code>queue.enabled: true</code></li>
+</ul>
+<p><strong>The Rule:</strong> <strong>Match trigger type to data arrival pattern</strong> for optimal efficiency and cost.</p>
+<p>This transforms <strong>static schedules into intelligent, event-driven pipelines</strong> that respond appropriately to your data's natural rhythm! 🫡</p>
+</body>
+</html>
