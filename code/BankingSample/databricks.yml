@@ -1,0 +1,46 @@
+# BankingSample - Databricks Asset Bundle
+# Deploys notebooks, Lakeflow Job, and Lakeflow Declarative Pipeline as one unit.
+#
+# Usage:
+#   databricks bundle validate
+#   databricks bundle deploy --target dev
+#   databricks bundle run banking_pipeline_job --target dev
+
+bundle:
+  name: banking_sample
+
+# Workspace-specific variables.
+# Override defaults locally without committing changes via:
+#   databricks bundle deploy --var="workspace_host=https://your-workspace.com"
+variables:
+  workspace_host:
+    description: "Your Databricks workspace URL (no trailing slash)"
+    default: "https://<your-workspace-url>.cloud.databricks.com"
+
+  catalog:
+    description: "Unity Catalog name to deploy assets into"
+    default: "databricks_clar"
+
+  notification_email:
+    description: "Email for job failure alerts"
+    default: "<your-email>"
+
+# Include resource definitions from separate files for clarity.
+include:
+  - resources/jobs/*.yml
+  - resources/pipelines/*.yml
+
+# Deployment targets - dev for personal use, prod for shared environments.
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: ${var.workspace_host}
+
+  prod:
+    mode: production
+    workspace:
+      host: ${var.workspace_host}
+    run_as:
+      user_name: ${var.notification_email}

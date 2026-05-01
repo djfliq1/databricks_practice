@@ -1,0 +1,38 @@
+# Lakeflow Declarative Pipeline definition.
+# References the 3 transformation files: 1_bronze.py, 2_silver.py, 3_gold.py
+
+resources:
+  pipelines:
+    banking_declarative_pipeline:
+      name: "BankingSample - Declarative Pipeline"
+
+      # Triggered mode = manual/scheduled run; switch to continuous for streaming.
+      continuous: false
+
+      # Serverless compute - no cluster config needed.
+      serverless: true
+
+      # Unity Catalog target.
+      catalog: ${var.catalog}
+      schema: banking_dlt
+
+      # Source files (paths relative to bundle root).
+      libraries:
+        - file:
+            path: ../../pipelines/transformations/1_bronze.py
+        - file:
+            path: ../../pipelines/transformations/2_silver.py
+        - file:
+            path: ../../pipelines/transformations/3_gold.py
+
+      # Development mode = faster iteration; production mode = strict retries.
+      development: true
+
+      # Failure notifications.
+      notifications:
+        - email_recipients:
+            - ${var.notification_email}
+          alerts:
+            - on-update-failure
+            - on-update-fatal-failure
+            - on-flow-failure
